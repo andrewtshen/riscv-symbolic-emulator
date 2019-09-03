@@ -1,0 +1,12 @@
+[submodule "legOS"]
+	path = legOS
+	url = https://github.com/AndrewTShen/legOS
+[submodule "software-foundations"]
+	path = software-foundations
+	url = https://github.com/AndrewTShen/software-foundations
+[submodule "z3-proofs"]
+	path = z3-proofs
+	url = https://github.com/AndrewTShen/z3-proofs
+[submodule "xv6-public"]
+	path = xv6-public
+	url = https://github.com/mit-pdos/xv6-public
