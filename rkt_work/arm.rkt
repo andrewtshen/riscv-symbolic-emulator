@@ -1,61 +1,16 @@
 #lang rosette
 
-(struct cpu (pc regs) #:mutable)
+(require "arm_lifter.rkt")
 
-(define (interpret c program)
-  (define insn (fetch c program))
-  (printf "insn: ~a~n" insn)
-  (match insn
-    [(list opcode rd rs imm)
-     (execute c opcode rd rs imm)
-     (when (not (equal? opcode 'ret))
-       (interpret c program))]))
-
-(define (fetch c program)
-  (define pc (cpu-pc c))
-  (if (< pc 0) (display "failed\n") (display ""))
-  (if (>= pc (vector-length program)) (display "failed\n") (display ""))
-  (display "\n")
-  (vector-ref program pc))
-
-(define (cpu-reg c rs)
-  (vector-ref (cpu-regs c) rs))
-
-(define (set-cpu-reg! c rd v)
-  (vector-set! (cpu-regs c) rd v))
-
-(define (execute c opcode rd rs imm)
-  (define pc (cpu-pc c))
-  (case opcode
-    [(ret)
-     (set-cpu-pc! c 0)]
-    [(li)
-     (set-cpu-pc! c (+ 1 pc))]
-    [(snez)
-     (set-cpu-pc! c (+ 1 pc))
-     (if (= (cpu-reg c rs) 0)
-         (set-cpu-reg! c rd 0)
-         (set-cpu-reg! c rd 1))]
-    [(mv)
-     (set-cpu-pc! c (+ 1 pc))]
-    [(bltz)
-     (if (< (cpu-reg c rs) 0)
-         (set-cpu-pc! c imm)
-         (set-cpu-pc! c (+ 1 pc)))]))
-
-; (define-symbolic X Y integer?)
-; (define c (cpu 0 (vector X Y)))
 (define program (vector
-                 '(snez 1 0 #f)
-                 '(bltz #f 0 4)
-                 '(mv 0 1 #f)
-                 '(ret #f #f #f)
-                 '(li 0 #f -1)
-                 '(ret #f #f #f)))
-;(interpret c program)
+                 '(snez 1 0 #f #f)
+                 '(bltz #f 0 #f 4)
+                 '(mov 0 1 #f #f)
+                 '(ret #f #f #f #f)
+                 '(li 0 #f #f -1)
+                 '(ret #f #f #f #f)))
 
-
-(struct state (a0 a1)) ; specification state
+(struct state (a0 a1) #:mutable #:transparent) ; specification state
 
 ; functional specification for the sign code
 (define (spec-sign s)
@@ -67,22 +22,38 @@
   (define scratch (if (zero? a0) 0 1))
   (state sign scratch))
 
+; test spec-impl relation
+
+; lets us build a symbolic vector of length n
+(define (build-symbols n)
+    (build-vector n (lambda (i) (define-symbolic* m integer?) m)))
+
+(define-symbolic X Y integer?)
+(define cpu-state (cpu 0 (vector X Y)))
+
+; Display our symbolic CPU
+(displayln (cpu-regs cpu-state))
+(displayln (cpu-pc cpu-state))
+;(displayln (cpu-mem cpu-state))
+
+;(interpret cpu-state program)
+
+(define-symbolic X1 Y1 integer?)
+(define spec-state (state X1 Y1))
+
 ; abstraction function: impl. cpu state to spec. state
 (define (AF c)
   (state (cpu-reg c 0) (cpu-reg c 1)))
 
-; test spec-impl relation
-(define-symbolic X Y integer?)
-(define cpu-state (cpu 0 (vector X Y)))
-
-(define-symbolic X1 Y1 integer?)
-(define spec-state (cpu 0 (vector X1 Y1)))
-
-;(assert (equal? (AF cpu-state) spec-state))
-
+(assert (equal? (AF cpu-state) spec-state))
 ;(define cpu-state1 (interpret cpu-state program))
+(interpret cpu-state program)
+(define spec-state1 (spec-sign spec-state))
+(assert (not (equal? (AF cpu-state) spec-state1)))
+(asserts)
 
-;(define spec-state1 (spec-sign (AF spec-state)))
+(solve #t)
 
-;(= (AF cpu-state1) spec-state1)
-
+;(list (= 10 X)
+;      (&& (= X (ite (< 0 X1) 1 (ite (< X1 0) -1 0))) (|| (&& (= 0 X) (= 0 X1)) (&& (! (= 0 X)) (! (= 0 X1)))))
+;      (&& (= X X1) (= Y Y1)))
