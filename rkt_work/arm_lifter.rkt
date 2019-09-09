@@ -1,7 +1,14 @@
 #lang rosette
 
-(struct cpu (pc regs) #:mutable #:transparent)
+(require syntax/parse/define)
+
+(struct cpu (pc regs mem mpu) #:mutable #:transparent)
 (provide (struct-out cpu))
+
+(struct AP (kern user)) ; access permissions
+(provide (struct-out AP))
+(struct mpu_unit (start end RNR AP)) ; maybe can hard code in this information? RNR = region number, AP = access permissions
+(provide (struct-out mpu_unit))
 
 ; backbone of the interpretor
 (define (interpret c program)
@@ -37,14 +44,16 @@
     [(ret)
      (set-cpu-pc! c 0)]
     [(li)
-     (set-cpu-pc! c (+ 1 pc))]
+     (set-cpu-pc! c (+ 1 pc))
+     (set-cpu-reg! c rd imm)]
     [(snez)
      (set-cpu-pc! c (+ 1 pc))
      (if (= (cpu-reg c rs) 0)
          (set-cpu-reg! c rd 0)
          (set-cpu-reg! c rd 1))]
     [(mov)
-     (set-cpu-pc! c (+ 1 pc))]
+     (set-cpu-pc! c (+ 1 pc))
+     (set-cpu-reg! c rd (cpu-reg c rs))]
     [(bltz)
      (if (< (cpu-reg c rs) 0)
          (set-cpu-pc! c imm)
