@@ -32,15 +32,14 @@
   ; (define scratch (if (zero? a0) 0 1)) this is intermediate register
   (state sign))
 
-(define-symbolic* Rd Rn Op2 addr Rm Rs cpsr mem R0 R1 integer?)
+(define-symbolic* cpsr R0 R1 integer?)
 (define cpu-state
   (cpu 0
-       (vector Rd Rn Op2 addr Rm Rs)
        (vector R0 R1) ; test with this first then use (build-mem 16 umem) for full memory
-       cpsr ; control program status register
+       0 ; control program status register
        )) ; both have full access
 
-(display-cpu cpu-state)
+(displayln cpu-state)
 
 (interpret cpu-state program)
 (displayln cpu-state)
@@ -50,7 +49,7 @@
 
 ; abstraction function: impl. cpu state to spec. state
 #|(define (AF c)
-  (state (cpu-mem c)))
+  (state (cpu-reg c 1)))
 (verify
  #:assume
  (assert (equal? (AF cpu-state) spec-state))

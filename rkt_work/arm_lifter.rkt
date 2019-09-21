@@ -2,7 +2,7 @@
 
 (require syntax/parse/define)
 
-(struct cpu (pc regs mems cpsr) #:mutable #:transparent)
+(struct cpu (pc regs cpsr) #:mutable #:transparent)
 (provide (struct-out cpu))
 
 ; backbone of the interpretor
@@ -32,13 +32,6 @@
 (define (set-cpu-reg! c rd v)
   (vector-set! (cpu-regs c) rd v))
 
-(define (cpu-mem c rs)
-  (vector-ref (cpu-mems c) rs))
-(provide cpu-mem)
-
-(define (set-cpu-mem! c rd v)
-  (vector-set! (cpu-mems c) rd v))
-
 ; Display our symbolic CPU
 (define (display-cpu c)
   (display "---\ncpu: ")
@@ -46,8 +39,6 @@
   (displayln (cpu-regs c))
   (display "pc: ")
   (displayln (cpu-pc c))
-  (display "mem: ")
-  (displayln (cpu-mems c))
   (displayln "---"))
 (provide display-cpu)
 
@@ -59,7 +50,7 @@
      (set-cpu-pc! c 0)]
     [(mov)
      (set-cpu-pc! c (+ 1 pc))
-     (set-cpu-mem! c Rd Op2)]
+     (set-cpu-reg! c Rd Op2)]
     [(ble)
      (if (>= 0 (cpu-cpsr c))
          (set-cpu-pc! c addr)
@@ -70,6 +61,6 @@
          (set-cpu-pc! c (+ 1 pc)))]
     [(cmp)
      (set-cpu-pc! c (+ 1 pc))
-     (set-cpu-cpsr! c (- (cpu-mem c Rn) Op2))
+     (set-cpu-cpsr! c (- (cpu-reg c Rn) Op2))
      (displayln (cpu-cpsr c))]
     ))
