@@ -3,19 +3,24 @@
 
 (require "arm_lifter.rkt")
 
-(define-simple-macro (build-symbols n:expr m:id)
-  (build-vector n (lambda (i) (define-symbolic* m integer?) m)))
+(define-simple-macro (build-mem n:expr m:id)
+  (build-vector n (lambda (i) (define-symbolic* m (bitvector 1)) m)))
 
 ; the program we are testing
 (define program (vector
-                 '(snez 1 0 #f #f)
-                 '(bltz #f 0 #f 4)
-                 '(mov 0 1 #f #f)
-                 '(ret #f #f #f #f)
-                 '(li 0 #f #f -1)
-                 '(ret #f #f #f #f)))
+                 `(cmp #f 0 0 #f #f #f)
+                 `(ble #f #f #f 4 #f #f)
+                 `(mov 1 #f 1 #f #f #f)
+                 `(ret #f #f #f #f #f #f)
+                 `(cmp #f 0 0 #f #f #f)
+                 `(bge #f #f #f 8 #f #f)
+                 `(mov 1 #f -1 #f #f #f)
+                 `(ret #f #f #f #f #f #f)
+                 `(mov 1 #f 0 #f #f #f)
+                 `(ret #f #f #f #f #f #f)
+                 ))
 
-(struct state (a0 a1) #:mutable #:transparent)
+(struct state (a0) #:mutable #:transparent)
 
 ; functional specification for the sign code
 (define (spec-sign s)
@@ -24,40 +29,45 @@
                  [(positive? a0) 1]
                  [(negative? a0) -1]
                  [else 0]))
-  (define scratch (if (zero? a0) 0 1))
-  (state sign scratch))
+  ; (define scratch (if (zero? a0) 0 1)) this is intermediate register
+  (state sign))
 
-; test spec-impl relation
-
-(define-symbolic* r0 r1 integer?)
-(define mpu_settings (mpu_unit 0 5 1 (AP 1 1)))
+(define-symbolic* Rd Rn Op2 addr Rm Rs cpsr mem R0 R1 integer?)
 (define cpu-state
   (cpu 0
-       (vector r0 r1)
-       (build-symbols 10 ustack)
-       (build-symbols 10 umem)
-       mpu_settings)) ; both have full access
+       (vector Rd Rn Op2 addr Rm Rs)
+       (vector R0 R1) ; test with this first then use (build-mem 16 umem) for full memory
+       cpsr ; control program status register
+       )) ; both have full access
 
-; Display our symbolic CPU
-(displayln (cpu-regs cpu-state))
-(displayln (cpu-pc cpu-state))
-;(displayln (cpu-mem cpu-state))
+(display-cpu cpu-state)
 
-(define-symbolic* R0 R1 integer?)
-(define spec-state (state R0 R1))
+(interpret cpu-state program)
+(displayln cpu-state)
+
+(define-symbolic* r0 integer?)
+(define spec-state (state r0))
 
 ; abstraction function: impl. cpu state to spec. state
-(define (AF c)
-  (state (cpu-reg c 0) (cpu-reg c 1)))
-(solve (begin
-          (assert (equal? (AF cpu-state) spec-state))
-          (interpret cpu-state program) ; after program is run, cpu-state is essentially cpu-state'
-          (define spec-state1 (spec-sign spec-state))
-          (assert (not (equal? (AF cpu-state) spec-state1)))
-          (displayln (asserts))))
+#|(define (AF c)
+  (state (cpu-mem c)))
+(verify
+ #:assume
+ (assert (equal? (AF cpu-state) spec-state))
+ #:guarantee
+ (begin
+   (interpret cpu-state program) ; after program is run, cpu-state is essentially cpu-state'
+   (define spec-state1 (spec-sign spec-state))
+   (assert (equal? (AF cpu-state) spec-state1))
+   (displayln (asserts))))
 ; unsat, no solution that does not satisfy the spec state
+|#
 
 ; (asserts)
+;((= mem$0
+;    (ite (< 0 r0$0) 1 (ite (< r0$0 0) -1 0))
+;    ))
+
 ; (list (! (&& (= (ite (< X 0) -1 (ite (= 0 X) 0 1)) (ite (< 0 X1) 1 (ite (< X1 0) -1 0))) ; check that the R0 are equal
 ;             (|| (&& (= 0 X) (= 0 X1)) (&& (! (= 0 X)) (! (= 0 X1)))))) ; check that the R1 are equal
 ;      (&& (= X X1) (= Y Y1))) ; check that the initial states are equal
