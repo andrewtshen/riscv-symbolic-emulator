@@ -10,3 +10,6 @@
 [submodule "xv6-public"]
 	path = xv6-public
 	url = https://github.com/mit-pdos/xv6-public
+[submodule "serval-sosp19"]
+	path = serval-sosp19
+	url = https://github.com/uw-unsat/serval-sosp19

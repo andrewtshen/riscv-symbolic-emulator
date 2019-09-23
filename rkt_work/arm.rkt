@@ -1,5 +1,12 @@
 #lang rosette
 (require syntax/parse/define)
+(require
+  serval/lib/unittest
+  rackunit/text-ui
+  (prefix-in serval:
+    (combine-in serval/lib/core
+                serval/spec/refinement
+                serval/spec/ni)))
 
 (require "arm_lifter.rkt")
 
@@ -18,7 +25,7 @@
                  `(ret #f #f #f #f #f #f)
                  `(mov 1 #f 0 #f #f #f)
                  `(ret #f #f #f #f #f #f)
-                 ))
+                ))
 
 (struct state (a0) #:mutable #:transparent)
 

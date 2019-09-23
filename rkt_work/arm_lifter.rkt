@@ -1,20 +1,28 @@
 #lang rosette
 
 (require syntax/parse/define)
+(require
+  serval/lib/unittest
+  rackunit/text-ui
+  (prefix-in serval:
+    (combine-in serval/lib/core
+                serval/spec/refinement
+                serval/spec/ni)))
 
 (struct cpu (pc regs cpsr) #:mutable #:transparent)
 (provide (struct-out cpu))
 
 ; backbone of the interpretor
 (define (interpret c program)
-  (define insn (fetch c program))
-  (displayln c)
-  (printf "insn: ~a~n" insn)
-  (match insn
-    [(list opcode Rd Rn Op2 addr Rm Rs)
-     (execute c opcode Rd Rn Op2 addr Rm Rs)
-     (when (not (equal? opcode 'ret))
-       (interpret c program))]))
+  (serval:split-pc (cpu pc) c
+                   (define insn (fetch c program))
+                   (displayln c)
+                   (printf "insn: ~a~n" insn)
+                   (match insn
+                     [(list opcode Rd Rn Op2 addr Rm Rs)
+                      (execute c opcode Rd Rn Op2 addr Rm Rs)
+                      (when (not (equal? opcode 'ret))
+                        (interpret c program))])))
 (provide interpret)
 
 ; fetch the program counter to make sure it's in bounds
