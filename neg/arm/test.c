@@ -1,4 +1,4 @@
-int main() {
+int _start() {
     int a = 0;
     int b;
     if (a > 0) {
@@ -10,4 +10,5 @@ int main() {
             b = 0;
         }
     }
+    return 0;
 }
