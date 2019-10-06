@@ -1,6 +1,8 @@
 #lang serval/spec
 
-(require "test.rkt")
+(require 
+  "test.rkt"
+  serval/lib/unittest)
 
 (struct state ([x (bitvector 64)]))
 
@@ -24,5 +26,12 @@
                     [(cpu2) (cpu-ecall cpu (bv __NR_get_and_set 64) (list arg))])
           (=> pre
               (equal? (abs-function cpu2) s2))))))))
+; (display refinement)
 
-(prove refinement)
+(define refine_tests
+  (test-suite+ "refinement tests"
+    (test-case+ "get and set refinement"
+      (prove refinement))))
+
+(module+ test
+  (time (run-tests refine_tests)))

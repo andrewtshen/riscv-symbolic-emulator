@@ -1,5 +1,6 @@
 LEGOS_TESTS := \
         monitors/legOS/verif/test.rkt \
+        monitors/legOS/verif/spec.rkt \
 
 verify-legOS: $(LEGOS_TESTS)
 	$(RACO_TEST) $^

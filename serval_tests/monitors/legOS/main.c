@@ -7,37 +7,8 @@
 #include <asm/tlbflush.h>
 #include <uapi/legOS/syscalls.h>
 
-noreturn static void supervisor_init(unsigned int, phys_addr_t);
-extern char _payload_start[], _payload_end[];
-
-noreturn void main(unsigned int hartid, phys_addr_t dtb) {
-    mcall_init(dtb);
+void main(unsigned int hartid, phys_addr_t dtb) {
     pr_info("Hello from ToyMon!\n");
-    supervisor_init(hartid, dtb);
-}
-
-noreturn static void supervisor_init(unsigned int hartid, phys_addr_t dtb) {
-    struct pt_regs regs = {
-            .a0 = hartid,
-            .a1 = dtb,
-    };
-
-    /* mret to S-mode */
-    csr_write(mstatus, SR_MPP_S);
-
-    /* entry to supervisor_main */
-    csr_write(mepc, (uintptr_t) _payload_start);
-
-    /* PMP to allow S-mode access only to supervisor payload */
-    csr_write(pmpcfg0, 0);
-    csr_write(pmpcfg2, 0);
-    pmpaddr_write(pmpaddr0, (uintptr_t) _payload_start);
-    pmpaddr_write(pmpaddr1, (uintptr_t) _payload_end);
-    pmpcfg_write(pmp1cfg, PMPCFG_A_TOR | PMPCFG_R | PMPCFG_W | PMPCFG_X);
-    local_flush_tlb_all();
-
-    /* "return" to supervisor */
-    mret_with_regs(&regs);
 }
 
 static long sys_hello_world(void) {
@@ -49,8 +20,8 @@ long x;
 
 static long sys_get_and_set(long y) {
     long old = x;
-    x = y;
-    return old;
+    x = y+100;
+    return old+100;
 }
 
 static long sys_test_print(void) {
