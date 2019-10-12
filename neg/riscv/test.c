@@ -1,5 +1,5 @@
 int _start() {
-    int a = 0;
+    int a = 10;
     int b;
     if (a > 0) {
         b = 1;

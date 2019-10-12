@@ -30,3 +30,6 @@ $(LEGOS_TESTS): | \
 		cat $< >> $@~
 	$(Q)mv "$@~" "$@"
 
+test: $(LEGOS_TESTS)
+	raco test --check-stderr --table --timeout 1200 --jobs 4 test.rkt spec.rkt
+

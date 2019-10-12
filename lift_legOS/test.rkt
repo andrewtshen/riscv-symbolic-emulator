@@ -16,13 +16,15 @@
 
 ; (provide forall/cpu cpu-ecall find-block-by-name cpu-mregions
 ;          mblock-iload __NR_get_and_set)
+; (provide forall/cpu cpu-ecall find-block-by-name cpu-mregions
+;          mblock-iload __NR_get_and_set)
 
-; (define (forall/cpu k)
-;   (define cpu (init-cpu kernel:symbols kernel:globals))
-;   (gpr-set! cpu 'a0 (bv 1 (XLEN)))
+(define (forall/cpu k)
+  (define cpu (init-cpu kernel:symbols kernel:globals))
+  (gpr-set! cpu 'a0 (bv 1 (XLEN)))
 
-;   (interpret-objdump-program cpu kernel:instructions)
-;   (k cpu))
+  (interpret-objdump-program cpu kernel:instructions)
+  (k cpu))
 
 ; (define (cpu-ecall c callno args)
 ;   (define c2 (struct-copy cpu c))
@@ -34,16 +36,16 @@
 ;   (interpret-objdump-program c2 kernel:instructions)
 ;   c2)
 
-; (define (sanity-check)
-;   (define cpu (init-cpu kernel:symbols kernel:globals))
-;   ; (display cpu)
-;   (gpr-set! cpu 'a0 (bv 1 (XLEN)))
+(define (sanity-check)
+  (define cpu (init-cpu kernel:symbols kernel:globals))
+  (displayln cpu)
+  (gpr-set! cpu 'a0 (bv 1 (XLEN)))
 
-;   (define asserted (with-asserts-only (interpret-objdump-program cpu kernel:instructions)))
-;   (check-unsat? (verify (assert (apply && asserted))))
+  (define asserted (with-asserts-only (interpret-objdump-program cpu kernel:instructions)))
+  (check-unsat? (verify (assert (apply && asserted))))
 
-;   (void))
+  (void))
 
 (module+ test
-  ; (sanity-check)
+  (sanity-check)
   (displayln "Testing!"))
