@@ -1,6 +1,0 @@
-*.aux
-*.scm
-*.vo
-*.glob
-extracted.rkt
-.depend

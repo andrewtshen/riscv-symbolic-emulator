@@ -2,7 +2,7 @@ PREFIX ?= riscv64-unknown-elf-
 DEBUG ?= 1
 
 QEMU := qemu-system-riscv32
-QEMUFLAGS := -M sifive_e -serial stdio
+QEMUFLAGS := -M sifive_e -nographic
 
 CC := $(PREFIX)gcc
 GDB := $(PREFIX)gdb
@@ -94,4 +94,5 @@ qemu-gdb: kernel.elf
 
 .PHONY: gdb
 gdb: kernel.elf
-	$(GDB) kernel.elf
+	$(GDB) kernel.elf --data-directory=/usr/local/share/gdb
+

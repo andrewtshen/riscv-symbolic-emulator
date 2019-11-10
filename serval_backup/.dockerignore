@@ -1,6 +1,0 @@
-**/.git
-o.riscv64
-.gitlab-ci.yml
-.gitignore
-.dockerignore
-local.mk

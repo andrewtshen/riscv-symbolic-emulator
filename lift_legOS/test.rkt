@@ -14,17 +14,27 @@
       "kernel.globals.rkt"
       "kernel.map.rkt")))
 
-; (provide forall/cpu cpu-ecall find-block-by-name cpu-mregions
-;          mblock-iload __NR_get_and_set)
-; (provide forall/cpu cpu-ecall find-block-by-name cpu-mregions
-;          mblock-iload __NR_get_and_set)
 
-(define (forall/cpu k)
+(define (verify-correct)
   (define cpu (init-cpu kernel:symbols kernel:globals))
-  (gpr-set! cpu 'a0 (bv 1 (XLEN)))
+  ; Set program counter to architecturally-defined reset vector
+  (set-cpu-pc! cpu (bv #x0000000020400000 64))
+
+  ; Display initial CPU state
+  (displayln "State of CPU before startup:")
+  (displayln cpu)
+  ; (displayln (reg-ref cpu 15))
+  ; (displayln (cpu-regs cpu))
+
+  (displayln "kernel instructions: ")
+  (displayln kernel:instructions)
 
   (interpret-objdump-program cpu kernel:instructions)
-  (k cpu))
+
+  ; Dsiplay final CPU state
+  (displayln "State of CPU after startup:")
+  (displayln cpu))
+
 
 ; (define (cpu-ecall c callno args)
 ;   (define c2 (struct-copy cpu c))
@@ -36,16 +46,17 @@
 ;   (interpret-objdump-program c2 kernel:instructions)
 ;   c2)
 
-(define (sanity-check)
-  (define cpu (init-cpu kernel:symbols kernel:globals))
-  (displayln cpu)
-  (gpr-set! cpu 'a0 (bv 1 (XLEN)))
+; (define (sanity-check)
+;   (define cpu (init-cpu kernel:symbols kernel:globals))
+;   (displayln cpu)
+;   (gpr-set! cpu 'a0 (bv 1 (XLEN)))
 
-  (define asserted (with-asserts-only (interpret-objdump-program cpu kernel:instructions)))
-  (check-unsat? (verify (assert (apply && asserted))))
+;   (define asserted (with-asserts-only (interpret-objdump-program cpu kernel:instructions)))
+;   (check-unsat? (verify (assert (apply && asserted))))
 
-  (void))
+;   (void))
 
 (module+ test
-  (sanity-check)
+  ; (sanity-check)
   (displayln "Testing!"))
+  (verify-correct)
