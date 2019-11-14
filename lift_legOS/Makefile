@@ -44,7 +44,7 @@ ifeq ($(DEBUG),1)
 endif
 
 OBJS := \
-	neg.o \
+	sign.o \
 
 include test.mk
 

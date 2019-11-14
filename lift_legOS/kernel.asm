@@ -8,8 +8,15 @@ start address 0x20400000
 Disassembly of section .text:
 20400000 <_startup> 5fc01117          	auipc	sp,0x5fc01
 20400004 <_startup+0x4> 00010113          	addi	sp,sp,0 # 80001000 <_estack>
-20400008 <_startup+0x8> 008000ef          	jal	ra,20400010 <_neg>
+20400008 <_startup+0x8> 008000ef          	jal	ra,20400010 <_sign>
 2040000c <_junk> 0000006f          	jal	zero,2040000c <_junk>
-20400010 <_neg> 00500793          	addi	a5,zero,5
-20400014 <_neg+0x4> 00a00813          	addi	a6,zero,10
-20400018 <_neg+0x8> 30200073          	mret
+20400010 <_sign> 00200893          	addi	a7,zero,2
+20400014 <_sign+0x4> 010788b3          	add	a7,a5,a6
+20400018 <_sign+0x8> 00064663          	blt	a2,zero,20400024 <_neg>
+2040001c <_sign+0xc> 00c04663          	blt	zero,a2,20400028 <_pos>
+20400020 <_sign+0x10> 00c05863          	bge	zero,a2,20400030 <_zero>
+20400024 <_neg> fff00693          	addi	a3,zero,-1
+20400028 <_pos> 00100693          	addi	a3,zero,1
+2040002c <_pos+0x4> 30200073          	mret
+20400030 <_zero> 00000693          	addi	a3,zero,0
+20400034 <_zero+0x4> 30200073          	mret
