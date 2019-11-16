@@ -3,7 +3,7 @@
 20400000 T _stext
 2040000c t _junk
 20400010 00000028 t _sign
-20400024 t _neg
+20400020 t _neg
 20400028 t _pos
 20400030 t _zero
 20400038 R _erodata

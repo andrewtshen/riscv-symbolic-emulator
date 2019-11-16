@@ -13,3 +13,6 @@
 [submodule "serval-sosp19"]
 	path = serval-sosp19
 	url = https://github.com/uw-unsat/serval-sosp19
+[submodule "serval-tutorial-sosp19"]
+	path = serval-tutorial-sosp19
+	url = https://github.com/uw-unsat/serval-tutorial-sosp19

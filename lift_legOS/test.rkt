@@ -23,9 +23,9 @@
 
   ; Display initial CPU state
   (displayln "\nState of CPU before startup:")
-  (displayln (vector-ref gprs 15))
-  (displayln (vector-ref gprs 16))
-  (displayln (vector-ref gprs 17))
+  (displayln gprs)
+  ; (displayln (vector-ref gprs 16))
+  ; (displayln (vector-ref gprs 17))
 
   ; (displayln "kernel instructions: ")
   ; (displayln kernel:instructions)
@@ -34,34 +34,37 @@
 
   ; Dsiplay final CPU state
   (displayln "\nState of CPU after startup:")
-  (define x2 (vector-ref gprs 13))
-  (define x3 (vector-ref gprs 14))
-  (define x4 (vector-ref gprs 15))
-  (define x5 (vector-ref gprs 16))
-  (define x6 (vector-ref gprs 17))
+  (define x2 (vector-ref gprs 12))
+  (define x3 (vector-ref gprs 13))
+  (define x4 (vector-ref gprs 14))
+  (define x5 (vector-ref gprs 15))
+  (define x6 (vector-ref gprs 16))
+  (define x7 (vector-ref gprs 17))
 
-  (displayln x4)
-  (displayln x5)
-  (displayln x6)
+  ; (displayln x4)
+  ; (displayln x5)
+  ; (displayln x6)
+  (displayln gprs)
   ; (displayln (bveq (bvadd x4 x5) x6))
 
   (define sign (cond
-    [(positive? (bitvector->integer x2)) 1]
-    [(negative? (bitvector->integer x2)) -1]
-    [else 0]))
-  (displayln x2)
-  (displayln sign)
+    [(positive? (bitvector->integer x2)) (bv 1 64)]
+    [(negative? (bitvector->integer x2)) (bv -1 64)]
+    [else (bv 0 64)]))
 
-  ; (displayln "\nSolving add")
-  ; (solve (begin 
-  ;   (assert (not (bveq (bvadd x4 x5) x6)))
-  ;   ))
+  (displayln "\n Solving add")
+  (define model-add (verify (begin 
+      (assert (bveq (bvadd x5 x6) x7))
+      )))
+  (displayln "\n model add")
+  (displayln model-add)
 
-  (displayln "\nSolving sign")
-  (solve (begin
-    (assert (bveq (integer->bitvector sign) x3))
-    ))
-  )
+  (define solvesign (bveq sign x3))
+
+  (define model-sign (verify (begin
+    (assert solvesign))))
+  (displayln "\n model sign")
+  (displayln model-sign))
 
 ; (define (cpu-ecall c callno args)
 ;   (define c2 (struct-copy cpu c))
@@ -85,5 +88,5 @@
 
 (module+ test
   ; (sanity-check)
-  (displayln "Testing!"))
+  (displayln "\n Running Tests!"))
   (verify-correct)
