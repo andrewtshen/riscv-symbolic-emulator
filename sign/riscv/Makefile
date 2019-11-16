@@ -12,10 +12,10 @@ ifeq ($(DEBUG),1)
 endif
 
 OBJS := \
-    test.o
+    sign.o
 
 .PHONY: all
-all: test.elf test.lst
+all: sign.elf sign.lst
 
 %.o: %.c
 	$(CC) $(CFLAGS) -c $< -o $@
@@ -23,7 +23,7 @@ all: test.elf test.lst
 %.o: %.s
 	$(CC) $(CFLAGS) -c $< -o $@
 
-test.elf: $(OBJS)
+sign.elf: $(OBJS)
 	$(CC) $(CFLAGS) $(OBJS) -o $@
 
 %.lst: %.elf

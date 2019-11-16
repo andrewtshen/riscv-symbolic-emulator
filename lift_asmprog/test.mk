@@ -1,16 +1,16 @@
 # Testing/Proof
 
-LEGOS_TESTS := \
+asmprog_TESTS := \
 		test.rkt \
 # 		spec.rkt \
 
-# verify-legOS: $(LEGOS_TESTS)
+# verify-asmprog: $(asmprog_TESTS)
 # 	$(RACO_TEST) $^
 
-# verify-legOS-%: monitors/legOS/verif/%.rkt
+# verify-asmprog-%: monitors/asmprog/verif/%.rkt
 # 	$(RACO_TEST) $^
 
-$(LEGOS_TESTS): | \
+$(asmprog_TESTS): | \
 	kernel.asm.rkt \
 	kernel.map.rkt \
 	kernel.globals.rkt \
@@ -30,6 +30,6 @@ $(LEGOS_TESTS): | \
 		cat $< >> $@~
 	$(Q)mv "$@~" "$@"
 
-test: $(LEGOS_TESTS)
+test: $(asmprog_TESTS)
 	raco test --check-stderr --table --timeout 1200 --jobs 4 test.rkt
 

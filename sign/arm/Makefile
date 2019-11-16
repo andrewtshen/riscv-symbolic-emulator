@@ -14,14 +14,14 @@ OBJDUMP := $(PREFIX)objdump
 HEADERFILES := $(wildcard *.h)
 
 OBJS := \
-    test.o
+    sign.o
 
 CFLAGS=-O0 -c -g -mcpu=cortex-m3 -mthumb -nostdlib -Wall -Wextra -fno-builtin -ffreestanding -Wno-unused-but-set-variable
 
 .PRECIOUS: %.o
 
 .PHONY: all
-all: test.elf test.lst test.bin
+all: sign.elf sign.lst sign.bin
 
 %.bin: %.elf
 	$(OBJCOPY) -O binary $< $@

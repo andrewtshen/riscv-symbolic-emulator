@@ -50,7 +50,7 @@ include test.mk
 
 .DEFAULT_GOAL = all
 .PHONY: all
-all: kernel.elf kernel.lst kernel.bin kernel.asm kernel.map $(LEGOS_TESTS)
+all: kernel.elf kernel.lst kernel.bin kernel.asm kernel.map $(asmprog_TESTS)
 
 %.o: %.c
 	$(CC) $(CFLAGS) -c $< -o $@

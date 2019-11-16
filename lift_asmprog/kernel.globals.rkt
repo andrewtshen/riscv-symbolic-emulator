@@ -14,7 +14,7 @@ Contents of the .debug_info section:
     <10>   DW_AT_low_pc      : 0x20400000
     <14>   DW_AT_high_pc     : 0x20400038
     <18>   DW_AT_name        : (indirect string, offset: 0x0): sign.s
-    <1c>   DW_AT_comp_dir    : (indirect string, offset: 0x7): /Users/andrewshen/Documents/primes2019/lift_legOS
-    <20>   DW_AT_producer    : (indirect string, offset: 0x39): GNU AS 2.32
+    <1c>   DW_AT_comp_dir    : (indirect string, offset: 0x7): /Users/andrewshen/Documents/primes2019/lift_asmprog
+    <20>   DW_AT_producer    : (indirect string, offset: 0x3b): GNU AS 2.32
     <24>   DW_AT_language    : 32769	(MIPS assembler)
 
