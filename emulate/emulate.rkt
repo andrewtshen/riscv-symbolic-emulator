@@ -17,16 +17,9 @@
 ; ; get instructions until reach mret
 (while (not (equal? op "mret"))
     (define next_instr (decode (ram-get-x m (get-pc m))))
-    ; (define next_instr (list "mret"))
-    (printf "~a~n" next_instr)
+    (printf "PC: ~a INS: ~a~n" (get-pc m) next_instr)
     (set! op (list-ref next_instr 0))
-    (printf "~a~n" op)
     (set-pc! m (+ (get-pc m) 1)))
     
-
-; (define operation "mret")
-; (define mylist (list operation))
-
-; (set! op (list-ref mylist 0))
-; (printf "~a~n" op)
-; (printf "~a~n" (equal? op "mret"))
+; TODO add more instructions
+; Add symbolic execution of risc-v instructions, interp.rkt?

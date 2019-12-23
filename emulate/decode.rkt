@@ -4,17 +4,15 @@
 
 ; decode a 32 bit vector instruction
 (define (decode b_instr)
-    (printf "decoding: ~a~n" b_instr)
+    ; (printf "decoding: ~a~n" b_instr)
     (define instr null)
     (define opcode (extract 6 0 b_instr))
-    (printf "opcode: ~v~n" opcode)
 
     ; go back and match each of the opcodes to each of the expressions,
     ; ask if there is a nice way to do this
     (cond
         ; R format
         [(bveq opcode (bv #b0110011 7))
-            (printf "> R format~n")
             (define op null)
             (define rd (extract 11 7 b_instr))
             (define funct3 (extract 14 12 b_instr))
@@ -30,7 +28,6 @@
             (set! instr (list op rd rs1 rs2))]
         ; I format
         [(bveq opcode (bv #b0010011 7))
-            (printf "> I format~n")
             (define op null)
             (define rd (extract 11 7 b_instr))
             (define funct3 (extract 14 12 b_instr))
@@ -45,7 +42,6 @@
 
         ; SB format
         [(bveq opcode (bv #b1100011 7))
-            (printf "> SB format~n")
             (define op null)
             (define funct3 (extract 14 12 b_instr))
             (define rs1 (extract 19 15 b_instr))
@@ -70,7 +66,6 @@
 
         ; U format
         [(bveq opcode (bv #b0110111 7))
-            (printf "> U (LUI) format~n")
             (define op "lui")
             (define rd (extract 11 7 b_instr))
             (define imm (extract 31 12 b_instr))
@@ -84,7 +79,6 @@
 
         ; Speical Case for MRETs
         [(bveq b_instr (bv #b00110000001000000000000001110011 32))
-            (printf "MRET~n")
             (set! instr (list "mret"))]
         [else (error "format does not match any known formats")])
     instr)

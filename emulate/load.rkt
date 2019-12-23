@@ -56,8 +56,8 @@
 (provide file->bitvectors)
 
 ; get program example
-(define program (file->bitvectors "sum.bin"))
-(printf "Program: ~a~n" program)
+; (define program (file->bitvectors "sum.bin"))
+; (printf "Program: ~a~n" program)
 
 (define (make-vector len bvec)
     (list->vector
