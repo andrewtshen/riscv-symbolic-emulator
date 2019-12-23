@@ -10,7 +10,7 @@ OBJDUMP := $(PREFIX)objdump
 OBJCOPY := $(PREFIX)objcopy
 OBJDUMPFLAGS := --disassemble-all --source --section-headers --demangle
 
-CFLAGS := -ffreestanding -nostdlib -O0 -mcmodel=medany
+CFLAGS := -ffreestanding -nostdlib -O0 -mcmodel=medany -march=rv64i
 ifeq ($(DEBUG),1)
 	CFLAGS += -g
 endif
@@ -36,13 +36,29 @@ sum.elf: $(OBJS) sum.ld
 %.lst: %.elf
 	$(OBJDUMP) $(OBJDUMPFLAGS) $< > $@
 
+.PHONE: test
+test: sum.bin
+	@echo "----------------------"
+	@echo "> starting load.rkt"
+	racket load.rkt
+	@echo "> ending load.rkt"
+	@echo "----------------------"
+	@echo "> starting decode.rkt"
+	racket decode.rkt
+	@echo "> ending decode.rkt"
+	@echo "----------------------"
+	@echo "> starting emulate.rkt"
+	racket emulate.rkt
+	@echo "> ending emulate.rkt"
+	@echo "----------------------"
+
 .PHONY: clean
 clean:
 	rm -f *.o *.lst *.elf
 
 .PHONY: qemu
 qemu: sum.elf
-	$(QEMU) $(QEMUFLAGS) -sum sum.elf
+	$(QEMU) $(QEMUFLAGS) -kernel sum.elf
 
 .PHONY: qemu-gdb
 qemu-gdb: sum.elf
