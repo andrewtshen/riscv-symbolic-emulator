@@ -3,6 +3,15 @@
 (require (only-in racket/file file->bytes)
          (only-in racket/base bytes-length for/list in-range subbytes bytes-ref))
 
+(require syntax/parse/define)
+(require (only-in racket/base build-vector))
+
+(define-simple-macro (make-sym-vector n:expr m:id)
+    (build-vector n (lambda (i) (define-symbolic* m integer?) m)))
+
+; example sym vector for bitvectors
+; (make-sym-vector 3 foo)
+
 ; 31 64-bit-vectors (x0 isn't an actual gpr)
 (struct cpu
     (gprs pc) #:mutable #:transparent)
@@ -12,12 +21,18 @@
     (cpu ram) #:mutable #:transparent)
 
 ; Wrappers for Accessor Functions
+; be careful to decrement by 1 to access right location
 (define (gprs-get-x m idx)
-    (vector-ref (cpu-gprs (machine-cpu m)) idx))
+    (if (positive? idx)
+        (vector-ref (cpu-gprs (machine-cpu m)) (- idx 1))
+        (bv 0 64)))
+    
 (provide gprs-get-x)
 
 (define (gprs-set-x! m idx val)
-    (vector-set! (cpu-gprs (machine-cpu m)) idx val))
+    (cond [(zero? idx)
+            (printf "set zero vector invalid~n~n~n")])
+    (vector-set! (cpu-gprs (machine-cpu m)) (- idx 1) val))
 (provide gprs-set-x!)
 
 (define (ram-get-x m idx)
@@ -43,16 +58,6 @@
         (define b2 (bv (bytes-ref contents (+ 2 (* 4 i))) 8))
         (define b3 (bv (bytes-ref contents (+ 3 (* 4 i))) 8))
         (concat b3 b2 b1 b0))))
-; (define (file->bitvectors filename)
-;     (define contents (file->bytes filename))
-;     (define length (bytes-length contents))
-;     (assert (equal? (modulo length 4) 0))
-;     (printf "length: ~a~n" length)
-;     (list->vector
-;         (for/list ([i (in-range 0 (/ length 4))])
-;             (printf "~a~n" (subbytes contents (* 4 i) (* 4 (+ i 1))))
-;             ; (bv (subbytes contents (* 4 i) (* 4 (+ i 1))) 4)
-;             )))
 (provide file->bitvectors)
 
 ; get program example
