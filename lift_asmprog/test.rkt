@@ -56,7 +56,7 @@
   (define model-add (verify (begin 
       (assert (bveq (bvadd x5 x6) x7))
       )))
-  (displayln "\n model add")
+  (displayln "\n Model add")
   (displayln model-add)
 
   (define solvesign (bveq sign x3))

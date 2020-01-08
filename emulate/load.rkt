@@ -1,16 +1,20 @@
 #lang rosette/safe
 
+; Initialize the machine and load the program into the machine 
+; to run symbolically. Initalize mutator and accessor functions 
+; for changing the memory in the function.
+
 (require (only-in racket/file file->bytes)
          (only-in racket/base bytes-length for/list in-range subbytes bytes-ref))
 
 (require syntax/parse/define)
 (require (only-in racket/base build-vector))
 
-(define-simple-macro (make-sym-vector n:expr m:id)
-    (build-vector n (lambda (i) (define-symbolic* m integer?) m)))
+(define-simple-macro (make-sym-vector n:expr size:expr m:id)
+    (build-vector n (lambda (i) (define-symbolic* m (bitvector size)) m)))
 
-; example sym vector for bitvectors
-; (make-sym-vector 3 foo)
+; example sym vector for bitvectors 3 bitvectors size 32 named foo
+; (make-sym-vector 3 32 foo) 
 
 ; 31 64-bit-vectors (x0 isn't an actual gpr)
 (struct cpu
@@ -74,10 +78,10 @@
     (define proglength (vector-length program))
     (assert (>= ramsize proglength))
     (machine
-        (cpu (make-vector 31 (bv 0 64)) 0) ; be careful of -1 for offset
+        (cpu (make-sym-vector 31 64 gpr) 0) ; be careful of -1 for offset
         (vector-append
             program
-            (make-vector (- ramsize proglength) (bv 0 32)))))
+            (make-sym-vector (- ramsize proglength) 32 mem))))
 (provide init-machine)
 
 ; machine init example

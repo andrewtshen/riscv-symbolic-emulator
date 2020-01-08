@@ -51,6 +51,10 @@ test: sum.bin
 	racket emulate.rkt
 	@echo "> ending emulate.rkt"
 	@echo "----------------------"
+	@echo "> starting instr.rkt"
+	racket instr.rkt
+	@echo "> ending instr.rkt"
+	@echo "----------------------"
 
 .PHONY: clean
 clean:
