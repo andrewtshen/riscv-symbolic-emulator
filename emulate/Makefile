@@ -47,14 +47,19 @@ test: sum.bin
 	racket decode.rkt
 	@echo "> ending decode.rkt"
 	@echo "----------------------"
-	@echo "> starting emulate.rkt"
-	racket emulate.rkt
-	@echo "> ending emulate.rkt"
-	@echo "----------------------"
 	@echo "> starting instr.rkt"
 	racket instr.rkt
 	@echo "> ending instr.rkt"
 	@echo "----------------------"
+	@echo "> starting execute.rkt"
+	racket execute.rkt
+	@echo "> ending execute.rkt"
+	@echo "----------------------"
+	@echo "> starting emulate.rkt"
+	racket emulate.rkt
+	@echo "> ending emulate.rkt"
+	@echo "----------------------"
+
 
 .PHONY: clean
 clean:

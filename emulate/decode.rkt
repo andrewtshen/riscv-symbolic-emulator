@@ -39,7 +39,11 @@
 	(define rs1 (extract 19 15 b_instr))
 	(define rs2 (extract 24 20 b_instr))
 	; append upper imm and lower imm into imm
-	(define imm (concat (extract 11 7 b_instr) (extract 31 25 b_instr)))
+	(define imm (concat 
+		(extract 31 31 b_instr) 
+		(extract 7 7 b_instr)
+		(extract 30 25 b_instr)
+		(extract 11 8 b_instr)))
 	(cond
 		[(bveq funct3 (bv #b000 3))
 			(set! op "beq")]
@@ -55,12 +59,29 @@
 			(set! op "bgeu")])
 	(list op rs1 rs2 imm))
 
+(define (decode-U b_instr)
+	(define op null)
+	(define opcode (extract 6 0 b_instr))
+	; append upper imm and lower imm into imm
+	(define rd (extract 11 7 b_instr))
+	(define imm (extract 31 12 b_instr))
+	(cond
+		[(bveq opcode (bv #b0110111 7))
+			(set! op "lui")]
+		[(bveq opcode (bv #b0010111 7))
+			(set! op "auipc")])
+	(list op rd imm))
+
 (define (decode-RET b_instr)
 	(define op null)
 	(cond
 		[(bveq b_instr (bv #b00110000001000000000000001110011 32))
-		(set! op "mret")])
+			(set! op "mret")]
+		[(bveq b_instr (bv #b00000000001000000000000001110011 32))
+			(set! op "uret")])
 	(list op))
+
+
 
 ; decode a 32 bit vector instruction
 (define (decode b_instr)
@@ -68,7 +89,7 @@
 	(define instr null)
 	(define opcode (extract 6 0 b_instr))
 	(define fmt (get-fmt opcode))
-	(printf "~a~n" fmt)
+	(printf "FMT: ~a " fmt)
 
 	(cond
 		[(equal? fmt "R")
@@ -78,7 +99,7 @@
 		[(equal? fmt "B")
 			(set! instr (decode-B b_instr))]
 		[(equal? fmt "U")
-			(set! instr (decode-B b_instr))]
+			(set! instr (decode-U b_instr))]
 		[(equal? fmt "RET")
 			(set! instr (decode-RET b_instr))])
 	instr)

@@ -5,7 +5,8 @@
 ; for changing the memory in the function.
 
 (require (only-in racket/file file->bytes)
-         (only-in racket/base bytes-length for/list in-range subbytes bytes-ref))
+         (only-in racket/base bytes-length for/list in-range subbytes bytes-ref error))
+
 
 (require syntax/parse/define)
 (require (only-in racket/base build-vector))
@@ -35,7 +36,7 @@
 
 (define (gprs-set-x! m idx val)
     (cond [(zero? idx)
-            (printf "set zero vector invalid~n~n~n")])
+            (error "set zero vector invalid~n~n~n")])
     (vector-set! (cpu-gprs (machine-cpu m)) (- idx 1) val))
 (provide gprs-set-x!)
 
