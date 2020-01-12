@@ -3,10 +3,11 @@
 .global _sum
 .type _sum, %function
 _sum:
-    li a5, 3
+    li a5, 2
     li a6, 3
     auipc a4, 4
-    bgeu a5, a6, _add 
+    bltu a5, a6, _add
+    li a7, 8
     mret
 _add:
     li a7, 2

@@ -36,7 +36,11 @@ sum.elf: $(OBJS) sum.ld
 %.lst: %.elf
 	$(OBJDUMP) $(OBJDUMPFLAGS) $< > $@
 
-.PHONE: test
+.PHONY: emulate
+emulate: sum.bin
+	racket emulate.rkt
+
+.PHONY: test
 test: sum.bin
 	@echo "----------------------"
 	@echo "> starting load.rkt"

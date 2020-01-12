@@ -11,19 +11,19 @@
 	(let loop () (when test body ... (loop))))
 
 ; get program
-(define program (file->bitvectors "sum.bin"))
+(define program (file->bytearray "sum.bin"))
 
 ; make machine
-(define ramsize 20)
+(define ramsize 1000)
 (define m (init-machine program ramsize))
 
-(printf "program: ~a~n" program)
+; (printf "program: ~a~n" program)
 (define op null)
 ; get instructions until reach mret
 (define (test-and-execute m)
 	(while (not (equal? op "mret"))
-		(define next_instr (decode (ram-get-x m (/ (get-pc m) 2))))
-		(printf "PC: ~a INS: ~a~n" (/ (get-pc m) 2) next_instr)
+		(define next_instr (decode (get-next-instr m)))
+		(printf "PC: ~a INS: ~a~n" (get-pc m) next_instr)
 		(set! op (list-ref next_instr 0))
 		(execute next_instr m))
 		
