@@ -8,7 +8,8 @@ CC := $(PREFIX)gcc
 GDB := $(PREFIX)gdb
 OBJDUMP := $(PREFIX)objdump
 OBJCOPY := $(PREFIX)objcopy
-OBJDUMPFLAGS := --disassemble-all --source --section-headers --demangle
+# OBJDUMPFLAGS := --disassemble-all --source --section-headers --demangle
+OBJDUMPFLAGS := --source --demangle
 
 CFLAGS := -ffreestanding -nostdlib -O0 -mcmodel=medany -march=rv64i
 ifeq ($(DEBUG),1)
@@ -17,6 +18,9 @@ endif
 
 OBJS := \
 	sum.o \
+
+SUM2_OBJS := \
+	sum2.o \
 
 .PHONY: all
 all: sum.bin sum.lst
@@ -29,6 +33,9 @@ all: sum.bin sum.lst
 
 sum.elf: $(OBJS) sum.ld
 	$(CC) $(CFLAGS) -T sum.ld $(OBJS) -o $@
+
+sum2.elf: $(SUM2_OBJS) sum.ld
+	$(CC) $(CFLAGS) -T sum.ld $(SUM2_OBJS) -o $@
 
 %.bin: %.elf
 	$(OBJCOPY) -O binary $< $@

@@ -3,14 +3,19 @@
 .global _sum
 .type _sum, %function
 _sum:
-    li a5, 2
-    li a6, 3
+    lui a3, 0x80000
     auipc a4, 4
-    bltu a5, a6, _add
-    li a7, 8
+    lw a2, 0x8(a3)
+
+
+    li a5, -2
+    li a6, 3
+    blt a5, a6, _add
+
+    li a6, 3
     mret
 _add:
-    li a7, 2
+    # li a7, 8
     add a6, a5, a7 # adding registers together
     mret
 _fallthrough:

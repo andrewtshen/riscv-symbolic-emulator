@@ -39,6 +39,9 @@
 	(vector-set! (cpu-gprs (machine-cpu m)) (- idx 1) val))
 (provide gprs-set-x!)
 
+; get machine ram
+(provide machine-ram)
+
 ; get program counter
 (define (get-pc m)
 	(cpu-pc (machine-cpu m)))
@@ -62,6 +65,7 @@
       (vector-ref ba pos)))
   ; little endian
   (apply concat (reverse bytes)))
+(provide bytearray-read)
 
 ; convert a file to a bytearray
 (define (file->bytearray filename)
@@ -85,6 +89,7 @@
 (provide init-machine)
 
 (define base_address #x80000000)
+(provide base_address)
 
 ; get program example
 ; (define program (file->bytearray "sum.bin"))

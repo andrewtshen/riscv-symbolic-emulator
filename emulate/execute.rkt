@@ -49,11 +49,11 @@
 		[(equal? opcode "addi")
 			(define rd (bitvector->natural (list-ref instr 1)))
 			(define rs1 (gprs-get-x m (bitvector->natural (list-ref instr 2))))
-			(define imm (zero-extend (list-ref instr 3) (bitvector 64)))
+			(define imm (sign-extend (list-ref instr 3) (bitvector 64)))
 			(gprs-set-x! m rd (bvadd rs1 imm))
 			(set-pc! m (+ pc 4))]
-		[(equal? opcode "lui")
-			(error "lui instruction not implemented yet")]
+		[(equal? opcode "slli")
+			(error "slli instruction not implemented yet")]
 		[(equal? opcode "slti")
 			(error "slti instruction not implemented yet")]
 		[(equal? opcode "sltiu")
@@ -81,7 +81,18 @@
 		[(equal? opcode "lh")
 			(error "lh instruction not implemented yet")]
 		[(equal? opcode "lw")
-			(error "lw instruction not implemented yet")]
+			; (printf "executing lw instruction~n")
+			(define rd (bitvector->natural (list-ref instr 1)))
+			(define rs1 (gprs-get-x m (bitvector->natural (list-ref instr 2))))
+			(define imm (sign-extend (list-ref instr 3) (bitvector 64)))
+			; (printf "rd: ~a~n" rd)
+			(define addr (- (bitvector->natural (bvadd rs1 imm)) base_address))
+			(define nbytes 4)
+			; (printf "addr: ~a~n" addr)
+			(define val (bytearray-read (machine-ram m) addr nbytes))
+			; (printf "val: ~a~n: " val)
+			(gprs-set-x! m rd val)
+			(set-pc! m (+ pc 4))]
 		[(equal? opcode "ld")
 			(error "ld instruction not implemented yet")]
 		[(equal? opcode "lbu")
@@ -214,10 +225,14 @@
 
 		; U Format
 		[(equal? opcode "lui")
-			(error "lui instruction not implemented yet")]
+			(define rd (list-ref-nat instr 1))
+			; extend immediate by 12 bits
+			(define imm (zero-extend (concat (list-ref instr 2) (bv 0 12)) (bitvector 64)))
+			(gprs-set-x! m rd imm)
+			(set-pc! m (+ pc 4))]
 		[(equal? opcode "auipc")
 			(define rd (list-ref-nat instr 1))
-			(define imm (zero-extend (list-ref instr 2) (bitvector 64)))
+			(define imm (zero-extend (concat (list-ref instr 2) (bv 0 3)) (bitvector 64)))
 			(gprs-set-x! m rd (bvadd (bv pc 64) imm))
 			(set-pc! m (+ pc 4))]
 

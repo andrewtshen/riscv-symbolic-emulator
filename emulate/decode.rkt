@@ -23,13 +23,24 @@
 
 (define (decode-I b_instr)
 	(define op null)
+	(define opcode (extract 6 0 b_instr))
 	(define rd (extract 11 7 b_instr))
 	(define funct3 (extract 14 12 b_instr))
 	(define rs1 (extract 19 15 b_instr))
 	(define imm (extract 31 20 b_instr))
 	(cond
-		[(bveq funct3 (bv #b000 3))
+		[(and (bveq funct3 (bv #b000 3)) (bveq opcode (bv #b0010011 7)))
 			(set! op "addi")]
+		[(and (bveq funct3 (bv #b000 3)) (bveq opcode (bv #b0000011 7)))
+			(set! op "lb")]
+		[(and (bveq funct3 (bv #b001 3)) (bveq opcode (bv #b0000011 7)))
+			(set! op "lh")]
+		[(and (bveq funct3 (bv #b010 3)) (bveq opcode (bv #b0000011 7)))
+			(set! op "lw")]
+		[(and (bveq funct3 (bv #b011 3)) (bveq opcode (bv #b0000011 7)))
+			(set! op "lbu")]
+		[(and (bveq funct3 (bv #b101 3)) (bveq opcode (bv #b0000011 7)))
+			(set! op "lhu")]
 		[else (error "no such op exists")])
 	(list op rd rs1 imm))
 
@@ -80,8 +91,6 @@
 		[(bveq b_instr (bv #b00000000001000000000000001110011 32))
 			(set! op "uret")])
 	(list op))
-
-
 
 ; decode a 32 bit vector instruction
 (define (decode b_instr)
