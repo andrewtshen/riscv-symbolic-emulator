@@ -3,9 +3,12 @@
 .global _sum
 .type _sum, %function
 _sum:
-    lui a3, 0x80000
-    lui a4, 0x10038
-    sd a4, 0x200(a3)
+    lui a1, 0x80000
+    # lui a2, 0x10038
+    sd a2, 0x200(a1)
+    ld a3, 0x200(a1)
+
+    # csrr a2, ustatus
 
 
     li a5, -2

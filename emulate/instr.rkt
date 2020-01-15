@@ -39,7 +39,7 @@
 			(set! fmt "TODO FMT")]
 		[(equal? opcode (bv #b1110011 7)) ; ECALL EBREAK URET MRET DRET SFENCE_VMA WFI 
 										  ; CSRRW CSRRS CSRRC CSRRWI CSRRSI CSRRCI
-			(set! fmt "RET")]
+			(set! fmt "SPECIAL")]
 		[(equal? opcode (bv #b0010011 7)) ; SLLI_RV32 SRLI_RV32 SRAI_RV32
 			(set! fmt "TODO FMT")]
 		[(equal? opcode (bv #b1110011 7)) ; RDCYCLE RDTIME RDINSTRET RDCYCLEH RDTIMEH RDINSTRETH

@@ -3,7 +3,7 @@
 (require "load.rkt")
 (require "decode.rkt")
 (require "execute.rkt")
-(require (only-in racket/base for in-vector))
+(require (only-in racket/base for for/list in-range in-vector))
 
 ; Set up the machine and execute each instruction.
 ; Properties are proved at the end of the execution of the machine.
@@ -44,25 +44,25 @@
 		(execute next_instr m))
 		
 	; Begin proving properties
-	(define x3 (gprs-get-x m 13))
-	(define x4 (gprs-get-x m 14))
-	(define x5 (gprs-get-x m 15))
-	(define x6 (gprs-get-x m 16))
-	(define x7 (gprs-get-x m 17))
-	(printf "~nprinting some registers...~n")
-	(printf "x2: ~a~n" (gprs-get-x m 12))
-	(printf "x3: ~a~n" (gprs-get-x m 13))
-	(printf "x4: ~a~n" (gprs-get-x m 14))
-	(printf "x5: ~a~n" (gprs-get-x m 15))
-	(printf "x6: ~a~n" (gprs-get-x m 16))
-	(printf "x7: ~a~n" (gprs-get-x m 17))
+	(define gprsx
+		(for/list ([i (in-range 10 18)])
+			(gprs-get-x m i)))
 
+	(printf "~nprinting some registers...~n")
+	(for/list ([i gprsx])
+			(printf "~a~n" i))
 	(printf "proving add property~n")
 	(define model-add (verify (begin 
-		(assert (bveq (bvadd x5 x7) x6))
-	)))
-	(displayln model-add))
+		(assert (bveq (bvadd (list-ref gprsx 5) (list-ref gprsx 7))
+									(list-ref gprsx 6))))))
+	(displayln model-add)
+	
+	(printf "proving load and store~n")
+	(define model-load-store (verify (begin 
+		(assert (bveq (list-ref gprsx 2) (list-ref gprsx 3))))))
+	(displayln model-load-store)
+	)
 
 (test-and-execute m)
 
-(print-memory m ramsize)
+; (print-memory m ramsize)

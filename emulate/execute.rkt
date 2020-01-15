@@ -19,31 +19,31 @@
 	(cond
 		; RET Format
 		[(equal? opcode "ecall")
-			(error "slti instruction not implemented yet")]
+			(error "ecall instruction not implemented yet")]
 		[(equal? opcode "ebreak")
-			(error "sltiu instruction not implemented yet")]
+			(error "ebreak instruction not implemented yet")]
 		[(equal? opcode "uret")
-			(error "xori instruction not implemented yet")]
+			(error "uret instruction not implemented yet")]
 		[(equal? opcode "mret")
 			(set-pc! m 0)]
 		[(equal? opcode "dret")
-			(error "srai instruction not implemented yet")]
+			(error "dret instruction not implemented yet")]
 		[(equal? opcode "sfence_vma")
-			(error "ori instruction not implemented yet")]
+			(error "sfence_vma instruction not implemented yet")]
 		[(equal? opcode "wfi")
-			(error "andi instruction not implemented yet")]
+			(error "wfi instruction not implemented yet")]
 		[(equal? opcode "csrrw")
-			(error "addiw instruction not implemented yet")]
+			(error "csrrw instruction not implemented yet")]
 		[(equal? opcode "csrrs")
-			(error "slliw instruction not implemented yet")]
+			(error "csrrs instruction not implemented yet")]
 		[(equal? opcode "csrrc")
-			(error "srliw instruction not implemented yet")]
+			(error "csrrc instruction not implemented yet")]
 		[(equal? opcode "csrrwi")
-			(error "sraiw instruction not implemented yet")]
+			(error "csrrwi instruction not implemented yet")]
 		[(equal? opcode "csrrsi")
-			(error "lb instruction not implemented yet")]
+			(error "csrrsi instruction not implemented yet")]
 		[(equal? opcode "csrrci")
-			(error "lh instruction not implemented yet")]
+			(error "csrrci instruction not implemented yet")]
 
 		; I Format
 		[(equal? opcode "addi")
@@ -105,9 +105,10 @@
 			(set-pc! m (+ pc 4))]
 		[(equal? opcode "ld")
 			(define rd (list-ref-nat instr 1))
-			(define v_rs1 (list-ref-nat instr 2))
+			(define rs1 (list-ref-nat instr 2))
 			(define imm (sign-extend (list-ref instr 3) (bitvector 64)))
-			(define addr (- (bitvector->natural (bvadd v_rs1 imm)) base_address))
+			(define addr (- (bitvector->natural (bvadd (gprs-get-x m rs1) imm)) base_address))
+			(printf "~a~n" addr)
 			(define nbytes 8)
 			(define val (bytearray-read (machine-ram m) addr nbytes))
 			(gprs-set-x! m rd val)

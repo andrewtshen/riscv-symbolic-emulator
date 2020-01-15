@@ -69,7 +69,6 @@
   (when (not (equal? (modulo nbits 8) 0))
 		(error "bytearray-write!: value has invalid width"))
   (define bytes (quotient nbits 8))
-  (printf "nbytes: ~a~n" bytes)
   (for ([i (in-range bytes)])
 		; little-endian
 		(let* ([pos (+ addr i)]
