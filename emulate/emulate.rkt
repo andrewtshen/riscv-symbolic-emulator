@@ -23,6 +23,11 @@
 	(printf "~n~n"))
 (print-program program)
 
+(define (print-memory m ramsize)
+	(for ([i (machine-ram m)])
+		(printf "~a " i))
+	(printf "~n~n"))
+
 ; make machine
 (define ramsize 1000)
 (define m (init-machine program ramsize))
@@ -59,3 +64,5 @@
 	(displayln model-add))
 
 (test-and-execute m)
+
+(print-memory m ramsize)

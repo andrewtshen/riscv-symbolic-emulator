@@ -11,8 +11,8 @@
 	(define rd (extract 11 7 b_instr))
 	(define funct3 (extract 14 12 b_instr))
 	(define rs1 (extract 19 15 b_instr))
-	(define funct7 (extract 31 25 b_instr))
 	(define rs2 (extract 24 20 b_instr))
+	(define funct7 (extract 31 25 b_instr))
 	(cond
 		[(and (bveq funct3 (bv #b000 3)) (bveq funct7 (bv #b0000000 7)))
 			(set! op "add")]
@@ -38,9 +38,13 @@
 		[(and (bveq funct3 (bv #b010 3)) (bveq opcode (bv #b0000011 7)))
 			(set! op "lw")]
 		[(and (bveq funct3 (bv #b011 3)) (bveq opcode (bv #b0000011 7)))
+			(set! op "ld")]
+		[(and (bveq funct3 (bv #b100 3)) (bveq opcode (bv #b0000011 7)))
 			(set! op "lbu")]
 		[(and (bveq funct3 (bv #b101 3)) (bveq opcode (bv #b0000011 7)))
 			(set! op "lhu")]
+		[(and (bveq funct3 (bv #b110 3)) (bveq opcode (bv #b0000011 7)))
+			(set! op "lwu")]
 		[else (error "no such op exists")])
 	(list op rd rs1 imm))
 
@@ -83,6 +87,28 @@
 			(set! op "auipc")])
 	(list op rd imm))
 
+(define (decode-S b_instr)
+	(define op null)
+	(define opcode (extract 6 0 b_instr))
+	(define funct3 (extract 14 12 b_instr))
+	(define rs1 (extract 19 15 b_instr))
+	(define rs2 (extract 24 20 b_instr))
+	(define imm (concat
+		(extract 31 31 b_instr)
+		(extract 7 7 b_instr)
+		(extract 30 25 b_instr)
+		(extract 11 8 b_instr)))
+	(cond
+		[(and (bveq funct3 (bv #b000 3)) (bveq opcode (bv #b0100011 7)))
+			(set! op "sb")]
+		[(and (bveq funct3 (bv #b001 3)) (bveq opcode (bv #b0100011 7)))
+			(set! op "sh")]
+		[(and (bveq funct3 (bv #b010 3)) (bveq opcode (bv #b0100011 7)))
+			(set! op "sw")]
+		[(and (bveq funct3 (bv #b011 3)) (bveq opcode (bv #b0100011 7)))
+			(set! op "sd")])
+	(list op rs1 rs2 imm))
+
 (define (decode-RET b_instr)
 	(define op null)
 	(cond
@@ -109,6 +135,8 @@
 			(set! instr (decode-B b_instr))]
 		[(equal? fmt "U")
 			(set! instr (decode-U b_instr))]
+		[(equal? fmt "S")
+			(set! instr (decode-S b_instr))]
 		[(equal? fmt "RET")
 			(set! instr (decode-RET b_instr))])
 	instr)

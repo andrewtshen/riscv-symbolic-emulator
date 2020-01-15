@@ -4,8 +4,8 @@
 .type _sum, %function
 _sum:
     lui a3, 0x80000
-    auipc a4, 4
-    lw a2, 0x8(a3)
+    lui a4, 0x10038
+    sd a4, 0x200(a3)
 
 
     li a5, -2
@@ -15,7 +15,6 @@ _sum:
     li a6, 3
     mret
 _add:
-    # li a7, 8
     add a6, a5, a7 # adding registers together
     mret
 _fallthrough:

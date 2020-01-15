@@ -5,9 +5,7 @@
 ; for changing the memory in the function.
 
 (require (only-in racket/file file->bytes)
-		 (only-in racket/base bytes-length for/list in-range subbytes bytes-ref error))
-
-
+		 (only-in racket/base bytes-length for for/list in-range subbytes bytes-ref error))
 (require syntax/parse/define)
 (require (only-in racket/base build-vector))
 
@@ -61,11 +59,25 @@
 ; read an nbytes from a bytearray ba starting at address addr
 (define (bytearray-read ba addr nbytes)
   (define bytes
-    (for/list ([pos (in-range addr (+ addr nbytes))])
-      (vector-ref ba pos)))
+		(for/list ([pos (in-range addr (+ addr nbytes))])
+		  (vector-ref ba pos)))
   ; little endian
   (apply concat (reverse bytes)))
 (provide bytearray-read)
+
+(define (bytearray-write! ba addr value nbits)
+  (when (not (equal? (modulo nbits 8) 0))
+		(error "bytearray-write!: value has invalid width"))
+  (define bytes (quotient nbits 8))
+  (printf "nbytes: ~a~n" bytes)
+  (for ([i (in-range bytes)])
+		; little-endian
+		(let* ([pos (+ addr i)]
+			[low (* 8 i)]
+			[hi (+ 7 low)]
+			[v (extract hi low value)])
+		(vector-set! ba pos v))))
+(provide bytearray-write!)
 
 ; convert a file to a bytearray
 (define (file->bytearray filename)

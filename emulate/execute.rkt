@@ -77,30 +77,68 @@
 		[(equal? opcode "sraiw")
 			(error "sraiw instruction not implemented yet")]
 		[(equal? opcode "lb")
-			(error "lb instruction not implemented yet")]
-		[(equal? opcode "lh")
-			(error "lh instruction not implemented yet")]
-		[(equal? opcode "lw")
-			; (printf "executing lw instruction~n")
 			(define rd (bitvector->natural (list-ref instr 1)))
 			(define rs1 (gprs-get-x m (bitvector->natural (list-ref instr 2))))
 			(define imm (sign-extend (list-ref instr 3) (bitvector 64)))
-			; (printf "rd: ~a~n" rd)
+			(define addr (- (bitvector->natural (bvadd rs1 imm)) base_address))
+			(define nbytes 1)
+			(define val (sign-extend (bytearray-read (machine-ram m) addr nbytes) (bitvector 64)))
+			(gprs-set-x! m rd val)
+			(set-pc! m (+ pc 4))]
+		[(equal? opcode "lh")
+			(define rd (bitvector->natural (list-ref instr 1)))
+			(define rs1 (gprs-get-x m (bitvector->natural (list-ref instr 2))))
+			(define imm (sign-extend (list-ref instr 3) (bitvector 64)))
+			(define addr (- (bitvector->natural (bvadd rs1 imm)) base_address))
+			(define nbytes 2)
+			(define val (sign-extend (bytearray-read (machine-ram m) addr nbytes) (bitvector 64)))
+			(gprs-set-x! m rd val)
+			(set-pc! m (+ pc 4))]
+		[(equal? opcode "lw")
+			(define rd (bitvector->natural (list-ref instr 1)))
+			(define rs1 (gprs-get-x m (bitvector->natural (list-ref instr 2))))
+			(define imm (sign-extend (list-ref instr 3) (bitvector 64)))
 			(define addr (- (bitvector->natural (bvadd rs1 imm)) base_address))
 			(define nbytes 4)
-			; (printf "addr: ~a~n" addr)
-			(define val (bytearray-read (machine-ram m) addr nbytes))
-			; (printf "val: ~a~n: " val)
+			(define val (sign-extend (bytearray-read (machine-ram m) addr nbytes) (bitvector 64)))
 			(gprs-set-x! m rd val)
 			(set-pc! m (+ pc 4))]
 		[(equal? opcode "ld")
-			(error "ld instruction not implemented yet")]
+			(define rd (bitvector->natural (list-ref instr 1)))
+			(define rs1 (gprs-get-x m (bitvector->natural (list-ref instr 2))))
+			(define imm (sign-extend (list-ref instr 3) (bitvector 64)))
+			(define addr (- (bitvector->natural (bvadd rs1 imm)) base_address))
+			(define nbytes 8)
+			(define val (bytearray-read (machine-ram m) addr nbytes))
+			(gprs-set-x! m rd val)
+			(set-pc! m (+ pc 4))]
 		[(equal? opcode "lbu")
-			(error "lbu instruction not implemented yet")]
+			(define rd (bitvector->natural (list-ref instr 1)))
+			(define rs1 (gprs-get-x m (bitvector->natural (list-ref instr 2))))
+			(define imm (zero-extend (list-ref instr 3) (bitvector 64)))
+			(define addr (- (bitvector->natural (bvadd rs1 imm)) base_address))
+			(define nbytes 1)
+			(define val (zero-extend (bytearray-read (machine-ram m) addr nbytes) (bitvector 64)))
+			(gprs-set-x! m rd val)
+			(set-pc! m (+ pc 4))]
 		[(equal? opcode "lhu")
-			(error "lhu instruction not implemented yet")]
+			(define rd (bitvector->natural (list-ref instr 1)))
+			(define rs1 (gprs-get-x m (bitvector->natural (list-ref instr 2))))
+			(define imm (zero-extend (list-ref instr 3) (bitvector 64)))
+			(define addr (- (bitvector->natural (bvadd rs1 imm)) base_address))
+			(define nbytes 2)
+			(define val (zero-extend (bytearray-read (machine-ram m) addr nbytes) (bitvector 64)))
+			(gprs-set-x! m rd val)
+			(set-pc! m (+ pc 4))]
 		[(equal? opcode "lwu")
-			(error "lwu instruction not implemented yet")]
+			(define rd (bitvector->natural (list-ref instr 1)))
+			(define rs1 (gprs-get-x m (bitvector->natural (list-ref instr 2))))
+			(define imm (zero-extend (list-ref instr 3) (bitvector 64)))
+			(define addr (- (bitvector->natural (bvadd rs1 imm)) base_address))
+			(define nbytes 4)
+			(define val (zero-extend (bytearray-read (machine-ram m) addr nbytes) (bitvector 64)))
+			(gprs-set-x! m rd val)
+			(set-pc! m (+ pc 4))]
 
 		; R Format
 		[(equal? opcode "add")
@@ -175,52 +213,49 @@
 			(define rs1 (gprs-get-x m (list-ref-nat instr 1)))
 			(define rs2 (gprs-get-x m (list-ref-nat instr 2)))
 			; append upper imm and lower imm into imm
-			(define offset (list-ref-nat instr 3))
+			(define imm (list-ref-nat instr 3))
 			(if (equal? rs1 rs2)
-				(set-pc! m (+ pc (* offset 2)))
+				(set-pc! m (+ pc (* imm 2)))
 				(set-pc! m (+ pc 4)))]
 		[(equal? opcode "bne")
 			(define rs1 (gprs-get-x m (list-ref-nat instr 1)))
 			(define rs2 (gprs-get-x m (list-ref-nat instr 2)))
 			; append upper imm and lower imm into imm
-			(define offset (list-ref-nat instr 3))
+			(define imm (list-ref-nat instr 3))
 			(if (not (equal? rs1 rs2))
-				(set-pc! m (+ pc (* offset 2)))
+				(set-pc! m (+ pc (* imm 2)))
 				(set-pc! m (+ pc 4)))]
 		[(equal? opcode "blt")
 			(define rs1 (gprs-get-x m (list-ref-nat instr 1)))
 			(define rs2 (gprs-get-x m (list-ref-nat instr 2)))
 			; append upper imm and lower imm into imm
-			(define offset (list-ref-nat instr 3))
+			(define imm (list-ref-nat instr 3))
 			(if (bvslt rs1 rs2)
-				(set-pc! m (+ pc (* offset 2)))
+				(set-pc! m (+ pc (* imm 2)))
 				(set-pc! m (+ pc 4)))]
 		[(equal? opcode "bge")
 			(define rs1 (gprs-get-x m (list-ref-nat instr 1)))
 			(define rs2 (gprs-get-x m (list-ref-nat instr 2)))
 			; append upper imm and lower imm into imm
-			(define offset (list-ref-nat instr 3))
+			(define imm (list-ref-nat instr 3))
 			(if (bvsge rs1 rs2)
-				(set-pc! m (+ pc (* offset 2)))
+				(set-pc! m (+ pc (* imm 2)))
 				(set-pc! m (+ pc 4)))]
 		[(equal? opcode "bltu")
 			(define rs1 (gprs-get-x m (list-ref-nat instr 1)))
 			(define rs2 (gprs-get-x m (list-ref-nat instr 2)))
 			; append upper imm and lower imm into imm
-			(define offset (list-ref-nat instr 3))
+			(define imm (list-ref-nat instr 3))
 			(if (bvult rs1 rs2)
-				(set-pc! m (+ pc (* offset 2)))
+				(set-pc! m (+ pc (* imm 2)))
 				(set-pc! m (+ pc 4)))]
 		[(equal? opcode "bgeu")
 			(define rs1 (gprs-get-x m (list-ref-nat instr 1)))
 			(define rs2 (gprs-get-x m (list-ref-nat instr 2)))
 			; append upper imm and lower imm into imm
-			(define offset (list-ref-nat instr 3))
-			(printf "rs1: ~a~n" rs1)
-			(printf "rs2: ~a~n" rs2)
-			(printf "offset: ~a~n" offset)
+			(define imm (list-ref-nat instr 3))
 			(if (bvuge rs1 rs2)
-				(set-pc! m (+ pc (* offset 2)))
+				(set-pc! m (+ pc (* imm 2)))
 				(set-pc! m (+ pc 4)))]
 
 		; U Format
@@ -238,13 +273,53 @@
 
 		; S Format
 		[(equal? opcode "sb")
-			(error "sb instruction not implemented yet")]
+			(define rs1 (gprs-get-x m (list-ref-nat instr 1)))
+			(define rs2 (gprs-get-x m (list-ref-nat instr 2)))
+			(define imm (sign-extend (list-ref instr 3) (bitvector 64)))
+			(define addr (- (bitvector->natural (bvadd rs1 imm)) base_address))
+			(printf "rs1: ~a~n" rs1)
+			(printf "rs2: ~a~n" rs2)
+			(printf "imm: ~a~n" imm)
+			(printf "addr: ~a~n" addr)
+			(define nbits 8)
+			(bytearray-write! (machine-ram m) addr rs2 nbits)
+			(set-pc! m (+ pc 4))]
 		[(equal? opcode "sh")
-			(error "sh instruction not implemented yet")]
+			(define rs1 (gprs-get-x m (list-ref-nat instr 1)))
+			(define rs2 (gprs-get-x m (list-ref-nat instr 2)))
+			(define imm (sign-extend (list-ref instr 3) (bitvector 64)))
+			(define addr (- (bitvector->natural (bvadd rs1 imm)) base_address))
+			(printf "rs1: ~a~n" rs1)
+			(printf "rs2: ~a~n" rs2)
+			(printf "imm: ~a~n" imm)
+			(printf "addr: ~a~n" addr)
+			(define nbits 16)
+			(bytearray-write! (machine-ram m) addr rs2 nbits)
+			(set-pc! m (+ pc 4))]
 		[(equal? opcode "sw")
-			(error "sw instruction not implemented yet")]
+			(define rs1 (gprs-get-x m (list-ref-nat instr 1)))
+			(define rs2 (gprs-get-x m (list-ref-nat instr 2)))
+			(define imm (sign-extend (list-ref instr 3) (bitvector 64)))
+			(define addr (- (bitvector->natural (bvadd rs1 imm)) base_address))
+			(printf "rs1: ~a~n" rs1)
+			(printf "rs2: ~a~n" rs2)
+			(printf "imm: ~a~n" imm)
+			(printf "addr: ~a~n" addr)
+			(define nbits 32)
+			(bytearray-write! (machine-ram m) addr rs2 nbits)
+			(set-pc! m (+ pc 4))]
 		[(equal? opcode "sd")
-			(error "sd instruction not implemented yet")]
+			(define rs1 (gprs-get-x m (list-ref-nat instr 1)))
+			(define rs2 (gprs-get-x m (list-ref-nat instr 2)))
+			(define imm (sign-extend (list-ref instr 3) (bitvector 64)))
+			(define addr (- (bitvector->natural (bvadd rs1 imm)) base_address))
+			(printf "rs1: ~a~n" rs1)
+			(printf "rs2: ~a~n" rs2)
+			(printf "imm: ~a~n" imm)
+			(printf "addr: ~a~n" addr)
+			(define nbits 64)
+			(bytearray-write! (machine-ram m) addr rs2 nbits)
+			(set-pc! m (+ pc 4))]
 
 		; FENCE Format
 		[(equal? opcode "FENCE")
