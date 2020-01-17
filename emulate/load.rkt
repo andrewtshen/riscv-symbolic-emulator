@@ -14,7 +14,13 @@
 
 ; 31 64-bit-vectors (x0 isn't an actual gpr)
 (struct cpu
-	(gprs pc) #:mutable #:transparent)
+	(csrs gprs pc) #:mutable #:transparent)
+
+(struct csrs
+	(ustatus uie utvec uscratch uepc ucause ubadaddr uip 
+	mstatus misa medeleg mideleg mie mtvec mscratch mepc
+	mcause mbadaddr mip) 
+	#:mutable #:transparent)
 
 ; cpu and ram
 (struct machine
@@ -22,6 +28,58 @@
 
 ; Wrappers for Mutator and Accessor Functions
 ; be careful to decrement by 1 to access right location for gprs
+
+(define (get-csr m csr)
+	(define v_csr null)
+	(cond 
+		[(equal? csr "ustatus") 	(set! v_csr (csrs-ustatus (cpu-csrs (machine-cpu m))))]
+		[(equal? csr "uie") 			(set! v_csr (csrs-uie (cpu-csrs (machine-cpu m))))]
+		[(equal? csr "utvec") 		(set! v_csr (csrs-utvec (cpu-csrs (machine-cpu m))))]
+		[(equal? csr "uscratch")	(set! v_csr (csrs-uscratch (cpu-csrs (machine-cpu m))))]
+		[(equal? csr "uepc") 			(set! v_csr (csrs-uepc (cpu-csrs (machine-cpu m))))]
+		[(equal? csr "ucause") 		(set! v_csr (csrs-ucause (cpu-csrs (machine-cpu m))))]
+		[(equal? csr "ubadaddr")	(set! v_csr (csrs-ubadaddr (cpu-csrs (machine-cpu m))))]
+		[(equal? csr "uip") 			(set! v_csr (csrs-uip (cpu-csrs (machine-cpu m))))]
+		[(equal? csr "mstatus") 	(set! v_csr (csrs-mstatus (cpu-csrs (machine-cpu m))))]
+		[(equal? csr "misa") 			(set! v_csr (csrs-misa (cpu-csrs (machine-cpu m))))]
+		[(equal? csr "medeleg") 	(set! v_csr (csrs-medeleg (cpu-csrs (machine-cpu m))))]
+		[(equal? csr "mideleg") 	(set! v_csr (csrs-mideleg (cpu-csrs (machine-cpu m))))]
+		[(equal? csr "mie") 			(set! v_csr (csrs-mie (cpu-csrs (machine-cpu m))))]
+		[(equal? csr "mtvec") 		(set! v_csr (csrs-mtvec (cpu-csrs (machine-cpu m))))]
+		[(equal? csr "mscratch")	(set! v_csr (csrs-mscratch (cpu-csrs (machine-cpu m))))]
+		[(equal? csr "mepc") 			(set! v_csr (csrs-mepc (cpu-csrs (machine-cpu m))))]
+		[(equal? csr "mcause") 		(set! v_csr (csrs-mcause (cpu-csrs (machine-cpu m))))]
+		[(equal? csr "mbadaddr")	(set! v_csr (csrs-mbadaddr (cpu-csrs (machine-cpu m))))]
+		[(equal? csr "mip") 			(set! v_csr (csrs-mip (cpu-csrs (machine-cpu m))))]
+		[else (error "No CSR value found")])
+	v_csr)
+(provide get-csr)
+
+(define (set-csr! m csr val)
+	(define v_csr null)
+	(cond 
+		[(equal? csr "ustatus") 	(set-csrs-ustatus! (cpu-csrs (machine-cpu m)) val)]
+		[(equal? csr "uie") 			(set-csrs-uie! (cpu-csrs (machine-cpu m)) val)]
+		[(equal? csr "utvec") 		(set-csrs-utvec! (cpu-csrs (machine-cpu m)) val)]
+		[(equal? csr "uscratch")	(set-csrs-uscratch! (cpu-csrs (machine-cpu m)) val)]
+		[(equal? csr "uepc") 			(set-csrs-uepc! (cpu-csrs (machine-cpu m)) val)]
+		[(equal? csr "ucause") 		(set-csrs-ucause! (cpu-csrs (machine-cpu m)) val)]
+		[(equal? csr "ubadaddr")	(set-csrs-ubadaddr! (cpu-csrs (machine-cpu m)) val)]
+		[(equal? csr "uip") 			(set-csrs-uip! (cpu-csrs (machine-cpu m)) val)]
+		[(equal? csr "mstatus") 	(set-csrs-mstatus! (cpu-csrs (machine-cpu m)) val)]
+		[(equal? csr "misa") 			(set-csrs-misa! (cpu-csrs (machine-cpu m)) val)]
+		[(equal? csr "medeleg") 	(set-csrs-medeleg! (cpu-csrs (machine-cpu m)) val)]
+		[(equal? csr "mideleg") 	(set-csrs-mideleg! (cpu-csrs (machine-cpu m)) val)]
+		[(equal? csr "mie") 			(set-csrs-mie! (cpu-csrs (machine-cpu m)) val)]
+		[(equal? csr "mtvec") 		(set-csrs-mtvec! (cpu-csrs (machine-cpu m)) val)]
+		[(equal? csr "mscratch")	(set-csrs-mscratch! (cpu-csrs (machine-cpu m)) val)]
+		[(equal? csr "mepc") 			(set-csrs-mepc! (cpu-csrs (machine-cpu m)) val)]
+		[(equal? csr "mcause") 		(set-csrs-mcause! (cpu-csrs (machine-cpu m)) val)]
+		[(equal? csr "mbadaddr")	(set-csrs-mbadaddr! (cpu-csrs (machine-cpu m)) val)]
+		[(equal? csr "mip") 			(set-csrs-mip! (cpu-csrs (machine-cpu m)) val)]
+		[else (error "No CSR value found")])
+	v_csr)
+(provide set-csr!)
 
 ; get gprs at index idx
 (define (gprs-get-x m idx)
@@ -32,8 +90,9 @@
 
 ; set gprs at index idx to value val
 (define (gprs-set-x! m idx val)
+	(printf "idx ~a~n" idx)
 	(cond [(zero? idx)
-			(error "set zero vector invalid~n~n~n")])
+			(error "set zero vector invalid")])
 	(vector-set! (cpu-gprs (machine-cpu m)) (- idx 1) val))
 (provide gprs-set-x!)
 
@@ -92,8 +151,19 @@
 (define (init-machine program ramsize)
 	(define proglength (vector-length program))
 	(assert (>= ramsize proglength))
+	(define-symbolic* 
+		ustatus uie utvec uscratch uepc ucause ubadaddr uip 
+		mstatus misa medeleg mideleg mie mtvec mscratch mepc
+		mcause mbadaddr mip
+		(bitvector 64))
 	(machine
-		(cpu (make-sym-vector 31 64 gpr) 0) ; be careful of -1 for offset
+		(cpu 
+			(csrs 
+				ustatus uie utvec uscratch uepc ucause ubadaddr uip 
+				mstatus misa medeleg mideleg mie mtvec mscratch mepc
+				mcause mbadaddr mip)
+			(make-sym-vector 31 64 gpr)
+			0) ; be careful of -1 for offset
 		(vector-append
 			program
 			(make-sym-vector (- ramsize proglength) 8 mem))))

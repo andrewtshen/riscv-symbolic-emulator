@@ -8,7 +8,8 @@ _sum:
     sd a2, 0x200(a1)
     ld a3, 0x200(a1)
 
-    # csrr a2, ustatus
+    li a4, 1
+    csrr a4, mstatus
 
 
     li a5, -2

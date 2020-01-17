@@ -35,7 +35,15 @@
 		[(equal? opcode "csrrw")
 			(error "csrrw instruction not implemented yet")]
 		[(equal? opcode "csrrs")
-			(error "csrrs instruction not implemented yet")]
+			(printf "executing csrrs!~n")
+			(define rd (list-ref-nat instr 1))
+			(define rs1 (list-ref-nat instr 2))
+			(define v_csr (get-csr m (list-ref instr 3)))
+			(printf "rd: ~a~n" rd)
+			(printf "rs1: ~a~n" rs1)
+			(printf "v_csr: ~a~n" v_csr)
+			(set-csr! m (list-ref instr 3) (zero-extend (bvor v_csr (gprs-get-x m rs1)) (bitvector 64)))
+			(set-pc! m (+ pc 4))]
 		[(equal? opcode "csrrc")
 			(error "csrrc instruction not implemented yet")]
 		[(equal? opcode "csrrwi")
@@ -108,7 +116,6 @@
 			(define rs1 (list-ref-nat instr 2))
 			(define imm (sign-extend (list-ref instr 3) (bitvector 64)))
 			(define addr (- (bitvector->natural (bvadd (gprs-get-x m rs1) imm)) base_address))
-			(printf "~a~n" addr)
 			(define nbytes 8)
 			(define val (bytearray-read (machine-ram m) addr nbytes))
 			(gprs-set-x! m rd val)

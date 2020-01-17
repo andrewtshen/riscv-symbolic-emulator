@@ -196,8 +196,7 @@
 		[else
 			(error "No such SPECIAL op")])
 
-	(printf "OPCODE ~a" opcode)
-	; (list op rd rs1 csr))
+	(printf "OPCODE ~a " opcode)
 	(if is_csr
 		(list op rd rs1 (decode-csr csr))
 		(list op)))
