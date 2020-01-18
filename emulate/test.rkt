@@ -2,13 +2,12 @@
 
 (require "load.rkt")
 (require "emulate.rkt")
-; (require serval/lib/unittest)
 (require (only-in racket/base for for/list in-range in-vector))
 (require rackunit rackunit/text-ui)
 
 (define-test-suite arithmetic-check
   (test-case "sum test"
-    (define program (file->bytearray "sum.bin"))
+    (define program (file->bytearray "build/sum.bin"))
 			; make machine
 			(define ramsize 1000)
 			(define m (init-machine program ramsize))
@@ -27,7 +26,7 @@
 
 (define-test-suite store-load-check
 	(test-case "sd/ld test"
-		(define program (file->bytearray "store_and_load.bin"))
+		(define program (file->bytearray "build/store_and_load.bin"))
 			; make machine
 			(define ramsize 1000)
 			(define m (init-machine program ramsize))
@@ -44,5 +43,5 @@
 			(check-equal? (unsat? model-load-store) #t)))
 
 
-; (run-tests arithmetic-check)
-(run-tests store-load-check)
+(run-tests arithmetic-check)
+; (run-tests store-load-check)

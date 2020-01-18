@@ -11,6 +11,7 @@ _sum:
     mret
 _add:
     add a6, a5, a7 # adding registers together
+    # li a6, 3 # this causes a sat model to be produced
     mret
 _fallthrough:
     j _fallthrough

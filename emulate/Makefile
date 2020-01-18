@@ -16,14 +16,8 @@ ifeq ($(DEBUG),1)
 	CFLAGS += -g
 endif
 
-SUM_OBJS := \
-	sum.o \
-
-STORE_AND_LOAD_OBJS := \
-	store_and_load.o \
-
-CSR_TEST_OBJS := \
-	csr_test.o
+BUILDDIR = build
+TESTS = tests
 
 BUILDS := \
 	sum.bin sum.lst \
@@ -31,39 +25,37 @@ BUILDS := \
 	csr_test.bin csr_test.lst \
 
 .PHONY: all
-all: $(BUILDS)
+all: dir $(addprefix $(BUILDDIR)/, $(BUILDS))
+	$(info BUILDING: $(addprefix $(BUILDDIR)/, $(BUILDS)))
 
-%.o: %.c
+$(BUILDDIR)/%.o: $(TESTS)/%.c
 	$(CC) $(CFLAGS) -c $< -o $@
 
-%.o: %.s
+$(BUILDDIR)/%.o: $(TESTS)/%.s
 	$(CC) $(CFLAGS) -c $< -o $@
 
-sum.elf: $(SUM_OBJS) prog.ld
-	$(CC) $(CFLAGS) -T prog.ld $(SUM_OBJS) -o $@
+$(BUILDDIR)/%.elf: $(BUILDDIR)/%.o prog.ld
+	$(CC) $(CFLAGS) -T prog.ld $< -o $@
 
-store_and_load.elf: $(STORE_AND_LOAD_OBJS) prog.ld
-	$(CC) $(CFLAGS) -T prog.ld $(STORE_AND_LOAD_OBJS) -o $@
-
-csr_test.elf: $(CSR_TEST_OBJS) prog.ld
-	$(CC) $(CFLAGS) -T prog.ld $(CSR_TEST_OBJS) -o $@
-
-%.bin: %.elf
+$(BUILDDIR)/%.bin: $(BUILDDIR)/%.elf
 	$(OBJCOPY) -O binary $< $@
 
-%.lst: %.elf
+$(BUILDDIR)/%.lst: $(BUILDDIR)/%.elf
 	$(OBJDUMP) $(OBJDUMPFLAGS) $< > $@
 
+dir:
+	mkdir -p $(BUILDDIR)
+
 .PHONY: emulate
-emulate: sum.bin store_and_load.bin
+emulate: all
 	racket emulate.rkt
 
 .PHONY: proof
-proof: sum.bin store_and_load.bin
+proof: all
 	raco test test.rkt
 
 .PHONY: test
-test: sum.bin store_and_load.bin
+test: dir $(addprefix $(BUILDDIR)/, $(BUILDS))
 	@echo "----------------------"
 	@echo "> starting load.rkt"
 	racket load.rkt
@@ -88,16 +80,17 @@ test: sum.bin store_and_load.bin
 
 .PHONY: clean
 clean:
-	rm -f *.o *.lst *.elf *.bin
+	rm -f *.elf *.o
+	rm -rf build
 
 .PHONY: qemu
-qemu: sum.elf
-	$(QEMU) $(QEMUFLAGS) -kernel sum.elf
+qemu: $(BUILDDIR)/sum.elf
+	$(QEMU) $(QEMUFLAGS) -kernel $(BUILDDIR)/sum.elf
 
 .PHONY: qemu-gdb
-qemu-gdb: sum.elf
-	$(QEMU) $(QEMUFLAGS) -S -s -kernel sum.elf
+qemu-gdb: $(BUILDDIR)/sum.elf
+	$(QEMU) $(QEMUFLAGS) -S -s -kernel $(BUILDDIR)/sum.elf
 
 .PHONY: gdb
-gdb: sum.elf
-	$(GDB) --data-directory=/usr/local/share/gdb sum.elf
+gdb: $(BUILDDIR)/sum.elf
+	$(GDB) --data-directory=/usr/local/share/gdb $(BUILDDIR)/sum.elf
