@@ -16,14 +16,22 @@ ifeq ($(DEBUG),1)
 	CFLAGS += -g
 endif
 
-OBJS := \
+SUM_OBJS := \
 	sum.o \
 
-SUM2_OBJS := \
-	sum2.o \
+STORE_AND_LOAD_OBJS := \
+	store_and_load.o \
+
+CSR_TEST_OBJS := \
+	csr_test.o
+
+BUILDS := \
+	sum.bin sum.lst \
+	store_and_load.bin store_and_load.lst \
+	csr_test.bin csr_test.lst \
 
 .PHONY: all
-all: sum.bin sum.lst
+all: $(BUILDS)
 
 %.o: %.c
 	$(CC) $(CFLAGS) -c $< -o $@
@@ -31,11 +39,14 @@ all: sum.bin sum.lst
 %.o: %.s
 	$(CC) $(CFLAGS) -c $< -o $@
 
-sum.elf: $(OBJS) sum.ld
-	$(CC) $(CFLAGS) -T sum.ld $(OBJS) -o $@
+sum.elf: $(SUM_OBJS) prog.ld
+	$(CC) $(CFLAGS) -T prog.ld $(SUM_OBJS) -o $@
 
-sum2.elf: $(SUM2_OBJS) sum.ld
-	$(CC) $(CFLAGS) -T sum.ld $(SUM2_OBJS) -o $@
+store_and_load.elf: $(STORE_AND_LOAD_OBJS) prog.ld
+	$(CC) $(CFLAGS) -T prog.ld $(STORE_AND_LOAD_OBJS) -o $@
+
+csr_test.elf: $(CSR_TEST_OBJS) prog.ld
+	$(CC) $(CFLAGS) -T prog.ld $(CSR_TEST_OBJS) -o $@
 
 %.bin: %.elf
 	$(OBJCOPY) -O binary $< $@
@@ -44,11 +55,15 @@ sum2.elf: $(SUM2_OBJS) sum.ld
 	$(OBJDUMP) $(OBJDUMPFLAGS) $< > $@
 
 .PHONY: emulate
-emulate: sum.bin
+emulate: sum.bin store_and_load.bin
 	racket emulate.rkt
 
+.PHONY: proof
+proof: sum.bin store_and_load.bin
+	raco test test.rkt
+
 .PHONY: test
-test: sum.bin
+test: sum.bin store_and_load.bin
 	@echo "----------------------"
 	@echo "> starting load.rkt"
 	racket load.rkt
@@ -71,10 +86,9 @@ test: sum.bin
 	@echo "> ending emulate.rkt"
 	@echo "----------------------"
 
-
 .PHONY: clean
 clean:
-	rm -f *.o *.lst *.elf
+	rm -f *.o *.lst *.elf *.bin
 
 .PHONY: qemu
 qemu: sum.elf

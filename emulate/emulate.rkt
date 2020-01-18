@@ -44,6 +44,7 @@
 	(printf "mcause: ~a~n" (get-csr m "mcause"))
 	(printf "mbadaddr: ~a~n" (get-csr m "mbadaddr"))
 	(printf "mip: ~a~n" (get-csr m "mip")))
+(provide print-csr)
 
 (define op null)
 ; get instructions until reach mret

@@ -33,12 +33,24 @@
 		[(equal? opcode "wfi")
 			(error "wfi instruction not implemented yet")]
 		[(equal? opcode "csrrw")
-			(error "csrrw instruction not implemented yet")]
-		[(equal? opcode "csrrs")
-			(printf "executing csrrs!~n")
+			(printf "executing csrrw!~n")
 			(define rd (list-ref-nat instr 1))
 			(define rs1 (list-ref-nat instr 2))
 			(define v_csr (get-csr m (list-ref instr 3)))
+			(cond
+				[(zero? rd) (null)]
+				[else
+					(gprs-set-x! m rd v_csr)
+					(printf "rd: ~a~n" rd)
+					(printf "rs1: ~a~n" rs1)
+					(printf "v_csr: ~a~n" v_csr)
+					(set-csr! m (list-ref instr 3) (zero-extend (gprs-get-x m rs1) (bitvector 64)))])
+			(set-pc! m (+ pc 4))]
+		[(equal? opcode "csrrs")
+			(define rd (list-ref-nat instr 1))
+			(define rs1 (list-ref-nat instr 2))
+			(define v_csr (get-csr m (list-ref instr 3)))
+			(gprs-set-x! m rd v_csr)
 			(printf "rd: ~a~n" rd)
 			(printf "rs1: ~a~n" rs1)
 			(printf "v_csr: ~a~n" v_csr)
