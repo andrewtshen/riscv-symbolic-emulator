@@ -9,8 +9,6 @@ _sum:
     ld a3, 0x200(a1)
 
     li a4, 1
-    csrr a4, mstatus
-
 
     li a5, -2
     li a6, 3

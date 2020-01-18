@@ -11,17 +11,13 @@
 (define-syntax-rule (while test body ...) ; while loop
 	(let loop () (when test body ... (loop))))
 
-; get program
-(define program (file->bytearray "sum.bin"))
-
 (define (print-program p)
-	(for ([i (in-vector program)])
+	(for ([i (in-vector p)])
 		(if (bvult i (bv 15 8))
 			(printf "0")
 			null)
 		(printf "~x " (bitvector->natural i)))
 	(printf "~n~n"))
-(print-program program)
 
 (define (print-memory m ramsize)
 	(for ([i (machine-ram m)])
@@ -49,11 +45,6 @@
 	(printf "mbadaddr: ~a~n" (get-csr m "mbadaddr"))
 	(printf "mip: ~a~n" (get-csr m "mip")))
 
-; make machine
-(define ramsize 1000)
-(define m (init-machine program ramsize))
-
-; (printf "program: ~a~n" program)
 (define op null)
 ; get instructions until reach mret
 (define (test-and-execute m)
@@ -63,27 +54,19 @@
 		(printf "PC: ~a INS: ~a~n" (get-pc m) next_instr)
 		(set! op (list-ref next_instr 0))
 		(execute next_instr m))
-		
-	; Begin proving properties
-	(define gprsx
-		(for/list ([i (in-range 10 18)])
-			(gprs-get-x m i)))
 
-	(printf "~nprinting some registers...~n")
-	(for/list ([i gprsx])
-			(printf "~a~n" i))
-	(printf "proving add property~n")
-	(define model-add (verify (begin 
-		(assert (bveq (bvadd (list-ref gprsx 5) (list-ref gprsx 7))
-									(list-ref gprsx 6))))))
-	(displayln model-add)
-	
-	(printf "proving load and store~n")
-	(define model-load-store (verify (begin 
-		(assert (bveq (list-ref gprsx 2) (list-ref gprsx 3))))))
-	(displayln model-load-store))
+	(for/list ([i (in-range 10 18)])
+			(printf "~a~n" (gprs-get-x m i))))
+(provide test-and-execute)
 
-(test-and-execute m)
 
+; ; get program
+; (define program (file->bytearray "sum.bin"))
+; (printf-program)
+; (printf "program: ~a~n" program)
+; make machine
+; (define ramsize 1000)
+; (define m (init-machine program ramsize))
+; (test-and-execute m)
 ; (print-memory m ramsize)
-(print-csr m)
+; (print-csr m)

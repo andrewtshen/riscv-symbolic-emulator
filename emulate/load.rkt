@@ -139,6 +139,7 @@
 
 ; convert a file to a bytearray
 (define (file->bytearray filename)
+	; (printf "filename: ~a~n " filename)
 	(define contents (file->bytes filename))
 	(define length (bytes-length contents))
 	(assert (equal? (modulo length 4) 0))
@@ -151,11 +152,33 @@
 (define (init-machine program ramsize)
 	(define proglength (vector-length program))
 	(assert (>= ramsize proglength))
-	(define-symbolic* 
+	(define-symbolic
 		ustatus uie utvec uscratch uepc ucause ubadaddr uip 
 		mstatus misa medeleg mideleg mie mtvec mscratch mepc
 		mcause mbadaddr mip
 		(bitvector 64))
+
+	; set all the initial csr
+	(set! ustatus (bv 0 64))
+	(set! uie (bv 0 64))
+	(set! utvec (bv 0 64))
+	(set! uscratch (bv 0 64))
+	(set! uepc (bv 0 64))
+	(set! ucause (bv 0 64))
+	(set! ubadaddr (bv 0 64))
+	(set! uip  (bv 0 64))
+	(set! mstatus (bv 0 64))
+	(set! misa (bv 0 64))
+	(set! medeleg (bv 0 64))
+	(set! mideleg (bv 0 64))
+	(set! mie (bv 0 64))
+	(set! mtvec (bv 0 64))
+	(set! mscratch (bv 0 64))
+	(set! mepc (bv 0 64))
+	(set! mcause (bv 0 64))
+	(set! mbadaddr (bv 0 64))
+	(set! mip (bv 0 64))
+
 	(machine
 		(cpu 
 			(csrs 
