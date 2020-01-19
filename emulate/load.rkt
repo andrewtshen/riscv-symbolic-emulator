@@ -1,21 +1,22 @@
 #lang rosette/safe
 
-; Initialize the machine and load the program into the machine 
-; to run symbolically. Initalize mutator and accessor functions 
-; for changing the memory in the function.
-
 (require (only-in racket/file file->bytes)
 		 (only-in racket/base bytes-length for for/list in-range subbytes bytes-ref error))
 (require syntax/parse/define)
 (require (only-in racket/base build-vector))
 
+; Initialize the machine and load the program into the machine to run symbolically. 
+; Initalize mutator and accessor functions for changing the memory in the function.
+
+; make-sym-vector creates a vector of symbolic bitvectors
 (define-simple-macro (make-sym-vector n:expr size:expr m:id)
 	(build-vector n (lambda (i) (define-symbolic* m (bitvector size)) m)))
 
-; 31 64-bit-vectors (x0 isn't an actual gpr)
+; 31 64-bit-vectors (x0 is not an actual gpr)
 (struct cpu
 	(csrs gprs pc) #:mutable #:transparent)
 
+; control status registers for u and m mode
 (struct csrs
 	(ustatus uie utvec uscratch uepc ucause ubadaddr uip 
 	mstatus misa medeleg mideleg mie mtvec mscratch mepc
@@ -81,14 +82,12 @@
 	v_csr)
 (provide set-csr!)
 
-; get gprs at index idx
 (define (gprs-get-x m idx)
 	(if (positive? idx)
 		(vector-ref (cpu-gprs (machine-cpu m)) (- idx 1))
 		(bv 0 64)))
 (provide gprs-get-x)
 
-; set gprs at index idx to value val
 (define (gprs-set-x! m idx val)
 	(printf "idx ~a~n" idx)
 	(cond [(zero? idx)
@@ -158,7 +157,7 @@
 		mcause mbadaddr mip
 		(bitvector 64))
 
-	; set all the initial csr
+	; set all the initial csrs to 0 (TODO: change to actual values)
 	(set! ustatus (bv 0 64))
 	(set! uie (bv 0 64))
 	(set! utvec (bv 0 64))
@@ -195,16 +194,16 @@
 (define base_address #x80000000)
 (provide base_address)
 
-; get program example
+; ; get program example
 ; (define program (file->bytearray "sum.bin"))
 ; (printf "Program: ~a~n" program)
 
-; machine init example
+; ; machine init example
 ; (define ramsize 100)
 ; (define m (init-machine program ramsize))
 ; (printf "~a~n" (machine-ram m))
 ; (displayln (gprs-get-x m 2))
 ; (get-next-instr m)
 
-; example sym vector for bitvectors 3 bitvectors size 32 named foo
+; ; example sym vector for bitvectors 3 bitvectors size 32 named foo
 ; (make-sym-vector 3 32 foo) 

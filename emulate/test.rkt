@@ -5,6 +5,10 @@
 (require (only-in racket/base for for/list in-range in-vector))
 (require rackunit rackunit/text-ui)
 
+; Test Cases for Symbolic Executions
+; note: currently need to add more test cases and fix symbolic variable construction
+; 			to allow for the usage of more than one machine in order to run multiple programs.
+
 (define-test-suite arithmetic-check
   (test-case "sum test"
     (define program (file->bytearray "build/sum.bin"))

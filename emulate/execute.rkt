@@ -4,11 +4,12 @@
 
 (require "load.rkt")
 
-; Execute each individual instruction symbolically
-; and update the program count to the proper place.
-; Used rv8.io for implementing instructions
+; Execute each individual instruction symbolically and update the program count to the proper place.
+; Used rv8.io and https://content.riscv.org/wp-content/uploads/2017/05/riscv-spec-v2.2.pdf for implementing instructions
+; Conventions used for decoding are as follows: v_var represents the bitvector value stored in register var. Otherwise,
+; the variable var contains the index into the register that it refers to.
 
-; helper to convert bitvectors to naturals after indexing instruction
+; Helper function to convert bitvectors to naturals after indexing instruction
 (define (list-ref-nat instr idx)
 	(bitvector->natural (list-ref instr idx)))
 
