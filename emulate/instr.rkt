@@ -5,7 +5,7 @@
 ; Return the instruction format for each of the opcodes.
 
 (define (get-fmt opcode)
-	(define fmt "FMT")
+	(define fmt null)
 	(cond
 		[(equal? opcode (bv #b1100011 7)) ; BEQ BNE BLT BGE BLTU BGEU
 			(set! fmt "B")]
@@ -45,6 +45,7 @@
 		[(equal? opcode (bv #b1110011 7)) ; RDCYCLE RDTIME RDINSTRET RDCYCLEH RDTIMEH RDINSTRETH
 			(set! fmt "TODO FMT")]
 		[else
+			(printf "OPCODE: ~a~n" opcode)
 			(error "NO SUCH FMT")])
 	fmt)
 (provide get-fmt)

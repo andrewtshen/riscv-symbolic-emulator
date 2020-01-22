@@ -11,7 +11,7 @@ OBJCOPY := $(PREFIX)objcopy
 # OBJDUMPFLAGS := --disassemble-all --source --section-headers --demangle
 OBJDUMPFLAGS := --source --demangle
 
-CFLAGS := -ffreestanding -nostdlib -O0 -mcmodel=medany -march=rv64i
+CFLAGS := -ffreestanding -nostdlib -O0 -mcmodel=medany -march=rv64i -mabi=lp64
 ifeq ($(DEBUG),1)
 	CFLAGS += -g
 endif
@@ -23,6 +23,8 @@ BUILDS := \
 	sum.bin sum.lst \
 	store_and_load.bin store_and_load.lst \
 	csr_test.bin csr_test.lst \
+	sub.bin sub.lst \
+	test.bin test.lst \
 
 .PHONY: all
 all: dir $(addprefix $(BUILDDIR)/, $(BUILDS))
@@ -34,8 +36,8 @@ $(BUILDDIR)/%.o: $(TESTS)/%.c
 $(BUILDDIR)/%.o: $(TESTS)/%.s
 	$(CC) $(CFLAGS) -c $< -o $@
 
-$(BUILDDIR)/%.elf: $(BUILDDIR)/%.o prog.ld
-	$(CC) $(CFLAGS) -T prog.ld $< -o $@
+$(BUILDDIR)/%.elf: $(BUILDDIR)/%.o $(TESTS)/prog.ld
+	$(CC) $(CFLAGS) -T $(TESTS)/prog.ld $< -o $@
 
 $(BUILDDIR)/%.bin: $(BUILDDIR)/%.elf
 	$(OBJCOPY) -O binary $< $@
@@ -57,25 +59,19 @@ proof: all
 .PHONY: test
 test: dir $(addprefix $(BUILDDIR)/, $(BUILDS))
 	@echo "----------------------"
-	@echo "> starting load.rkt"
 	racket load.rkt
-	@echo "> ending load.rkt"
 	@echo "----------------------"
-	@echo "> starting decode.rkt"
 	racket decode.rkt
-	@echo "> ending decode.rkt"
 	@echo "----------------------"
-	@echo "> starting instr.rkt"
 	racket instr.rkt
-	@echo "> ending instr.rkt"
 	@echo "----------------------"
-	@echo "> starting execute.rkt"
 	racket execute.rkt
-	@echo "> ending execute.rkt"
 	@echo "----------------------"
-	@echo "> starting emulate.rkt"
+	racket test.rkt
+	@echo "----------------------"
+	racket machine.rkt
+	@echo "----------------------"
 	racket emulate.rkt
-	@echo "> ending emulate.rkt"
 	@echo "----------------------"
 
 .PHONY: clean

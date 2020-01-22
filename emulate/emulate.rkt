@@ -1,8 +1,10 @@
 #lang rosette/safe
 
-(require "load.rkt")
-(require "decode.rkt")
-(require "execute.rkt")
+(require
+	"load.rkt"
+	"decode.rkt"
+	"execute.rkt"
+	"machine.rkt")
 (require (only-in racket/base for for/list in-range in-vector))
 
 ; Set up the machine and execute each instruction.
@@ -25,44 +27,35 @@
 	(printf "~n~n"))
 
 (define (print-csr m)
-	(printf "ustatus: ~a~n" (get-csr m "ustatus"))
-	(printf "uie: ~a~n" (get-csr m "uie"))
-	(printf "utvec: ~a~n" (get-csr m "utvec"))
-	(printf "uscratch: ~a~n" (get-csr m "uscratch"))
-	(printf "uepc: ~a~n" (get-csr m "uepc"))
-	(printf "ucause: ~a~n" (get-csr m "ucause"))
-	(printf "ubadaddr: ~a~n" (get-csr m "ubadaddr"))
-	(printf "uip: ~a~n" (get-csr m "uip"))
-	(printf "mstatus: ~a~n" (get-csr m "mstatus"))
-	(printf "misa: ~a~n" (get-csr m "misa"))
-	(printf "medeleg: ~a~n" (get-csr m "medeleg"))
-	(printf "mideleg: ~a~n" (get-csr m "mideleg"))
-	(printf "mie: ~a~n" (get-csr m "mie"))
-	(printf "mtvec: ~a~n" (get-csr m "mtvec"))
-	(printf "mscratch: ~a~n" (get-csr m "mscratch"))
-	(printf "mepc: ~a~n" (get-csr m "mepc"))
-	(printf "mcause: ~a~n" (get-csr m "mcause"))
-	(printf "mbadaddr: ~a~n" (get-csr m "mbadaddr"))
-	(printf "mip: ~a~n" (get-csr m "mip")))
+	(printf "mtvec ~a~n" (get-csr m "mtvec"))
+	(printf "mepc ~a~n" (get-csr m "mepc"))
+	(printf "pmpcfg0 ~a~n" (get-csr m "pmpcfg0"))
+	(printf "pmpcfg2 ~a~n" (get-csr m "pmpcfg2"))
+	(printf "pmpaddr0 ~a~n" (get-csr m "pmpaddr0"))
+	(printf "pmpaddr1 ~a~n" (get-csr m "pmpaddr1"))
+	(printf "pmpaddr2 ~a~n" (get-csr m "pmpaddr2"))
+	(printf "pmpaddr3 ~a~n" (get-csr m "pmpaddr3"))
+	(printf "pmpaddr4 ~a~n" (get-csr m "pmpaddr4"))
+	(printf "pmpaddr5 ~a~n" (get-csr m "pmpaddr5"))
+	(printf "pmpaddr6 ~a~n" (get-csr m "pmpaddr6"))
+	(printf "pmpaddr7 ~a~n" (get-csr m "pmpaddr7")))
 (provide print-csr)
 
-(define op null)
 ; get instructions until reach mret
 (define (test-and-execute m)
-	(printf "Running Program...~n")
+	(define op null)
 	(while (not (equal? op "mret"))
 		(define next_instr (decode (get-next-instr m)))
 		(printf "PC: ~a INS: ~a~n" (get-pc m) next_instr)
 		(set! op (list-ref next_instr 0))
-		(execute next_instr m))
-
-	(for/list ([i (in-range 10 18)])
-			(printf "~a~n" (gprs-get-x m i))))
+		(execute next_instr m)
+		; (print-memory m 1000)
+		))
 (provide test-and-execute)
 
 
-; ; get program
-; (define program (file->bytearray "sum.bin"))
+; ; example execution
+; (define program (file->bytearray "build/sum.bin"))
 ; (printf-program)
 ; (printf "program: ~a~n" program)
 ; make machine
