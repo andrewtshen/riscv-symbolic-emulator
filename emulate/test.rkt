@@ -13,9 +13,9 @@
 ; 			to allow for the usage of more than one machine in order to run multiple programs.
 
 (define-test-suite arithmetic-check
-  (test-case "sum test"
-    (define program (file->bytearray "build/sum.bin"))
-    (printf "~n* Running sum.bin test ~n" )
+  (test-case "add test"
+    (define program (file->bytearray "build/add.bin"))
+    (printf "~n* Running add.bin test ~n" )
 		; make machine
 		(define ramsize 1000)
 		(define m (init-machine program ramsize))
@@ -30,7 +30,7 @@
 														(list-ref gprsx 7))
 										(list-ref gprsx 6))))))
 		(check-true (unsat? model-add)))
-  (test-case "sub test (c code)"
+  (test-case "sub test (w/ stack)"
   	(define program (file->bytearray "build/test.bin"))
   	(printf "~n* Running test.bin test ~n" )
   	(define ramsize 1000000)
@@ -55,5 +55,5 @@
 
 		(check-true (unsat? model-load-store))))
 
-(run-tests store-load-check)
+; (run-tests store-load-check)
 (run-tests arithmetic-check)

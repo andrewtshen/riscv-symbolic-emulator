@@ -2,8 +2,9 @@
 
 (require (only-in racket/base error))
 
-(require "load.rkt")
-(require "machine.rkt")
+(require 
+	"load.rkt"
+	"machine.rkt")
 
 ; Execute each individual instruction symbolically and update the program count to the proper place.
 ; Used rv8.io and https://content.riscv.org/wp-content/uploads/2017/05/riscv-spec-v2.2.pdf for implementing instructions
@@ -312,6 +313,7 @@
 			(define addr (- (bitvector->natural (bvadd v_rs1 imm)) base_address))
 			(define nbits 32)
 			(bytearray-write! (machine-ram m) addr v_rs2 nbits)
+
 			(set-pc! m (+ pc 4))]
 		[(equal? opcode "sd")
 			(define v_rs1 (gprs-get-x m (list-ref-nat instr 1)))
@@ -319,7 +321,7 @@
 			(define imm (sign-extend (list-ref instr 3) (bitvector 64)))
 			(define addr (- (bitvector->natural (bvadd v_rs1 imm)) base_address))
 			(define nbits 64)
-			
+
 			(bytearray-write! (machine-ram m) addr v_rs2 nbits)
 			(set-pc! m (+ pc 4))]
 

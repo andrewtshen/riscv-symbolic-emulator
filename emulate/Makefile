@@ -20,11 +20,12 @@ BUILDDIR = build
 TESTS = tests
 
 BUILDS := \
-	sum.bin sum.lst \
+	add.bin add.lst \
 	store_and_load.bin store_and_load.lst \
 	csr_test.bin csr_test.lst \
 	sub.bin sub.lst \
 	test.bin test.lst \
+	pmp.bin pmp.lst
 
 .PHONY: all
 all: dir $(addprefix $(BUILDDIR)/, $(BUILDS))
@@ -63,7 +64,7 @@ test: dir $(addprefix $(BUILDDIR)/, $(BUILDS))
 	@echo "----------------------"
 	racket decode.rkt
 	@echo "----------------------"
-	racket instr.rkt
+	racket fmt.rkt
 	@echo "----------------------"
 	racket execute.rkt
 	@echo "----------------------"

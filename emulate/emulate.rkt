@@ -20,11 +20,12 @@
 			null)
 		(printf "~x " (bitvector->natural i)))
 	(printf "~n~n"))
+(provide print-program)
 
-(define (print-memory m ramsize)
-	(for ([i (machine-ram m)])
-		(printf "~a " i))
-	(printf "~n~n"))
+(define (print-memory m start end)
+	(for ([i (in-range start end)])
+		(printf "~a " (vector-ref (machine-ram m) i))))
+(provide print-memory)
 
 (define (print-csr m)
 	(printf "mtvec ~a~n" (get-csr m "mtvec"))
@@ -48,11 +49,8 @@
 		(define next_instr (decode (get-next-instr m)))
 		(printf "PC: ~a INS: ~a~n" (get-pc m) next_instr)
 		(set! op (list-ref next_instr 0))
-		(execute next_instr m)
-		; (print-memory m 1000)
-		))
+		(execute next_instr m)))
 (provide test-and-execute)
-
 
 ; ; example execution
 ; (define program (file->bytearray "build/sum.bin"))

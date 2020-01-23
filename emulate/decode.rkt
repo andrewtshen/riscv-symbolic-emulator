@@ -1,7 +1,7 @@
 #lang rosette/safe
 
 (require (only-in racket/base error))
-(require "instr.rkt")
+(require "fmt.rkt")
 
 ; Decode all of the binary instructions to a list similar to 
 ; objdump output so that it is easier to parse.
