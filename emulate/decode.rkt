@@ -28,6 +28,7 @@
 	(define funct3 (extract 14 12 b_instr))
 	(define rs1 (extract 19 15 b_instr))
 	(define imm (extract 31 20 b_instr))
+	(printf "opcode: ~a~n" opcode)
 	(cond
 		[(and (bveq funct3 (bv #b000 3)) (bveq opcode (bv #b0010011 7)))
 			(set! op "addi")]
@@ -45,6 +46,8 @@
 			(set! op "lhu")]
 		[(and (bveq funct3 (bv #b110 3)) (bveq opcode (bv #b0000011 7)))
 			(set! op "lwu")]
+		[(and (bveq funct3 (bv #b000 3)) (bveq opcode (bv #b1100111 7)))
+			(set! op "jalr")]
 		[else (error "No such I op")])
 	(list op rd rs1 imm))
 
@@ -112,6 +115,23 @@
 		[else
 			(error "No such S op")])
 	(list op rs1 rs2 imm))
+
+(define (decode-J b_instr)
+	(printf "Decoding J instruction: ~a~n" b_instr)
+	(define op null)
+	(define opcode (extract 6 0 b_instr))
+	(define rd (extract 11 7 b_instr))
+	(define imm (concat
+		(extract 31 31 b_instr)
+		(extract 19 12 b_instr)
+		(extract 20 20 b_instr)
+		(extract 30 21 b_instr)))
+	(cond
+		[(bveq opcode (bv #b1101111 7))
+			(set! op "jal")]
+		[else
+			(error "No such J op")])
+	(list op rd imm))
 
 (define (decode-csr b_csr)
 	(define csr null)
@@ -220,6 +240,8 @@
 			(set! instr (decode-U b_instr))]
 		[(equal? fmt "S")
 			(set! instr (decode-S b_instr))]
+		[(equal? fmt "J")
+			(set! instr (decode-J b_instr))]
 		[(equal? fmt "SPECIAL")
 			(set! instr (decode-SPECIAL b_instr))]
 		[else

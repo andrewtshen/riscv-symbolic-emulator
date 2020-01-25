@@ -16,38 +16,55 @@ ifeq ($(DEBUG),1)
 	CFLAGS += -g
 endif
 
-BUILDDIR = build
+BUILD = build
+CBUILD = build/cbuild
+SBUILD = build/sbuild
 TESTS = tests
+
+C_STARTUP = startup.s
 
 BUILDS := \
 	add.bin add.lst \
 	store_and_load.bin store_and_load.lst \
-	csr_test.bin csr_test.lst \
+	csr.bin csr.lst \
 	sub.bin sub.lst \
-	test.bin test.lst \
-	pmp.bin pmp.lst
+	stack.bin stack.lst \
+	pmp.bin pmp.lst \
+	addi.bin addi.lst \
+	addw.bin addw.lst \
+	jal.bin jal.lst \
+
+.SECONDARY:
 
 .PHONY: all
-all: dir $(addprefix $(BUILDDIR)/, $(BUILDS))
-	$(info BUILDING: $(addprefix $(BUILDDIR)/, $(BUILDS)))
+all: dir $(addprefix $(BUILD)/, $(BUILDS)) $(CBUILD)/startup.o
+# 	$(info BUILDING: $(addprefix $(BUILD)/, $(BUILDS)))
 
-$(BUILDDIR)/%.o: $(TESTS)/%.c
+$(CBUILD)/startup.o: $(TESTS)/startup.s
 	$(CC) $(CFLAGS) -c $< -o $@
 
-$(BUILDDIR)/%.o: $(TESTS)/%.s
+$(CBUILD)/%.o: $(TESTS)/%.c
+	$(CC) $(CFLAGS) -c $< -o $@	
+
+$(SBUILD)/%.o: $(TESTS)/%.s
 	$(CC) $(CFLAGS) -c $< -o $@
 
-$(BUILDDIR)/%.elf: $(BUILDDIR)/%.o $(TESTS)/prog.ld
+$(BUILD)/%.elf: $(CBUILD)/%.o $(CBUILD)/startup.o $(TESTS)/prog.ld
+	$(CC) $(CFLAGS) -T $(TESTS)/prog.ld $< $(CBUILD)/startup.o -o $@
+
+$(BUILD)/%.elf: $(SBUILD)/%.o $(TESTS)/prog.ld
 	$(CC) $(CFLAGS) -T $(TESTS)/prog.ld $< -o $@
 
-$(BUILDDIR)/%.bin: $(BUILDDIR)/%.elf
+$(BUILD)/%.bin: $(BUILD)/%.elf
 	$(OBJCOPY) -O binary $< $@
 
-$(BUILDDIR)/%.lst: $(BUILDDIR)/%.elf
+$(BUILD)/%.lst: $(BUILD)/%.elf
 	$(OBJDUMP) $(OBJDUMPFLAGS) $< > $@
 
 dir:
-	mkdir -p $(BUILDDIR)
+	mkdir -p $(BUILD)
+	mkdir -p $(CBUILD)
+	mkdir -p $(SBUILD)
 
 .PHONY: emulate
 emulate: all
@@ -58,7 +75,7 @@ proof: all
 	raco test test.rkt
 
 .PHONY: test
-test: dir $(addprefix $(BUILDDIR)/, $(BUILDS))
+test: dir $(addprefix $(BUILD)/, $(BUILDS))
 	@echo "----------------------"
 	racket load.rkt
 	@echo "----------------------"
@@ -81,13 +98,13 @@ clean:
 	rm -rf build
 
 .PHONY: qemu
-qemu: $(BUILDDIR)/sum.elf
-	$(QEMU) $(QEMUFLAGS) -kernel $(BUILDDIR)/sum.elf
+qemu: $(BUILD)/add.elf
+	$(QEMU) $(QEMUFLAGS) -kernel $(BUILD)/add.elf
 
 .PHONY: qemu-gdb
-qemu-gdb: $(BUILDDIR)/sum.elf
-	$(QEMU) $(QEMUFLAGS) -S -s -kernel $(BUILDDIR)/sum.elf
+qemu-gdb: $(BUILD)/add.elf
+	$(QEMU) $(QEMUFLAGS) -S -s -kernel $(BUILD)/add.elf
 
 .PHONY: gdb
-gdb: $(BUILDDIR)/sum.elf
-	$(GDB) --data-directory=/usr/local/share/gdb $(BUILDDIR)/sum.elf
+gdb: $(BUILD)/add.elf
+	$(GDB) --data-directory=/usr/local/share/gdb $(BUILD)/add.elf

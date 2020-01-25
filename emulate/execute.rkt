@@ -101,29 +101,30 @@
 			(error "sraiw instruction not implemented yet")]
 		[(equal? opcode "lb")
 			(define rd (list-ref-nat instr 1))
-			(define v_rs1 (list-ref-nat instr 2))
+			(define rs1 (list-ref-nat instr 2))
 			(define imm (sign-extend (list-ref instr 3) (bitvector 64)))
-			(define addr (- (bitvector->natural (bvadd v_rs1 imm)) base_address))
+			(define addr (- (bitvector->natural (bvadd (gprs-get-x m rs1) imm)) base_address))
 			(define nbytes 1)
 			(define val (sign-extend (bytearray-read (machine-ram m) addr nbytes) (bitvector 64)))
 			(gprs-set-x! m rd val)
 			(set-pc! m (+ pc 4))]
 		[(equal? opcode "lh")
 			(define rd (list-ref-nat instr 1))
-			(define v_rs1 (list-ref-nat instr 2))
+			(define rs1 (list-ref-nat instr 2))
 			(define imm (sign-extend (list-ref instr 3) (bitvector 64)))
-			(define addr (- (bitvector->natural (bvadd v_rs1 imm)) base_address))
+			(define addr (- (bitvector->natural (bvadd (gprs-get-x m rs1) imm)) base_address))
 			(define nbytes 2)
 			(define val (sign-extend (bytearray-read (machine-ram m) addr nbytes) (bitvector 64)))
 			(gprs-set-x! m rd val)
 			(set-pc! m (+ pc 4))]
 		[(equal? opcode "lw")
 			(define rd (list-ref-nat instr 1))
-			(define v_rs1 (list-ref-nat instr 2))
+			(define rs1 (list-ref-nat instr 2))
 			(define imm (sign-extend (list-ref instr 3) (bitvector 64)))
-			(define addr (- (bitvector->natural (bvadd v_rs1 imm)) base_address))
+			(define addr (- (bitvector->natural (bvadd (gprs-get-x m rs1) imm)) base_address))
 			(define nbytes 4)
 			(define val (sign-extend (bytearray-read (machine-ram m) addr nbytes) (bitvector 64)))
+			
 			(gprs-set-x! m rd val)
 			(set-pc! m (+ pc 4))]
 		[(equal? opcode "ld")
@@ -137,31 +138,49 @@
 			(set-pc! m (+ pc 4))]
 		[(equal? opcode "lbu")
 			(define rd (list-ref-nat instr 1))
-			(define v_rs1 (list-ref-nat instr 2))
+			(define rs1 (list-ref-nat instr 2))
 			(define imm (zero-extend (list-ref instr 3) (bitvector 64)))
-			(define addr (- (bitvector->natural (bvadd v_rs1 imm)) base_address))
+			(define addr (- (bitvector->natural (bvadd (gprs-get-x m rs1) imm)) base_address))
 			(define nbytes 1)
 			(define val (zero-extend (bytearray-read (machine-ram m) addr nbytes) (bitvector 64)))
 			(gprs-set-x! m rd val)
 			(set-pc! m (+ pc 4))]
 		[(equal? opcode "lhu")
 			(define rd (list-ref-nat instr 1))
-			(define v_rs1 (list-ref-nat instr 2))
+			(define rs1 (list-ref-nat instr 2))
 			(define imm (zero-extend (list-ref instr 3) (bitvector 64)))
-			(define addr (- (bitvector->natural (bvadd v_rs1 imm)) base_address))
+			(define addr (- (bitvector->natural (bvadd (gprs-get-x m rs1) imm)) base_address))
 			(define nbytes 2)
 			(define val (zero-extend (bytearray-read (machine-ram m) addr nbytes) (bitvector 64)))
 			(gprs-set-x! m rd val)
 			(set-pc! m (+ pc 4))]
 		[(equal? opcode "lwu")
 			(define rd (list-ref-nat instr 1))
-			(define v_rs1 (list-ref-nat instr 2))
+			(define rs1 (list-ref-nat instr 2))
 			(define imm (zero-extend (list-ref instr 3) (bitvector 64)))
-			(define addr (- (bitvector->natural (bvadd v_rs1 imm)) base_address))
+			(define addr (- (bitvector->natural (bvadd (gprs-get-x m rs1) imm)) base_address))
 			(define nbytes 4)
 			(define val (zero-extend (bytearray-read (machine-ram m) addr nbytes) (bitvector 64)))
 			(gprs-set-x! m rd val)
 			(set-pc! m (+ pc 4))]
+		[(equal? opcode "jalr")
+			(printf "Executing JALR operation!~n")
+			(define rd (list-ref-nat instr 1))
+			(define rs1 (list-ref-nat instr 2))
+			(define imm (sign-extend (list-ref instr 3) (bitvector 64)))
+			(printf "rs1 value: ~a~n" (gprs-get-x m rs1))
+			(printf "imm value: ~a~n" imm)
+			(define addr (bitvector->natural (bvadd (gprs-get-x m rs1) imm)))
+			(define save (bv (+ pc 4) 64))
+			(cond
+				[(not (equal? rd 0))
+					(gprs-set-x! m rd save)]
+				[else
+					(printf "not setting x0 reg~n")])
+			(printf "~a~n" (bv addr 64))
+			(printf "~a~n" (bvnot (bv 1 64)))
+			(printf "modified addr: ~a~n" (bvand (bv addr 64) (bvnot (bv 1 64))))
+			(set-pc! m addr)]
 
 		; R Format
 		[(equal? opcode "add")
@@ -174,7 +193,7 @@
 			(define rd (list-ref-nat instr 1))
 			(define rs1 (list-ref-nat instr 2))
 			(define rs2 (list-ref-nat instr 3))
-			(gprs-set-x! m rd (bvsub (gprs-get-x m rs1) (gprs-get-x rs2)))
+			(gprs-set-x! m rd (bvsub (gprs-get-x m rs1) (gprs-get-x m rs2)))
 			(set-pc! m (+ pc 4))]
 		[(equal? opcode "sll")
 			(error "slt instruction not implemented yet")]
@@ -324,6 +343,19 @@
 
 			(bytearray-write! (machine-ram m) addr v_rs2 nbits)
 			(set-pc! m (+ pc 4))]
+
+		; J Format
+		[(equal? opcode "jal")
+			(define rd (list-ref-nat instr 1))
+			(define imm (sign-extend (concat (list-ref instr 2) (bv 0 1)) (bitvector 64)))
+			(define save (bv (+ pc 4) 64))
+			(define jump_to (bitvector->natural (bvadd imm (bv pc 64))))
+			(cond
+				[(not (equal? rd 0))
+					(gprs-set-x! m rd save)]
+				[else
+					(printf "not setting x0 reg~n")])
+			(set-pc! m jump_to)]
 
 		; FENCE Format
 		[(equal? opcode "FENCE")

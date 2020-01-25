@@ -1,9 +1,9 @@
-.section .sub,"ax",%progbits
+.section .stack,"ax",%progbits
 
-.global _sub
-.type _sub, %function
+.global _stack
+.type _stack, %function
 
-_sub:
+_stack:
     la sp, estack
     addi sp, sp, -32
     sd s0, 24(sp)
@@ -17,10 +17,10 @@ _sub:
     mret 
 _fallthrough:
     j _fallthrough
-.size _sub, .-_sub
+.size _stack, .-_stack
 
 .type estack, %object
-.align 16
+.align 8
 estack:
-    .fill 256
+    .fill 64
 .size estack, .-estack
