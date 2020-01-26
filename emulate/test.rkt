@@ -30,22 +30,6 @@
 														(list-ref gprsx 7))
 										(list-ref gprsx 6))))))
 		(check-true (unsat? model-add)))
-	(test-case "sd/ld test"
-		(define program (file->bytearray "build/store_and_load.bin"))
-		(printf "~n* Running store_and_load.bin test ~n")
-		; make machine
-		(define ramsize 1000)
-		(define m (init-machine program ramsize))
-		(test-and-execute m)
-
-		(define gprsx
-			(for/list ([i (in-range 10 18)])
-				(gprs-get-x m i)))
-
-		(define model-load-store (verify (begin 
-			(assert (bveq (list-ref gprsx 2) (list-ref gprsx 3))))))
-
-		(check-true (unsat? model-load-store)))
 	(test-case "addi test"
 		(define program (file->bytearray "build/addi.bin"))
 		(define ramsize 1000)
@@ -78,17 +62,79 @@
 		(printf "~n* Running sub.bin test ~n")
 		(define m (init-machine program ramsize))
 		(test-and-execute m))
-	; (test-case "jal test"
-	; 	(define program (file->bytearray "build/jal.bin"))
-	; 	(define ramsize 1000000)
-	; 	(printf "~n* Running jal.bin test ~n")
-	; 	(define m (init-machine program ramsize))
-	; 	(test-and-execute m))
-	; 	; (define gprsx
-	; 	; 	(for/list ([i (in-range 10 18)])
-	; 	; 		(gprs-get-x m i)))
+	(test-case "jal test"
+		(define program (file->bytearray "build/jal.bin"))
+		(define ramsize 1000)
+		(printf "~n* Running jal.bin test ~n")
+		(define m (init-machine program ramsize))
+		(test-and-execute m))
+	(test-case "sd/ld test"
+		(define program (file->bytearray "build/sd_ld.bin"))
+		(printf "~n* Running sd_ld.bin test ~n")
+		(define ramsize 1000)
+		(define m (init-machine program ramsize))
+		(test-and-execute m)
+
+		(define gprsx
+			(for/list ([i (in-range 10 18)])
+				(gprs-get-x m i)))
+		; doubleword, use all bits
+		(define model_sd_ld (verify (begin 
+			(assert (bveq (list-ref gprsx 2) (list-ref gprsx 3))))))
+
+		(check-true (unsat? model_sd_ld)))
+	(test-case "sw/lw test"
+		(define program (file->bytearray "build/sw_lw.bin"))
+		(printf "~n* Running sw_lw.bin test ~n")
+		(define ramsize 1000)
+		(define m (init-machine program ramsize))
+		(test-and-execute m)
+
+		(define gprsx
+			(for/list ([i (in-range 10 18)])
+				(gprs-get-x m i)))
+
+		; word, index into the 32 lower bits
+		(define model_sw_lw (verify (begin 
+			(assert (bveq (extract 31 0 (list-ref gprsx 2))
+				(extract 31 0 (list-ref gprsx 3)))))))
+		; (define model_lw_sw (verify (begin 
+		; 	(assert (bveq (extract 32 0 (list-ref gprsx 2))
+		; 		(extract 32 0 (list-ref gprsx 3)))))))
+		(check-true (unsat? model_sw_lw)))
+	(test-case "sh/lh test"
+		(define program (file->bytearray "build/sh_lh.bin"))
+		(printf "~n* Running sh_lh.bin test ~n")
+		(define ramsize 1000)
+		(define m (init-machine program ramsize))
+		(test-and-execute m)
+
+		(define gprsx
+			(for/list ([i (in-range 10 18)])
+				(gprs-get-x m i)))
+
+		; half-word, index into the 15 lower bits
+		(define model_sh_lh (verify (begin 
+			(assert (bveq (extract 15 0 (list-ref gprsx 2))
+				(extract 15 0 (list-ref gprsx 3)))))))
+		(check-true (unsat? model_sh_lh)))
+	(test-case "sb/lb test"
+		(define program (file->bytearray "build/sb_lb.bin"))
+		(printf "~n* Running sb_lb.bin test ~n")
+		(define ramsize 1000)
+		(define m (init-machine program ramsize))
+		(test-and-execute m)
+
+		(define gprsx
+			(for/list ([i (in-range 10 18)])
+				(gprs-get-x m i)))
+
+		; half-word, index into the 15 lower bits
+		(define model_sb_lb (verify (begin 
+			(assert (bveq (extract 7 0 (list-ref gprsx 2))
+				(extract 7 0 (list-ref gprsx 3)))))))
+		(check-true (unsat? model_sb_lb)))
 	)
-  
 
 (define-test-suite high-level-test
 	(test-case "stack test"
@@ -96,7 +142,14 @@
   	(printf "~n* Running stack.bin test ~n" )
   	(define ramsize 1000)
   	(define m (init-machine program ramsize))
-  	(test-and-execute m)))
+  	(test-and-execute m))
+	(test-case "pmp test"
+		(define program (file->bytearray "build/pmp.bin"))
+		(printf "~n* Running pmp.bin test ~n")
+		(define ramsize 1000)
+		(define m (init-machine program ramsize))
+		(test-and-execute m))
+	)
 
 (run-tests instruction-check)
 (run-tests high-level-test)

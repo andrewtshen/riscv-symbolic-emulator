@@ -47,7 +47,7 @@
 	(define op null)
 	(while (not (equal? op "mret"))
 		(define next_instr (decode (get-next-instr m)))
-		(printf "PC: ~a INS: ~a~n" (get-pc m) next_instr)
+		(printf "PC: ~x INS: ~a~n" (get-pc m) next_instr)
 		(set! op (list-ref next_instr 0))
 		(execute next_instr m)))
 (provide test-and-execute)

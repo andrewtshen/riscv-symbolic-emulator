@@ -28,10 +28,19 @@
 	(define funct3 (extract 14 12 b_instr))
 	(define rs1 (extract 19 15 b_instr))
 	(define imm (extract 31 20 b_instr))
-	(printf "opcode: ~a~n" opcode)
+	(define shift_type (extract 30 30 b_instr))
+	; (printf "opcode: ~a~n" opcode)
 	(cond
 		[(and (bveq funct3 (bv #b000 3)) (bveq opcode (bv #b0010011 7)))
 			(set! op "addi")]
+		[(and (bveq funct3 (bv #b000 3)) (bveq opcode (bv #b0011011 7)))
+			(set! op "addiw")]
+		[(and (bveq funct3 (bv #b001 3)) (bveq opcode (bv #b0011011 7)))
+			(set! op "slliw")]
+		[(and (bveq funct3 (bv #b101 3)) (bveq opcode (bv #b0011011 7)) (bveq shift_type (bv #b0 1)))
+			(set! op "srliw")]
+		[(and (bveq funct3 (bv #b101 3)) (bveq opcode (bv #b0011011 7)) (bveq shift_type (bv #b1 1)))
+			(set! op "sraiw")]
 		[(and (bveq funct3 (bv #b000 3)) (bveq opcode (bv #b0000011 7)))
 			(set! op "lb")]
 		[(and (bveq funct3 (bv #b001 3)) (bveq opcode (bv #b0000011 7)))

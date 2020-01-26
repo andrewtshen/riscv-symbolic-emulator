@@ -73,7 +73,10 @@
 			(define rd (list-ref-nat instr 1))
 			(define rs1 (list-ref-nat instr 2))
 			(define imm (sign-extend (list-ref instr 3) (bitvector 64)))
-			(gprs-set-x! m rd (bvadd (gprs-get-x m rs1) imm))
+			; nop op pseudo code
+			(if (and (equal? rd 0) (equal? rs1 0) (bveq imm (bv 0 64)))
+				(set-pc! m (+ pc 4))
+				(gprs-set-x! m rd (bvadd (gprs-get-x m rs1) imm)))
 			(set-pc! m (+ pc 4))]
 		[(equal? opcode "slli")
 			(error "slli instruction not implemented yet")]

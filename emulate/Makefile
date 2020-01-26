@@ -23,16 +23,29 @@ TESTS = tests
 
 C_STARTUP = startup.s
 
+V = 0
+ACTUAL_CC := $(CC)
+
+CC_0 = @printf ' |%-10s| $@ \n' 'CC'; $(ACTUAL_CC)
+CC_1 = $(ACTUAL_CC)
+CC = $(CC_$(V))
+
+padlimit = 8
+ACTUAL_OBJDUMP := $(OBJDUMP)
+OBJDUMP_0 = @printf ' |%-10s| $@ \n' 'OBJDUMP'; $(ACTUAL_OBJDUMP)
+OBJDUMP_1 = $(ACTUAL_OBJDUMP)
+OBJDUMP = $(OBJDUMP_$(V))
+
+ACTUAL_OBJCOPY := $(OBJCOPY)
+OBJCOPY_0 = @printf ' |%-10s| $@ \n' 'OBJCOPY'; $(ACTUAL_OBJCOPY)
+OBJCOPY_1 = $(ACTUAL_OBJCOPY)
+OBJCOPY = $(OBJCOPY_$(V))
+
 BUILDS := \
-	add.bin add.lst \
-	store_and_load.bin store_and_load.lst \
-	csr.bin csr.lst \
-	sub.bin sub.lst \
-	stack.bin stack.lst \
-	pmp.bin pmp.lst \
-	addi.bin addi.lst \
-	addw.bin addw.lst \
-	jal.bin jal.lst \
+	$(patsubst tests/%.c,%.bin,$(wildcard tests/*.c)) \
+	$(patsubst tests/%.c,%.lst,$(wildcard tests/*.c)) \
+	$(patsubst tests/%.s,%.bin,$(wildcard tests/*.s)) \
+	$(patsubst tests/%.s,%.lst,$(wildcard tests/*.s)) \
 
 .SECONDARY:
 
@@ -40,7 +53,7 @@ BUILDS := \
 all: dir $(addprefix $(BUILD)/, $(BUILDS)) $(CBUILD)/startup.o
 # 	$(info BUILDING: $(addprefix $(BUILD)/, $(BUILDS)))
 
-$(CBUILD)/startup.o: $(TESTS)/startup.s
+$(CBUILD)/startup.o: $(TESTS)/startup/startup.s
 	$(CC) $(CFLAGS) -c $< -o $@
 
 $(CBUILD)/%.o: $(TESTS)/%.c
@@ -62,9 +75,9 @@ $(BUILD)/%.lst: $(BUILD)/%.elf
 	$(OBJDUMP) $(OBJDUMPFLAGS) $< > $@
 
 dir:
-	mkdir -p $(BUILD)
-	mkdir -p $(CBUILD)
-	mkdir -p $(SBUILD)
+	@mkdir -p $(BUILD)
+	@mkdir -p $(CBUILD)
+	@mkdir -p $(SBUILD)
 
 .PHONY: emulate
 emulate: all
