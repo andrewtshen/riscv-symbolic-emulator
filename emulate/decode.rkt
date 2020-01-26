@@ -36,10 +36,13 @@
 		[(and (bveq funct3 (bv #b000 3)) (bveq opcode (bv #b0011011 7)))
 			(set! op "addiw")]
 		[(and (bveq funct3 (bv #b001 3)) (bveq opcode (bv #b0011011 7)))
+			(set! imm (extract 25 20 b_instr))
 			(set! op "slliw")]
 		[(and (bveq funct3 (bv #b101 3)) (bveq opcode (bv #b0011011 7)) (bveq shift_type (bv #b0 1)))
+			(set! imm (extract 25 20 b_instr))
 			(set! op "srliw")]
 		[(and (bveq funct3 (bv #b101 3)) (bveq opcode (bv #b0011011 7)) (bveq shift_type (bv #b1 1)))
+			(set! imm (extract 25 20 b_instr))
 			(set! op "sraiw")]
 		[(and (bveq funct3 (bv #b000 3)) (bveq opcode (bv #b0000011 7)))
 			(set! op "lb")]
@@ -126,7 +129,6 @@
 	(list op rs1 rs2 imm))
 
 (define (decode-J b_instr)
-	(printf "Decoding J instruction: ~a~n" b_instr)
 	(define op null)
 	(define opcode (extract 6 0 b_instr))
 	(define rd (extract 11 7 b_instr))

@@ -97,11 +97,35 @@
 		[(equal? opcode "addiw")
 			(error "addiw instruction not implemented yet")]
 		[(equal? opcode "slliw")
-			(error "slliw instruction not implemented yet")]
+			(define rd (list-ref-nat instr 1))
+			(define v_rs1 (extract 31 0 (gprs-get-x m (list-ref-nat instr 2))))
+			(define imm (sign-extend (list-ref instr 3) (bitvector 32)))
+			(define shifted (sign-extend (bvshl v_rs1 imm) (bitvector 64)))
+			(gprs-set-x! m rd shifted)
+			(cond
+				[(not (bveq (extract 5 5 imm) (bv 0 1)))
+					(error "TODO generate illegal instruction error")])
+			(set-pc! m (+ pc 4))]
 		[(equal? opcode "srliw")
-			(error "srliw instruction not implemented yet")]
+			(define rd (list-ref-nat instr 1))
+			(define v_rs1 (extract 31 0 (gprs-get-x m (list-ref-nat instr 2))))
+			(define imm (sign-extend (list-ref instr 3) (bitvector 32)))
+			(define shifted (sign-extend (bvlshr v_rs1 imm) (bitvector 64)))
+			(gprs-set-x! m rd shifted)
+			(cond
+				[(not (bveq (extract 5 5 imm) (bv 0 1)))
+					(error "TODO generate illegal instruction error")])
+			(set-pc! m (+ pc 4))]
 		[(equal? opcode "sraiw")
-			(error "sraiw instruction not implemented yet")]
+			(define rd (list-ref-nat instr 1))
+			(define v_rs1 (extract 31 0 (gprs-get-x m (list-ref-nat instr 2))))
+			(define imm (sign-extend (list-ref instr 3) (bitvector 32)))
+			(define shifted (sign-extend (bvashr v_rs1 imm) (bitvector 64)))
+			(gprs-set-x! m rd shifted)
+			(cond
+				[(not (bveq (extract 5 5 imm) (bv 0 1)))
+					(error "TODO generate illegal instruction error")])
+			(set-pc! m (+ pc 4))]
 		[(equal? opcode "lb")
 			(define rd (list-ref-nat instr 1))
 			(define v_rs1 (gprs-get-x m (list-ref-nat instr 2)))

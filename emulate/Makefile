@@ -111,13 +111,13 @@ clean:
 	rm -rf build
 
 .PHONY: qemu
-qemu: $(BUILD)/add.elf
-	$(QEMU) $(QEMUFLAGS) -kernel $(BUILD)/add.elf
+qemu: $(BUILD)/pmp.elf
+	$(QEMU) $(QEMUFLAGS) -kernel $(BUILD)/pmp.elf
 
 .PHONY: qemu-gdb
-qemu-gdb: $(BUILD)/add.elf
-	$(QEMU) $(QEMUFLAGS) -S -s -kernel $(BUILD)/add.elf
+qemu-gdb: $(BUILD)/pmp.elf
+	$(QEMU) $(QEMUFLAGS) -S -s -kernel $(BUILD)/pmp.elf
 
 .PHONY: gdb
-gdb: $(BUILD)/add.elf
-	$(GDB) --data-directory=/usr/local/share/gdb $(BUILD)/add.elf
+gdb: $(BUILD)/pmp.elf
+	$(GDB) --data-directory=/usr/local/share/gdb $(BUILD)/pmp.elf

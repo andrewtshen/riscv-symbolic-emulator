@@ -26,8 +26,7 @@
 				(gprs-get-x m i)))
 
 		(define model-add (verify (begin 
-			(assert (bveq (bvadd (list-ref gprsx 5)
-														(list-ref gprsx 7))
+			(assert (bveq (bvadd (list-ref gprsx 5) (list-ref gprsx 7))
 										(list-ref gprsx 6))))))
 		(check-true (unsat? model-add)))
 	(test-case "addi test"
@@ -40,7 +39,8 @@
 			(for/list ([i (in-range 10 18)])
 				(gprs-get-x m i)))
 		(define model-addi (verify (begin 
-			(assert (bveq (list-ref gprsx 6) (bvadd (list-ref gprsx 5) (bv 32 64)))))))
+			(assert (bveq (list-ref gprsx 6)
+										(bvadd (list-ref gprsx 5) (bv 32 64)))))))
 
 		(check-true (unsat? model-addi)))
 	(test-case "addw test"
@@ -53,10 +53,12 @@
 			(for/list ([i (in-range 10 18)])
 				(gprs-get-x m i)))
 		(define model-addw (verify (begin 
-			(assert (bveq (list-ref gprsx 6) (bvadd (list-ref gprsx 5) (list-ref gprsx 3)))))))
+			(assert (bveq (list-ref gprsx 6)
+										(bvadd (list-ref gprsx 5) (list-ref gprsx 3)))))))
 
 		(check-true (unsat? model-addw)))
 	(test-case "sub test"
+		; TODO: make this into an actual test case
 		(define program (file->bytearray "build/sub.bin"))
 		(define ramsize 1000)
 		(printf "~n* Running sub.bin test ~n")
@@ -134,6 +136,25 @@
 			(assert (bveq (extract 7 0 (list-ref gprsx 2))
 				(extract 7 0 (list-ref gprsx 3)))))))
 		(check-true (unsat? model_sb_lb)))
+	  (test-case "srliw test"
+    (define program (file->bytearray "build/srliw.bin"))
+    (printf "~n* Running srliw.bin test ~n" )
+		; make machine
+		(define ramsize 1000)
+		(define m (init-machine program ramsize))
+		(test-and-execute m)
+
+		(define gprsx
+			(for/list ([i (in-range 10 18)])
+				(gprs-get-x m i)))
+		(displayln gprsx)
+		(define model-srliw (verify (begin 
+			(assert (and (bveq (list-ref gprsx 1) (bv #xffffffffffffffff 64))
+										(bveq (list-ref gprsx 2) (bv #x000000007fffffff 64))
+										(bveq (list-ref gprsx 3) (bv #x0000000001ffffff 64))
+										(bveq (list-ref gprsx 4) (bv #x000000000003ffff 64))
+										(bveq (list-ref gprsx 5) (bv #x0000000000000001 64)))))))
+		(check-true (unsat? model-srliw)))
 	)
 
 (define-test-suite high-level-test
