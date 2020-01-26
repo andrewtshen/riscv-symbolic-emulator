@@ -37,8 +37,7 @@
 			(set! fmt "R")]
 		[(equal? opcode (bv #b0101111 7)) ; LR_W SC_W LR_D SC_D
 			(set! fmt "TODO FMT")]
-		[(equal? opcode (bv #b1110011 7)) ; ECALL EBREAK URET MRET DRET SFENCE_VMA WFI 
-										  ; CSRRW CSRRS CSRRC CSRRWI CSRRSI CSRRCI
+		[(equal? opcode (bv #b1110011 7)) ; ECALL EBREAK URET MRET DRET SFENCE_VMA WFI CSRRW CSRRS CSRRC CSRRWI CSRRSI CSRRCI
 			(set! fmt "SPECIAL")]
 		[(equal? opcode (bv #b0010011 7)) ; SLLI_RV32 SRLI_RV32 SRAI_RV32
 			(set! fmt "TODO FMT")]

@@ -18,6 +18,22 @@
 			(set! op "add")]
 		[(and (bveq funct3 (bv #b000 3)) (bveq funct7 (bv #b0100000 7)))
 			(set! op "sub")]
+		[(and (bveq funct3 (bv #b001 3)) (bveq funct7 (bv #b0000000 7)))
+			(set! op "sll")]
+		[(and (bveq funct3 (bv #b010 3)) (bveq funct7 (bv #b0000000 7)))
+			(set! op "slt")]
+		[(and (bveq funct3 (bv #b011 3)) (bveq funct7 (bv #b0000000 7)))
+			(set! op "sltu")]
+		[(and (bveq funct3 (bv #b100 3)) (bveq funct7 (bv #b0000000 7)))
+			(set! op "xor")]
+		[(and (bveq funct3 (bv #b101 3)) (bveq funct7 (bv #b0000000 7)))
+			(set! op "srl")]
+		[(and (bveq funct3 (bv #b101 3)) (bveq funct7 (bv #b0100000 7)))
+			(set! op "sra")]
+		[(and (bveq funct3 (bv #b110 3)) (bveq funct7 (bv #b0000000 7)))
+			(set! op "or")]
+		[(and (bveq funct3 (bv #b111 3)) (bveq funct7 (bv #b0000000 7)))
+			(set! op "and")]
 		[else (error "No such R op")])
 	(list op rd rs1 rs2))
 
@@ -29,10 +45,19 @@
 	(define rs1 (extract 19 15 b_instr))
 	(define imm (extract 31 20 b_instr))
 	(define shift_type (extract 30 30 b_instr))
-	; (printf "opcode: ~a~n" opcode)
 	(cond
 		[(and (bveq funct3 (bv #b000 3)) (bveq opcode (bv #b0010011 7)))
 			(set! op "addi")]
+		[(and (bveq funct3 (bv #b010 3)) (bveq opcode (bv #b0010011 7)))
+			(set! op "slti")]
+		[(and (bveq funct3 (bv #b011 3)) (bveq opcode (bv #b0010011 7)))
+			(set! op "sltiu")]
+		[(and (bveq funct3 (bv #b100 3)) (bveq opcode (bv #b0010011 7)))
+			(set! op "xor")]
+		[(and (bveq funct3 (bv #b110 3)) (bveq opcode (bv #b0010011 7)))
+			(set! op "ori")]
+		[(and (bveq funct3 (bv #b111 3)) (bveq opcode (bv #b0010011 7)))
+			(set! op "andi")]
 		[(and (bveq funct3 (bv #b000 3)) (bveq opcode (bv #b0011011 7)))
 			(set! op "addiw")]
 		[(and (bveq funct3 (bv #b001 3)) (bveq opcode (bv #b0011011 7)))
@@ -60,7 +85,9 @@
 			(set! op "lwu")]
 		[(and (bveq funct3 (bv #b000 3)) (bveq opcode (bv #b1100111 7)))
 			(set! op "jalr")]
-		[else (error "No such I op")])
+		[else
+			(printf "opcode: ~a~n" opcode)
+			(error "No such I op")])
 	(list op rd rs1 imm))
 
 (define (decode-B b_instr)
@@ -147,44 +174,45 @@
 (define (decode-csr b_csr)
 	(define csr null)
 	(cond
-		[(bveq b_csr (bv #x000 12))
-			(set! csr "ustatus")]
-		[(bveq b_csr (bv #x004 12))
-			(set! csr "uie")]
-		[(bveq b_csr (bv #x005 12))
-			(set! csr "utevc")]
-		[(bveq b_csr (bv #x040 12))
-			(set! csr "uscratch")]
-		[(bveq b_csr (bv #x041 12))
-			(set! csr "uepc")]
-		[(bveq b_csr (bv #x042 12))
-			(set! csr "ucause")]
-		[(bveq b_csr (bv #x043 12))
-			(set! csr "ubadaddr")]
-		[(bveq b_csr (bv #x044 12))
-			(set! csr "uip")]
-		[(bveq b_csr (bv #x300 12))
-			(set! csr "mstatus")]
-		[(bveq b_csr (bv #x301 12))
-			(set! csr "misa")]
-		[(bveq b_csr (bv #x302 12))
-			(set! csr "medeleg")]
-		[(bveq b_csr (bv #x303 12))
-			(set! csr "mideleg")]
-		[(bveq b_csr (bv #x304 12))
-			(set! csr "mie")]
-		[(bveq b_csr (bv #x305 12))
-			(set! csr "mtevc")]
-		[(bveq b_csr (bv #x340 12))
-			(set! csr "mscratch")]
-		[(bveq b_csr (bv #x341 12))
-			(set! csr "mepc")]
-		[(bveq b_csr (bv #x342 12))
-			(set! csr "mcause")]
-		[(bveq b_csr (bv #x343 12))
-			(set! csr "mbadaddr")]
-		[(bveq b_csr (bv #x344 12))
-			(set! csr "mip")]
+		[(bveq b_csr (bv #x000 12)) (set! csr "ustatus")]
+		[(bveq b_csr (bv #x004 12)) (set! csr "uie")]
+		[(bveq b_csr (bv #x005 12)) (set! csr "utevc")]
+		[(bveq b_csr (bv #x040 12)) (set! csr "uscratch")]
+		[(bveq b_csr (bv #x041 12)) (set! csr "uepc")]
+		[(bveq b_csr (bv #x042 12)) (set! csr "ucause")]
+		[(bveq b_csr (bv #x043 12)) (set! csr "ubadaddr")]
+		[(bveq b_csr (bv #x044 12)) (set! csr "uip")]
+		[(bveq b_csr (bv #x300 12)) (set! csr "mstatus")]
+		[(bveq b_csr (bv #x301 12)) (set! csr "misa")]
+		[(bveq b_csr (bv #x302 12)) (set! csr "medeleg")]
+		[(bveq b_csr (bv #x303 12)) (set! csr "mideleg")]
+		[(bveq b_csr (bv #x304 12)) (set! csr "mie")]
+		[(bveq b_csr (bv #x305 12)) (set! csr "mtevc")]
+		[(bveq b_csr (bv #x340 12)) (set! csr "mscratch")]
+		[(bveq b_csr (bv #x341 12)) (set! csr "mepc")]
+		[(bveq b_csr (bv #x342 12)) (set! csr "mcause")]
+		[(bveq b_csr (bv #x343 12)) (set! csr "mbadaddr")]
+		[(bveq b_csr (bv #x344 12)) (set! csr "mip")]
+		[(bveq b_csr (bv #x3A0 12)) (set! csr "pmpcfg0")]
+		[(bveq b_csr (bv #x3A1 12)) (set! csr "pmpcfg1")]
+		[(bveq b_csr (bv #x3A2 12)) (set! csr "pmpcfg2")]
+		[(bveq b_csr (bv #x3A3 12)) (set! csr "pmpcfg3")]
+		[(bveq b_csr (bv #x3B0 12)) (set! csr "pmpaddr0")]
+		[(bveq b_csr (bv #x3B1 12)) (set! csr "pmpaddr1")]
+		[(bveq b_csr (bv #x3B2 12)) (set! csr "pmpaddr2")]
+		[(bveq b_csr (bv #x3B3 12)) (set! csr "pmpaddr3")]
+		[(bveq b_csr (bv #x3B4 12)) (set! csr "pmpaddr4")]
+		[(bveq b_csr (bv #x3B5 12)) (set! csr "pmpaddr5")]
+		[(bveq b_csr (bv #x3B6 12)) (set! csr "pmpaddr6")]
+		[(bveq b_csr (bv #x3B7 12)) (set! csr "pmpaddr7")]
+		[(bveq b_csr (bv #x3B8 12)) (set! csr "pmpaddr8")]
+		[(bveq b_csr (bv #x3B9 12)) (set! csr "pmpaddr9")]
+		[(bveq b_csr (bv #x3BA 12)) (set! csr "pmpaddr10")]
+		[(bveq b_csr (bv #x3BB 12)) (set! csr "pmpaddr11")]
+		[(bveq b_csr (bv #x3BC 12)) (set! csr "pmpaddr12")]
+		[(bveq b_csr (bv #x3BD 12)) (set! csr "pmpaddr13")]
+		[(bveq b_csr (bv #x3BE 12)) (set! csr "pmpaddr14")]
+		[(bveq b_csr (bv #x3BF 12)) (set! csr "pmpaddr15")]
 		[else
 			error "No such CSR"])
 	csr)
@@ -226,15 +254,14 @@
 			(set! is_csr #t)]
 		[else
 			(error "No such SPECIAL op")])
-
-	(printf "OPCODE ~a " opcode)
+	(printf "CSR CODE: ~a~n" csr)
 	(if is_csr
 		(list op rd rs1 (decode-csr csr))
 		(list op)))
 
 ; decode a 32 bit vector instruction
 (define (decode b_instr)
-	; (printf "decoding: ~a~n" b_instr)
+	(printf "decoding: ~a~n" b_instr)
 	(define instr null)
 	(define opcode (extract 6 0 b_instr))
 	(define fmt (get-fmt opcode))

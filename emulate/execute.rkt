@@ -36,28 +36,27 @@
 		[(equal? opcode "wfi")
 			(error "wfi instruction not implemented yet")]
 		[(equal? opcode "csrrw")
-			(printf "executing csrrw!~n")
 			(define rd (list-ref-nat instr 1))
 			(define rs1 (list-ref-nat instr 2))
-			(define v_csr (get-csr m (list-ref instr 3)))
+			(define v_rs1 (gprs-get-x m rs1))
+			(define csr (list-ref instr 3))
 			(cond
-				[(zero? rd) (null)]
+				[(zero? rd) null]
 				[else
-					(gprs-set-x! m rd v_csr)
-					(printf "rd: ~a~n" rd)
-					(printf "rs1: ~a~n" rs1)
-					(printf "v_csr: ~a~n" v_csr)
-					(set-csr! m (list-ref instr 3) (zero-extend (gprs-get-x m rs1) (bitvector 64)))])
+					(define v_csr (zero-extend (get-csr m csr) (bitvector 64)))
+					(gprs-set-x! m rd v_csr)])
+			(set-csr! m (list-ref instr 3) (zero-extend v_rs1 (bitvector 64)))
 			(set-pc! m (+ pc 4))]
 		[(equal? opcode "csrrs")
 			(define rd (list-ref-nat instr 1))
 			(define rs1 (list-ref-nat instr 2))
-			(define v_csr (get-csr m (list-ref instr 3)))
+			(define bitmask (gprs-get-x m rs1))
+			(define csr (list-ref instr 3))
+			(define v_csr (zero-extend (get-csr m csr) (bitvector 64)))
 			(gprs-set-x! m rd v_csr)
-			(printf "rd: ~a~n" rd)
-			(printf "rs1: ~a~n" rs1)
-			(printf "v_csr: ~a~n" v_csr)
-			(set-csr! m (list-ref instr 3) (zero-extend (bvor v_csr (gprs-get-x m rs1)) (bitvector 64)))
+			
+			(set-csr! m csr (bvor v_csr bitmask))
+			(set! v_csr (zero-extend (get-csr m csr) (bitvector 64)))
 			(set-pc! m (+ pc 4))]
 		[(equal? opcode "csrrc")
 			(error "csrrc instruction not implemented yet")]
@@ -85,22 +84,33 @@
 		[(equal? opcode "sltiu")
 			(error "sltiu instruction not implemented yet")]
 		[(equal? opcode "xori")
-			(error "xori instruction not implemented yet")]
+			(define rd (list-ref-nat instr 1))
+			(define v_rs1 (gprs-get-x m (list-ref-nat instr 2)))
+			(define imm (sign-extend (list-ref instr 3) (bitvector 64)))
+			(gprs-set-x! m rd (bvxor v_rs1 imm))
+			(set-pc! m (+ pc 4))]
 		[(equal? opcode "slri")
 			(error "slri instruction not implemented yet")]
 		[(equal? opcode "srai")
 			(error "srai instruction not implemented yet")]
 		[(equal? opcode "ori")
-			(error "ori instruction not implemented yet")]
+			(define rd (list-ref-nat instr 1))
+			(define v_rs1 (gprs-get-x m (list-ref-nat instr 2)))
+			(define imm (sign-extend (list-ref instr 3) (bitvector 64)))
+			(gprs-set-x! m rd (bvor v_rs1 imm))
+			(set-pc! m (+ pc 4))]
 		[(equal? opcode "andi")
-			(error "andi instruction not implemented yet")]
+			(define rd (list-ref-nat instr 1))
+			(define v_rs1 (gprs-get-x m (list-ref-nat instr 2)))
+			(define imm (sign-extend (list-ref instr 3) (bitvector 64)))
+			(gprs-set-x! m rd (bvand v_rs1 imm))
+			(set-pc! m (+ pc 4))]
 		[(equal? opcode "addiw")
 			(define rd (list-ref-nat instr 1))
 			(define v_rs1 (gprs-get-x m (list-ref-nat instr 2)))
 			(define imm (sign-extend (list-ref instr 3) (bitvector 64)))
 			(define 32bit_sum (extract 31 0 (bvadd v_rs1 imm)))
 			(gprs-set-x! m rd (sign-extend 32bit_sum (bitvector 64)))
-
 			(set-pc! m (+ pc 4))]
 		[(equal? opcode "slliw")
 			(define rd (list-ref-nat instr 1))
@@ -238,15 +248,27 @@
 		[(equal? opcode "sltu")
 			(error "xor instruction not implemented yet")]
 		[(equal? opcode "xor")
-			(error "srl instruction not implemented yet")]
+			(define rd (list-ref-nat instr 1))
+			(define v_rs1 (gprs-get-x m (list-ref-nat instr 2)))
+			(define v_rs2 (gprs-get-x m (list-ref-nat instr 3)))
+			(gprs-set-x! m rd (bvxor v_rs1 v_rs2))
+			(set-pc! m (+ pc 4))]
 		[(equal? opcode "srl")
 			(error "sra instruction not implemented yet")]
 		[(equal? opcode "sra")
 			(error "or instruction not implemented yet")]
 		[(equal? opcode "or")
-			(error "add instruction not implemented yet")]
+			(define rd (list-ref-nat instr 1))
+			(define v_rs1 (gprs-get-x m (list-ref-nat instr 2)))
+			(define v_rs2 (gprs-get-x m (list-ref-nat instr 3)))
+			(gprs-set-x! m rd (bvor v_rs1 v_rs2))
+			(set-pc! m (+ pc 4))]
 		[(equal? opcode "and")
-			(error "and instruction not implemented yet")]
+			(define rd (list-ref-nat instr 1))
+			(define v_rs1 (gprs-get-x m (list-ref-nat instr 2)))
+			(define v_rs2 (gprs-get-x m (list-ref-nat instr 3)))
+			(gprs-set-x! m rd (bvand v_rs1 v_rs2))
+			(set-pc! m (+ pc 4))]
 		[(equal? opcode "andw")
 			(error "and instruction not implemented yet")]
 		[(equal? opcode "subw")
