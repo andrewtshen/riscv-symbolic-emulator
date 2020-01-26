@@ -25,10 +25,10 @@
 			(for/list ([i (in-range 10 18)])
 				(gprs-get-x m i)))
 
-		(define model-add (verify (begin 
+		(define model_add (verify (begin 
 			(assert (bveq (bvadd (list-ref gprsx 5) (list-ref gprsx 7))
 										(list-ref gprsx 6))))))
-		(check-true (unsat? model-add)))
+		(check-true (unsat? model_add)))
 	(test-case "addi test"
 		(define program (file->bytearray "build/addi.bin"))
 		(define ramsize 1000)
@@ -38,11 +38,11 @@
 		(define gprsx
 			(for/list ([i (in-range 10 18)])
 				(gprs-get-x m i)))
-		(define model-addi (verify (begin 
+		(define model_addi (verify (begin 
 			(assert (bveq (list-ref gprsx 6)
 										(bvadd (list-ref gprsx 5) (bv 32 64)))))))
 
-		(check-true (unsat? model-addi)))
+		(check-true (unsat? model_addi)))
 	(test-case "addw test"
 		(define program (file->bytearray "build/addw.bin"))
 		(define ramsize 1000)
@@ -52,11 +52,11 @@
 		(define gprsx
 			(for/list ([i (in-range 10 18)])
 				(gprs-get-x m i)))
-		(define model-addw (verify (begin 
+		(define model_addw (verify (begin 
 			(assert (bveq (list-ref gprsx 6)
 										(bvadd (list-ref gprsx 5) (list-ref gprsx 3)))))))
 
-		(check-true (unsat? model-addw)))
+		(check-true (unsat? model_addw)))
 	(test-case "sub test"
 		; TODO: make this into an actual test case
 		(define program (file->bytearray "build/sub.bin"))
@@ -147,14 +147,33 @@
 		(define gprsx
 			(for/list ([i (in-range 10 18)])
 				(gprs-get-x m i)))
-		(displayln gprsx)
-		(define model-srliw (verify (begin 
+		(define model_srliw (verify (begin 
 			(assert (and (bveq (list-ref gprsx 1) (bv #xffffffffffffffff 64))
 										(bveq (list-ref gprsx 2) (bv #x000000007fffffff 64))
 										(bveq (list-ref gprsx 3) (bv #x0000000001ffffff 64))
 										(bveq (list-ref gprsx 4) (bv #x000000000003ffff 64))
 										(bveq (list-ref gprsx 5) (bv #x0000000000000001 64)))))))
-		(check-true (unsat? model-srliw)))
+		(check-true (unsat? model_srliw)))
+	(test-case "addiw test"
+    (define program (file->bytearray "build/addiw.bin"))
+    (printf "~n* Running addiw.bin test ~n" )
+		; make machine
+		(define ramsize 1000)
+		(define m (init-machine program ramsize))
+		(test-and-execute m)
+
+		(define gprsx
+			(for/list ([i (in-range 10 18)])
+				(gprs-get-x m i)))
+		(displayln gprsx)
+		(define model_addiw (verify (begin 
+			(assert (and (bveq (list-ref gprsx 1) (bv #x000000007fffffff 64))
+										(bveq (list-ref gprsx 2) (bv #xffffffff800007fe 64))
+										(bveq (list-ref gprsx 3) (bv #xffffffffffffffff 64))
+										(bveq (list-ref gprsx 4) (bv #x0000000000000000 64))
+										(bveq (list-ref gprsx 5) (bv #xfffffffffffffffe 64))
+				)))))
+		(check-true (unsat? model_addiw)))
 	)
 
 (define-test-suite high-level-test

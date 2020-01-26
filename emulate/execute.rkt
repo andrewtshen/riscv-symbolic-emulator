@@ -95,7 +95,13 @@
 		[(equal? opcode "andi")
 			(error "andi instruction not implemented yet")]
 		[(equal? opcode "addiw")
-			(error "addiw instruction not implemented yet")]
+			(define rd (list-ref-nat instr 1))
+			(define v_rs1 (gprs-get-x m (list-ref-nat instr 2)))
+			(define imm (sign-extend (list-ref instr 3) (bitvector 64)))
+			(define 32bit_sum (extract 31 0 (bvadd v_rs1 imm)))
+			(gprs-set-x! m rd (sign-extend 32bit_sum (bitvector 64)))
+
+			(set-pc! m (+ pc 4))]
 		[(equal? opcode "slliw")
 			(define rd (list-ref-nat instr 1))
 			(define v_rs1 (extract 31 0 (gprs-get-x m (list-ref-nat instr 2))))
