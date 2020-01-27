@@ -15,6 +15,9 @@
 (define (list-ref-nat instr idx)
 	(bitvector->natural (list-ref instr idx)))
 
+(define (list-ref-int instr idx)
+	(bitvector->integer (list-ref instr idx)))
+
 ; execute symbolic instruction
 (define (execute instr m)
 	(define opcode (list-ref instr 0))
@@ -242,7 +245,12 @@
 			(gprs-set-x! m rd (bvsub v_rs1 v_rs2))
 			(set-pc! m (+ pc 4))]
 		[(equal? opcode "sll")
-			(error "slt instruction not implemented yet")]
+			(define rd (list-ref-nat instr 1))
+			(define v_rs1 (gprs-get-x m (list-ref-nat instr 2)))
+			(define v_rs2 (gprs-get-x m (list-ref-nat instr 3)))
+			(define shifted (bvshl v_rs1 v_rs2))
+			(gprs-set-x! m rd shifted)
+			(set-pc! m (+ pc 4))]
 		[(equal? opcode "slt")
 			(error "sltu instruction not implemented yet")]
 		[(equal? opcode "sltu")
@@ -254,9 +262,19 @@
 			(gprs-set-x! m rd (bvxor v_rs1 v_rs2))
 			(set-pc! m (+ pc 4))]
 		[(equal? opcode "srl")
-			(error "sra instruction not implemented yet")]
+			(define rd (list-ref-nat instr 1))
+			(define v_rs1 (gprs-get-x m (list-ref-nat instr 2)))
+			(define v_rs2 (gprs-get-x m (list-ref-nat instr 3)))
+			(define shifted (bvlshr v_rs1 v_rs2))
+			(gprs-set-x! m rd shifted)
+			(set-pc! m (+ pc 4))]
 		[(equal? opcode "sra")
-			(error "or instruction not implemented yet")]
+			(define rd (list-ref-nat instr 1))
+			(define v_rs1 (gprs-get-x m (list-ref-nat instr 2)))
+			(define v_rs2 (gprs-get-x m (list-ref-nat instr 3)))
+			(define shifted (bvashr v_rs1 v_rs2))
+			(gprs-set-x! m rd shifted)
+			(set-pc! m (+ pc 4))]
 		[(equal? opcode "or")
 			(define rd (list-ref-nat instr 1))
 			(define v_rs1 (gprs-get-x m (list-ref-nat instr 2)))
@@ -277,8 +295,6 @@
 			(error "sllw instruction not implemented yet")]
 		[(equal? opcode "srlw")
 			(error "srlw instruction not implemented yet")]
-		[(equal? opcode "sraw")
-			(error "sraw instruction not implemented yet")]
 		[(equal? opcode "sraw")
 			(error "sraw instruction not implemented yet")]
 		[(equal? opcode "mul")
@@ -312,42 +328,42 @@
 		[(equal? opcode "beq")
 			(define v_rs1 (gprs-get-x m (list-ref-nat instr 1)))
 			(define v_rs2 (gprs-get-x m (list-ref-nat instr 2)))
-			(define imm (list-ref-nat instr 3))
+			(define imm (list-ref-int instr 3))
 			(if (equal? v_rs1 v_rs2)
 				(set-pc! m (+ pc (* imm 2)))
-				(set-pc! m (+ pc 4)))]
+					(set-pc! m (+ pc 4)))]
 		[(equal? opcode "bne")
 			(define v_rs1 (gprs-get-x m (list-ref-nat instr 1)))
 			(define v_rs2 (gprs-get-x m (list-ref-nat instr 2)))
-			(define imm (list-ref-nat instr 3))
+			(define imm (list-ref-int instr 3))
 			(if (not (equal? v_rs1 v_rs2))
 				(set-pc! m (+ pc (* imm 2)))
 				(set-pc! m (+ pc 4)))]
 		[(equal? opcode "blt")
 			(define v_rs1 (gprs-get-x m (list-ref-nat instr 1)))
 			(define v_rs2 (gprs-get-x m (list-ref-nat instr 2)))
-			(define imm (list-ref-nat instr 3))
+			(define imm (list-ref-int instr 3))
 			(if (bvslt v_rs1 v_rs2)
 				(set-pc! m (+ pc (* imm 2)))
 				(set-pc! m (+ pc 4)))]
 		[(equal? opcode "bge")
 			(define v_rs1 (gprs-get-x m (list-ref-nat instr 1)))
 			(define v_rs2 (gprs-get-x m (list-ref-nat instr 2)))
-			(define imm (list-ref-nat instr 3))
+			(define imm (list-ref-int instr 3))
 			(if (bvsge v_rs1 v_rs2)
 				(set-pc! m (+ pc (* imm 2)))
 				(set-pc! m (+ pc 4)))]
 		[(equal? opcode "bltu")
 			(define v_rs1 (gprs-get-x m (list-ref-nat instr 1)))
 			(define v_rs2 (gprs-get-x m (list-ref-nat instr 2)))
-			(define imm (list-ref-nat instr 3))
+			(define imm (list-ref-int instr 3))
 			(if (bvult v_rs1 v_rs2)
 				(set-pc! m (+ pc (* imm 2)))
 				(set-pc! m (+ pc 4)))]
 		[(equal? opcode "bgeu")
 			(define v_rs1 (gprs-get-x m (list-ref-nat instr 1)))
 			(define v_rs2 (gprs-get-x m (list-ref-nat instr 2)))
-			(define imm (list-ref-nat instr 3))
+			(define imm (list-ref-int instr 3))
 			(if (bvuge v_rs1 v_rs2)
 				(set-pc! m (+ pc (* imm 2)))
 				(set-pc! m (+ pc 4)))]

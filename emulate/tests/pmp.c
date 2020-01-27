@@ -35,24 +35,41 @@ CSR_GEN(pmpcfg0)
 CSR_GEN(pmpaddr0)
 PMPICFG_GEN(0, pmpcfg0, 0)
 
-// static inline void w_pmpaddr0(int x) {
-//     asm volatile("csrw pmpaddr0 %0" : : "r" (x));
-// }
-// static inline int r_pmpaddr0(void) {
-//     int x;
-//     asm volatile("csrr %0, pmpaddr0" : "=r" (x));
-//     return x;
-// }
+static inline int lsr(int x, int n) {
+  return (int)((unsigned int)x >> n);
+}
 
-// static inline void w_pmp0cfg(int cfg) {
-//     int x;
-//     asm volatile("csrr %0, pmp0cfg" : "=r" (x));
-//     x &= ~(PMPCFG_MASK << 0);
-//     x |= cfg << offset;
-//     asm volatile("csrw pmp0cfg %0" : : "r" (x));
-// }
+static inline int ctz64(int val) {
+    int numz = 0;
+    if (val == 0)
+        return 0;
+    while (val % 2 != 1) {
+        val = lsr(val, 1);
+        numz++;
+    }
+    return numz;
+}
+
+static void pmp_decode_napot(int a) {
+    /*
+       aaaa...aaa0   8-byte NAPOT range
+       aaaa...aa01   16-byte NAPOT range
+       aaaa...a011   32-byte NAPOT range
+       ...
+       aa01...1111   2^XLEN-byte NAPOT range
+       a011...1111   2^(XLEN+1)-byte NAPOT range
+       0111...1111   2^(XLEN+2)-byte NAPOT range
+       1111...1111   Reserved
+    */
+    int t1 = ctz64(~a);
+    int base = (a & ~(((int)1 << t1) - 1)) << 2;
+    int range = ((int)1 << (t1 + 3)) - 1;
+    return;
+}
 
 int main() {
     w_pmpaddr0(get_pmp_napot_addr(0x80800000L, 0x800000L));
     w_pmp0cfg(PMPCFG(0, PMPCFG_A_NAPOT, 1, 1, 1));
+    int a = get_pmp_napot_addr(0x80800000L, 0x800000L);
+    pmp_decode_napot(a);
 }

@@ -4,7 +4,8 @@
 	"load.rkt"
 	"emulate.rkt"
 	"execute.rkt"
-	"machine.rkt")
+	"machine.rkt"
+	"pmp.rkt")
 (require (only-in racket/base for for/list in-range in-vector))
 (require rackunit rackunit/text-ui)
 
@@ -186,10 +187,22 @@
 	(test-case "pmp test"
 		(define program (file->bytearray "build/pmp.bin"))
 		(printf "~n* Running pmp.bin test ~n")
-		(define ramsize 1000)
+		(define ramsize 10000)
 		(define m (init-machine program ramsize))
-		(test-and-execute m))
+		(test-and-execute m)
+		(print-pmp m)
+		)
 	)
 
-(run-tests instruction-check)
+(define-test-suite utils
+	(test-case "ctz64"
+		; CTZ Tests
+	(assert (check-equal? 8 (ctz64 (bv #xffffffffffffff00 64))))
+	(assert (check-equal? 7 (ctz64 (bv #xffffffffffffff80 64))))
+	(assert (check-equal? 2 (ctz64 (bv #xfffffffffffffff4 64))))
+	(assert (check-equal? 0 (ctz64 (bv #xffffffffffffffff 64))))
+	(assert (check-equal? 0 (ctz64 (bv #x0000000000000000 64))))))
+
+; (run-tests instruction-check)
+; (run-tests utils)
 (run-tests high-level-test)

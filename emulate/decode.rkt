@@ -53,7 +53,7 @@
 		[(and (bveq funct3 (bv #b011 3)) (bveq opcode (bv #b0010011 7)))
 			(set! op "sltiu")]
 		[(and (bveq funct3 (bv #b100 3)) (bveq opcode (bv #b0010011 7)))
-			(set! op "xor")]
+			(set! op "xori")]
 		[(and (bveq funct3 (bv #b110 3)) (bveq opcode (bv #b0010011 7)))
 			(set! op "ori")]
 		[(and (bveq funct3 (bv #b111 3)) (bveq opcode (bv #b0010011 7)))
@@ -116,7 +116,8 @@
 			(set! op "bgeu")]
 		[else
 			(error "No such B op")])
-		(list op rs1 rs2 imm))
+	(printf "BRANCH IMM: ~a~n" imm)
+	(list op rs1 rs2 imm))
 
 (define (decode-U b_instr)
 	(define op null)
@@ -261,7 +262,7 @@
 
 ; decode a 32 bit vector instruction
 (define (decode b_instr)
-	(printf "decoding: ~a~n" b_instr)
+	; (printf "decoding: ~a~n" b_instr)
 	(define instr null)
 	(define opcode (extract 6 0 b_instr))
 	(define fmt (get-fmt opcode))
