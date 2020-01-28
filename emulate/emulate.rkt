@@ -39,7 +39,8 @@
 	(printf "pmpaddr4 ~a~n" (get-csr m "pmpaddr4"))
 	(printf "pmpaddr5 ~a~n" (get-csr m "pmpaddr5"))
 	(printf "pmpaddr6 ~a~n" (get-csr m "pmpaddr6"))
-	(printf "pmpaddr7 ~a~n" (get-csr m "pmpaddr7")))
+	(printf "pmpaddr7 ~a~n" (get-csr m "pmpaddr7"))
+	(printf "pmpaddr8 ~a~n" (get-csr m "pmpaddr8")))
 (provide print-csr)
 
 ; get instructions until reach mret

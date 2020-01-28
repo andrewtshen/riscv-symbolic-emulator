@@ -81,7 +81,41 @@
 				(gprs-set-x! m rd (bvadd (gprs-get-x m rs1) imm)))
 			(set-pc! m (+ pc 4))]
 		[(equal? opcode "slli")
-			(error "slli instruction not implemented yet")]
+			(define rd (list-ref-nat instr 1))
+			(printf "rd: ~a~n: " rd)
+			(define v_rs1 (gprs-get-x m (list-ref-nat instr 2)))
+			(printf "v_rs1: ~a~n: " v_rs1)
+			(define imm (zero-extend (list-ref instr 3) (bitvector 64)))
+			(printf "imm: ~a~n: " imm)
+			(printf "original imm: ~a~n" (list-ref instr 3))
+			(define shifted (bvshl v_rs1 imm))
+			(printf "shifted: ~a~n: " shifted)
+			(gprs-set-x! m rd shifted)
+			(set-pc! m (+ pc 4))]
+		[(equal? opcode "srli")
+			(define rd (list-ref-nat instr 1))
+			(printf "rd: ~a~n: " rd)
+			(define v_rs1 (gprs-get-x m (list-ref-nat instr 2)))
+			(printf "v_rs1: ~a~n: " v_rs1)
+			(define imm (zero-extend (list-ref instr 3) (bitvector 64)))
+			(printf "imm: ~a~n: " imm)
+			(printf "original imm: ~a~n" (list-ref instr 3))
+			(define shifted (bvlshr v_rs1 imm))
+			(printf "shifted: ~a~n: " shifted)
+			(gprs-set-x! m rd shifted)
+			(set-pc! m (+ pc 4))]
+		[(equal? opcode "srai")
+			(define rd (list-ref-nat instr 1))
+			(printf "rd: ~a~n: " rd)
+			(define v_rs1 (gprs-get-x m (list-ref-nat instr 2)))
+			(printf "v_rs1: ~a~n: " v_rs1)
+			(define imm (zero-extend (list-ref instr 3) (bitvector 64)))
+			(printf "imm: ~a~n: " imm)
+			(printf "original imm: ~a~n" (list-ref instr 3))
+			(define shifted (bvashr v_rs1 imm))
+			(printf "shifted: ~a~n: " shifted)
+			(gprs-set-x! m rd shifted)
+			(set-pc! m (+ pc 4))]
 		[(equal? opcode "slti")
 			(error "slti instruction not implemented yet")]
 		[(equal? opcode "sltiu")
@@ -92,10 +126,6 @@
 			(define imm (sign-extend (list-ref instr 3) (bitvector 64)))
 			(gprs-set-x! m rd (bvxor v_rs1 imm))
 			(set-pc! m (+ pc 4))]
-		[(equal? opcode "slri")
-			(error "slri instruction not implemented yet")]
-		[(equal? opcode "srai")
-			(error "srai instruction not implemented yet")]
 		[(equal? opcode "ori")
 			(define rd (list-ref-nat instr 1))
 			(define v_rs1 (gprs-get-x m (list-ref-nat instr 2)))
@@ -118,7 +148,7 @@
 		[(equal? opcode "slliw")
 			(define rd (list-ref-nat instr 1))
 			(define v_rs1 (extract 31 0 (gprs-get-x m (list-ref-nat instr 2))))
-			(define imm (sign-extend (list-ref instr 3) (bitvector 32)))
+			(define imm (zero-extend (list-ref instr 3) (bitvector 32)))
 			(define shifted (sign-extend (bvshl v_rs1 imm) (bitvector 64)))
 			(gprs-set-x! m rd shifted)
 			(cond
@@ -128,7 +158,7 @@
 		[(equal? opcode "srliw")
 			(define rd (list-ref-nat instr 1))
 			(define v_rs1 (extract 31 0 (gprs-get-x m (list-ref-nat instr 2))))
-			(define imm (sign-extend (list-ref instr 3) (bitvector 32)))
+			(define imm (zero-extend (list-ref instr 3) (bitvector 32)))
 			(define shifted (sign-extend (bvlshr v_rs1 imm) (bitvector 64)))
 			(gprs-set-x! m rd shifted)
 			(cond
@@ -138,7 +168,7 @@
 		[(equal? opcode "sraiw")
 			(define rd (list-ref-nat instr 1))
 			(define v_rs1 (extract 31 0 (gprs-get-x m (list-ref-nat instr 2))))
-			(define imm (sign-extend (list-ref instr 3) (bitvector 32)))
+			(define imm (zero-extend (list-ref instr 3) (bitvector 32)))
 			(define shifted (sign-extend (bvashr v_rs1 imm) (bitvector 64)))
 			(gprs-set-x! m rd shifted)
 			(cond

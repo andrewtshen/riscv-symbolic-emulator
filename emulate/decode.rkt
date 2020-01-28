@@ -58,6 +58,15 @@
 			(set! op "ori")]
 		[(and (bveq funct3 (bv #b111 3)) (bveq opcode (bv #b0010011 7)))
 			(set! op "andi")]
+		[(and (bveq funct3 (bv #b001 3)) (bveq opcode (bv #b0010011 7)))
+			(set! imm (extract 24 20 b_instr))
+			(set! op "slli")]
+		[(and (bveq funct3 (bv #b101 3)) (bveq opcode (bv #b0010011 7)) (bveq shift_type (bv #b0 1)))
+			(set! imm (extract 25 20 b_instr))
+			(set! op "srli")]
+		[(and (bveq funct3 (bv #b101 3)) (bveq opcode (bv #b0010011 7)) (bveq shift_type (bv #b1 1)))
+			(set! imm (extract 25 20 b_instr))
+			(set! op "srai")]
 		[(and (bveq funct3 (bv #b000 3)) (bveq opcode (bv #b0011011 7)))
 			(set! op "addiw")]
 		[(and (bveq funct3 (bv #b001 3)) (bveq opcode (bv #b0011011 7)))

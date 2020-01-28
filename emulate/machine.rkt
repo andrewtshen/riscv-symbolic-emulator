@@ -10,7 +10,7 @@
 ; control status registers for u and m mode
 (struct csrs
 	(mtvec mepc pmpcfg0 pmpcfg2 pmpaddr0 pmpaddr1 pmpaddr2
-		pmpaddr3 pmpaddr4 pmpaddr5 pmpaddr6 pmpaddr7)
+		pmpaddr3 pmpaddr4 pmpaddr5 pmpaddr6 pmpaddr7 pmpaddr8)
 	#:mutable #:transparent)
 (provide csrs)
 
@@ -37,6 +37,7 @@
 		[(equal? csr "pmpaddr5") 	(set! v_csr (csrs-pmpaddr5 (cpu-csrs (machine-cpu m))))]
 		[(equal? csr "pmpaddr6") 	(set! v_csr (csrs-pmpaddr6 (cpu-csrs (machine-cpu m))))]
 		[(equal? csr "pmpaddr7") 	(set! v_csr (csrs-pmpaddr7 (cpu-csrs (machine-cpu m))))]
+		[(equal? csr "pmpaddr8") 	(set! v_csr (csrs-pmpaddr8 (cpu-csrs (machine-cpu m))))]
 		[else (error "No CSR value found")])
 	v_csr)
 (provide get-csr)
@@ -56,6 +57,7 @@
 		[(equal? csr "pmpaddr5") 	(set-csrs-pmpaddr5! (cpu-csrs (machine-cpu m)) val)]
 		[(equal? csr "pmpaddr6") 	(set-csrs-pmpaddr6! (cpu-csrs (machine-cpu m)) val)]
 		[(equal? csr "pmpaddr7") 	(set-csrs-pmpaddr7! (cpu-csrs (machine-cpu m)) val)]
+		[(equal? csr "pmpaddr8") 	(set-csrs-pmpaddr8! (cpu-csrs (machine-cpu m)) val)]
 		
 		[else (error "No CSR value found")])
 	v_csr)
