@@ -27,7 +27,6 @@
 (provide print-pmp)
 
 (define (ctz64 val)
-	(printf "ctz64 val: ~a~n" val)
 	(define numz 0)
 	(cond
 		[(bveq val (bv 0 64))
@@ -43,7 +42,6 @@
 (define (pmp_decode_napot val)
 	(define t1 (ctz64 (bvnot val)))
 	(define base (bvshl (bvand val (bvnot (bvsub (bvshl (bv 1 64) (bv t1 64)) (bv 1 64)))) (bv 2 64)))
-	(printf "t1: ~a~n" t1)
 	(printf "pmp_decode_napot base: ~a~n" base)
 	(printf "pmp_decode_napot base: ~x~n" (bitvector->integer base))
 	(define range (bvsub (bvshl (bv 1 64) (bvadd (bv t1 64) (bv 3 64))) (bv 1 64)))

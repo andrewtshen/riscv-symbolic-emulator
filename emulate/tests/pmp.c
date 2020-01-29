@@ -9,22 +9,27 @@
 #define STRCONCAT(x, y) x ## y
 #define STRCONCAT3(x, y, z) x ## y ## z
 #define CSR_GEN(regname) \
-  static inline void STRCONCAT(w_, regname)(int64_t x) { \
-    asm volatile("csrw " #regname ", %0" : : "r" (x)); \
-  } \
-  static inline int STRCONCAT(r_, regname)(void) { \
-    int x; \
-    asm volatile("csrr %0, " #regname : "=r" (x)); \
-    return x; \
-  }
+    static inline void STRCONCAT(w_, regname)(int64_t x) { \
+        asm volatile("csrw " #regname ", %0" : : "r" (x)); \
+    } \
+    static inline int STRCONCAT(r_, regname)(void) { \
+        int x; \
+        asm volatile("csrr %0, " #regname : "=r" (x)); \
+        return x; \
+    }
 
 #define PMPICFG_GEN(i, regname, offset) \
-    static inline void STRCONCAT3(w_pmp, i, cfg)(uint8_t cfg) { \
+    static inline void STRCONCAT3(w_pmp, i, cfg)(uint64_t cfg) { \
         uint64_t x; \
         asm volatile("csrr %0, " #regname : "=r" (x)); \
         x &= ~(((uint64_t) PMPCFG_MASK) << offset); \
         x |= ((uint64_t) cfg) << offset; \
         asm volatile("csrw " #regname ", %0" : : "r" (x)); \
+    } \
+    static inline int STRCONCAT3(r_pmp, i, cfg)(void) { \
+        int x; \
+        asm volatile("csrr %0, " #regname : "=r" (x)); \
+        return x; \
     }
 
 // Retrieve Proper NAPOT Address for Base and Size
