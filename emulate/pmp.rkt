@@ -39,6 +39,15 @@
 	numz)
 (provide ctz64)
 
+(define (pmp_decode_cfg val idx)
+	(define base (* idx 8))
+	(define R (bitvector->natural (extract base base val)))
+	(define W (bitvector->natural (extract (+ base 1) (+ base 1) val)))
+	(define X (bitvector->natural (extract (+ base 2) (+ base 2) val)))
+	(define A (bitvector->natural (extract (+ base 3) (+ base 3) val)))
+
+	(list A X W R))
+
 (define (pmp_decode_napot val)
 	(define t1 (ctz64 (bvnot val)))
 	(define base (bvshl (bvand val (bvnot (bvsub (bvshl (bv 1 64) (bv t1 64)) (bv 1 64)))) (bv 2 64)))
@@ -47,3 +56,9 @@
 	(define range (bvsub (bvshl (bv 1 64) (bvadd (bv t1 64) (bv 3 64))) (bv 1 64)))
 	(printf "pmp_decode_napot range: ~a~n" range)
 	(list base range))
+
+
+; test pmp_decode_cfg
+(printf "Decoding 0x0000000000001f1f: ~a~n"
+	(pmp_decode_cfg (bv #x0000000000001f1f 64) 2))
+

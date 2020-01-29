@@ -120,7 +120,6 @@ static void pmp_init(void) {
     w_pmp8cfg(PMPCFG(0, PMPCFG_A_NAPOT, 0, 0, 0));
 }
 
-
 int main() {
     pmp_init();
 }

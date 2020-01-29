@@ -264,7 +264,7 @@
 			(set! is_csr #t)]
 		[else
 			(error "No such SPECIAL op")])
-	(printf "CSR CODE: ~a~n" csr)
+	; (printf "CSR CODE: ~a~n" csr)
 	(if is_csr
 		(list op rd rs1 (decode-csr csr))
 		(list op)))
