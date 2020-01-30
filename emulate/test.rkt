@@ -191,18 +191,31 @@
 		(define m (init-machine program ramsize))
 		(test-and-execute m)
 		(print-pmp m)
-		)
+		(pmp-check m (bv #x00700001 64) (bv #x007FFFFF 64)))
 	)
 
 (define-test-suite utils
 	(test-case "ctz64"
 		; CTZ Tests
-	(assert (check-equal? 8 (ctz64 (bv #xffffffffffffff00 64))))
-	(assert (check-equal? 7 (ctz64 (bv #xffffffffffffff80 64))))
-	(assert (check-equal? 2 (ctz64 (bv #xfffffffffffffff4 64))))
-	(assert (check-equal? 0 (ctz64 (bv #xffffffffffffffff 64))))
-	(assert (check-equal? 0 (ctz64 (bv #x0000000000000000 64))))))
+		(assert (check-equal? 8 (ctz64 (bv #xffffffffffffff00 64))))
+		(assert (check-equal? 7 (ctz64 (bv #xffffffffffffff80 64))))
+		(assert (check-equal? 2 (ctz64 (bv #xfffffffffffffff4 64))))
+		(assert (check-equal? 0 (ctz64 (bv #xffffffffffffffff 64))))
+		(assert (check-equal? 0 (ctz64 (bv #x0000000000000000 64)))))
+	(test-case "pmp check"
+		(define program (file->bytearray "build/pmp.bin"))
+		(printf "~n* Running pmp.bin test ~n")
+		(define ramsize 10000)
+		(define m (init-machine program ramsize))
+		(test-and-execute m)
+		(print-pmp m)
+		(check-true (not (pmp-check m (bv #x00700001 64) (bv #x007FFFFF 64))))
+		(check-true (pmp-check m (bv #x10700001 64) (bv #x107FFFFF 64)))
+		(check-false (pmp-check m (bv #x00700001 64) (bv #x107FFFFF 64)))
+
+		)
+	)
 
 ; (run-tests instruction-check)
-; (run-tests utils)
-(run-tests high-level-test)
+(run-tests utils)
+; (run-tests high-level-test)

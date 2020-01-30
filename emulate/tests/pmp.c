@@ -19,7 +19,7 @@
     }
 
 #define PMPICFG_GEN(i, regname, offset) \
-    static inline void STRCONCAT3(w_pmp, i, cfg)(uint64_t cfg) { \
+    static inline void STRCONCAT3(w_pmp, i, cfg)(uint8_t cfg) { \
         uint64_t x; \
         asm volatile("csrr %0, " #regname : "=r" (x)); \
         x &= ~(((uint64_t) PMPCFG_MASK) << offset); \

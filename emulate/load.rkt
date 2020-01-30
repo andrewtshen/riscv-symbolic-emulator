@@ -12,6 +12,7 @@
 ; make-sym-vector creates a vector of symbolic bitvectors
 (define-simple-macro (make-sym-vector n:expr size:expr m:id)
 	(build-vector n (lambda (i) (define-symbolic* m (bitvector size)) m)))
+	; (build-vector n (lambda (i) (bv 0 size)))) ; for testing with qemu
 
 ; convert a file to a bytearray
 (define (file->bytearray filename)
