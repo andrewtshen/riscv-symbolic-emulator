@@ -5,7 +5,8 @@
 	"emulate.rkt"
 	"execute.rkt"
 	"machine.rkt"
-	"pmp.rkt")
+	"pmp.rkt"
+	"priv.rkt")
 (require (only-in racket/base for for/list in-range in-vector))
 (require rackunit rackunit/text-ui)
 
@@ -209,6 +210,7 @@
 		(define m (init-machine program ramsize))
 		(test-and-execute m)
 		(print-pmp m)
+		(print-special-regs m)
 		(check-true (pmp-check m (bv #x80800000 64) (bv #x80800000 64)))
 		(check-true (pmp-check m (bv #x80FFFFFF 64) (bv #x80FFFFFF 64)))
 		(check-false (pmp-check m (bv #x80FFFFFF 64) (bv #x81000000 64)))

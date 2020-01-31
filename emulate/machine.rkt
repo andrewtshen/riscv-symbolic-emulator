@@ -9,8 +9,9 @@
 
 ; control status registers for u and m mode
 (struct csrs
-	(mtvec mepc pmpcfg0 pmpcfg2 pmpaddr0 pmpaddr1 pmpaddr2
-		pmpaddr3 pmpaddr4 pmpaddr5 pmpaddr6 pmpaddr7 pmpaddr8)
+	(mtvec mepc mstatus pmpcfg0 pmpcfg2 pmpaddr0 pmpaddr1 pmpaddr2
+		pmpaddr3 pmpaddr4 pmpaddr5 pmpaddr6 pmpaddr7 pmpaddr8 pmpaddr9
+		pmpaddr10 pmpaddr11 pmpaddr12 pmpaddr13 pmpaddr14 pmpaddr15)
 	#:mutable #:transparent)
 (provide csrs)
 
@@ -25,19 +26,27 @@
 (define (get-csr m csr)
 	(define v_csr null)
 	(cond
-		[(equal? csr "mtvec") 		(set! v_csr (csrs-mtvec (cpu-csrs (machine-cpu m))))]
-		[(equal? csr "mepc") 			(set! v_csr (csrs-mepc (cpu-csrs (machine-cpu m))))]
-		[(equal? csr "pmpcfg0") 	(set! v_csr (csrs-pmpcfg0 (cpu-csrs (machine-cpu m))))]
-		[(equal? csr "pmpcfg2") 	(set! v_csr (csrs-pmpcfg2 (cpu-csrs (machine-cpu m))))]
-		[(equal? csr "pmpaddr0") 	(set! v_csr (csrs-pmpaddr0 (cpu-csrs (machine-cpu m))))]
-		[(equal? csr "pmpaddr1") 	(set! v_csr (csrs-pmpaddr1 (cpu-csrs (machine-cpu m))))]
-		[(equal? csr "pmpaddr2") 	(set! v_csr (csrs-pmpaddr2 (cpu-csrs (machine-cpu m))))]
-		[(equal? csr "pmpaddr3") 	(set! v_csr (csrs-pmpaddr3 (cpu-csrs (machine-cpu m))))]
-		[(equal? csr "pmpaddr4") 	(set! v_csr (csrs-pmpaddr4 (cpu-csrs (machine-cpu m))))]
-		[(equal? csr "pmpaddr5") 	(set! v_csr (csrs-pmpaddr5 (cpu-csrs (machine-cpu m))))]
-		[(equal? csr "pmpaddr6") 	(set! v_csr (csrs-pmpaddr6 (cpu-csrs (machine-cpu m))))]
-		[(equal? csr "pmpaddr7") 	(set! v_csr (csrs-pmpaddr7 (cpu-csrs (machine-cpu m))))]
-		[(equal? csr "pmpaddr8") 	(set! v_csr (csrs-pmpaddr8 (cpu-csrs (machine-cpu m))))]
+		[(equal? csr "mtvec") 		(set! v_csr (csrs-mtvec     (cpu-csrs (machine-cpu m))))]
+		[(equal? csr "mepc") 			(set! v_csr (csrs-mepc      (cpu-csrs (machine-cpu m))))]
+		[(equal? csr "mstatus") 	(set! v_csr (csrs-mstatus   (cpu-csrs (machine-cpu m))))]
+		[(equal? csr "pmpcfg0") 	(set! v_csr (csrs-pmpcfg0   (cpu-csrs (machine-cpu m))))]
+		[(equal? csr "pmpcfg2") 	(set! v_csr (csrs-pmpcfg2   (cpu-csrs (machine-cpu m))))]
+		[(equal? csr "pmpaddr0") 	(set! v_csr (csrs-pmpaddr0  (cpu-csrs (machine-cpu m))))]
+		[(equal? csr "pmpaddr1") 	(set! v_csr (csrs-pmpaddr1  (cpu-csrs (machine-cpu m))))]
+		[(equal? csr "pmpaddr2") 	(set! v_csr (csrs-pmpaddr2  (cpu-csrs (machine-cpu m))))]
+		[(equal? csr "pmpaddr3") 	(set! v_csr (csrs-pmpaddr3  (cpu-csrs (machine-cpu m))))]
+		[(equal? csr "pmpaddr4") 	(set! v_csr (csrs-pmpaddr4  (cpu-csrs (machine-cpu m))))]
+		[(equal? csr "pmpaddr5") 	(set! v_csr (csrs-pmpaddr5  (cpu-csrs (machine-cpu m))))]
+		[(equal? csr "pmpaddr6") 	(set! v_csr (csrs-pmpaddr6  (cpu-csrs (machine-cpu m))))]
+		[(equal? csr "pmpaddr7") 	(set! v_csr (csrs-pmpaddr7  (cpu-csrs (machine-cpu m))))]
+		[(equal? csr "pmpaddr8") 	(set! v_csr (csrs-pmpaddr8  (cpu-csrs (machine-cpu m))))]
+		[(equal? csr "pmpaddr9") 	(set! v_csr (csrs-pmpaddr9  (cpu-csrs (machine-cpu m))))]
+		[(equal? csr "pmpaddr10")	(set! v_csr (csrs-pmpaddr10 (cpu-csrs (machine-cpu m))))]
+		[(equal? csr "pmpaddr11")	(set! v_csr (csrs-pmpaddr11 (cpu-csrs (machine-cpu m))))]
+		[(equal? csr "pmpaddr12")	(set! v_csr (csrs-pmpaddr12 (cpu-csrs (machine-cpu m))))]
+		[(equal? csr "pmpaddr13")	(set! v_csr (csrs-pmpaddr13 (cpu-csrs (machine-cpu m))))]
+		[(equal? csr "pmpaddr14")	(set! v_csr (csrs-pmpaddr14 (cpu-csrs (machine-cpu m))))]
+		[(equal? csr "pmpaddr15")	(set! v_csr (csrs-pmpaddr15 (cpu-csrs (machine-cpu m))))]
 		[else (error "No CSR value found")])
 	v_csr)
 (provide get-csr)
@@ -45,20 +54,27 @@
 (define (set-csr! m csr val)
 	(define v_csr null)
 	(cond 
-		[(equal? csr "mtvec") 		(set-csrs-mtvec! (cpu-csrs (machine-cpu m)) val)]
-		[(equal? csr "mepc") 			(set-csrs-mepc! (cpu-csrs (machine-cpu m)) val)]
-		[(equal? csr "pmpcfg0") 	(set-csrs-pmpcfg0! (cpu-csrs (machine-cpu m)) val)]
-		[(equal? csr "pmpcfg2") 	(set-csrs-pmpcfg2! (cpu-csrs (machine-cpu m)) val)]
-		[(equal? csr "pmpaddr0") 	(set-csrs-pmpaddr0! (cpu-csrs (machine-cpu m)) val)]
-		[(equal? csr "pmpaddr1") 	(set-csrs-pmpaddr1! (cpu-csrs (machine-cpu m)) val)]
-		[(equal? csr "pmpaddr2") 	(set-csrs-pmpaddr2! (cpu-csrs (machine-cpu m)) val)]
-		[(equal? csr "pmpaddr3") 	(set-csrs-pmpaddr3! (cpu-csrs (machine-cpu m)) val)]
-		[(equal? csr "pmpaddr4") 	(set-csrs-pmpaddr4! (cpu-csrs (machine-cpu m)) val)]
-		[(equal? csr "pmpaddr5") 	(set-csrs-pmpaddr5! (cpu-csrs (machine-cpu m)) val)]
-		[(equal? csr "pmpaddr6") 	(set-csrs-pmpaddr6! (cpu-csrs (machine-cpu m)) val)]
-		[(equal? csr "pmpaddr7") 	(set-csrs-pmpaddr7! (cpu-csrs (machine-cpu m)) val)]
-		[(equal? csr "pmpaddr8") 	(set-csrs-pmpaddr8! (cpu-csrs (machine-cpu m)) val)]
-		
+		[(equal? csr "mtvec") 		(set-csrs-mtvec!     (cpu-csrs (machine-cpu m)) val)]
+		[(equal? csr "mepc") 			(set-csrs-mepc!      (cpu-csrs (machine-cpu m)) val)]
+		[(equal? csr "mstatus") 	(set-csrs-mstatus!   (cpu-csrs (machine-cpu m)) val)]
+		[(equal? csr "pmpcfg0") 	(set-csrs-pmpcfg0!   (cpu-csrs (machine-cpu m)) val)]
+		[(equal? csr "pmpcfg2") 	(set-csrs-pmpcfg2!   (cpu-csrs (machine-cpu m)) val)]
+		[(equal? csr "pmpaddr0") 	(set-csrs-pmpaddr0!  (cpu-csrs (machine-cpu m)) val)]
+		[(equal? csr "pmpaddr1") 	(set-csrs-pmpaddr1!  (cpu-csrs (machine-cpu m)) val)]
+		[(equal? csr "pmpaddr2") 	(set-csrs-pmpaddr2!  (cpu-csrs (machine-cpu m)) val)]
+		[(equal? csr "pmpaddr3") 	(set-csrs-pmpaddr3!  (cpu-csrs (machine-cpu m)) val)]
+		[(equal? csr "pmpaddr4") 	(set-csrs-pmpaddr4!  (cpu-csrs (machine-cpu m)) val)]
+		[(equal? csr "pmpaddr5") 	(set-csrs-pmpaddr5!  (cpu-csrs (machine-cpu m)) val)]
+		[(equal? csr "pmpaddr6") 	(set-csrs-pmpaddr6!  (cpu-csrs (machine-cpu m)) val)]
+		[(equal? csr "pmpaddr7") 	(set-csrs-pmpaddr7!  (cpu-csrs (machine-cpu m)) val)]
+		[(equal? csr "pmpaddr8") 	(set-csrs-pmpaddr8!  (cpu-csrs (machine-cpu m)) val)]
+		[(equal? csr "pmpaddr9") 	(set-csrs-pmpaddr9!  (cpu-csrs (machine-cpu m)) val)]
+		[(equal? csr "pmpaddr10")	(set-csrs-pmpaddr10! (cpu-csrs (machine-cpu m)) val)]
+		[(equal? csr "pmpaddr11")	(set-csrs-pmpaddr11! (cpu-csrs (machine-cpu m)) val)]
+		[(equal? csr "pmpaddr12")	(set-csrs-pmpaddr12! (cpu-csrs (machine-cpu m)) val)]
+		[(equal? csr "pmpaddr13")	(set-csrs-pmpaddr13! (cpu-csrs (machine-cpu m)) val)]
+		[(equal? csr "pmpaddr14")	(set-csrs-pmpaddr14! (cpu-csrs (machine-cpu m)) val)]
+		[(equal? csr "pmpaddr15")	(set-csrs-pmpaddr15! (cpu-csrs (machine-cpu m)) val)]
 		[else (error "No CSR value found")])
 	v_csr)
 (provide set-csr!)

@@ -116,6 +116,6 @@
 	(cond
 		[(not legal)
 			(define pmpcfg2 (get-csr m "pmpcfg0"))
-			(set! legal (pmpcfg-check m pmpcfg2 saddr eaddr))]))
+			(set! legal (pmpcfg-check m pmpcfg2 saddr eaddr))])
 	legal)
 (provide pmp-check)

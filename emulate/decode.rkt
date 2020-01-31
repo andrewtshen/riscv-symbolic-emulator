@@ -197,7 +197,7 @@
 		[(bveq b_csr (bv #x302 12)) (set! csr "medeleg")]
 		[(bveq b_csr (bv #x303 12)) (set! csr "mideleg")]
 		[(bveq b_csr (bv #x304 12)) (set! csr "mie")]
-		[(bveq b_csr (bv #x305 12)) (set! csr "mtevc")]
+		[(bveq b_csr (bv #x305 12)) (set! csr "mtvec")]
 		[(bveq b_csr (bv #x340 12)) (set! csr "mscratch")]
 		[(bveq b_csr (bv #x341 12)) (set! csr "mepc")]
 		[(bveq b_csr (bv #x342 12)) (set! csr "mcause")]

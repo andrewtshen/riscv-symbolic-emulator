@@ -31,12 +31,14 @@
 	(printf "ramsize: ~a~n" ramsize)
 	(printf "proglength: ~a~n" proglength)
 	(assert (>= ramsize proglength))
-	(define-symbolic* mtvec mepc pmpcfg0 pmpcfg2 pmpaddr0 pmpaddr1 pmpaddr2
-		pmpaddr3 pmpaddr4 pmpaddr5 pmpaddr6 pmpaddr7 pmpaddr8 (bitvector 64))
+	(define-symbolic* mtvec mepc mstatus pmpcfg0 pmpcfg2 pmpaddr0 pmpaddr1 pmpaddr2
+		pmpaddr3 pmpaddr4 pmpaddr5 pmpaddr6 pmpaddr7 pmpaddr8 pmpaddr9 pmpaddr10
+		pmpaddr11 pmpaddr12 pmpaddr13 pmpaddr14 pmpaddr15 (bitvector 64))
 
 	; set all the initial csrs to 0 (TODO: change to actual values)
 	(set! mtvec (bv 0 64))
 	(set! mepc (bv 0 64))
+	(set! mstatus (bv 0 64))
 	(set! pmpcfg0 (bv 0 64))
 	(set! pmpcfg2 (bv 0 64))
 	(set! pmpaddr0 (bv 0 64))
@@ -48,12 +50,20 @@
 	(set! pmpaddr6 (bv 0 64))
 	(set! pmpaddr7 (bv 0 64))
 	(set! pmpaddr8 (bv 0 64))
+	(set! pmpaddr9 (bv 0 64))
+	(set! pmpaddr10 (bv 0 64))
+	(set! pmpaddr11 (bv 0 64))
+	(set! pmpaddr12 (bv 0 64))
+	(set! pmpaddr13 (bv 0 64))
+	(set! pmpaddr14 (bv 0 64))
+	(set! pmpaddr15 (bv 0 64))
 
 	(machine
 		(cpu 
 			(csrs
-				mtvec mepc pmpcfg0 pmpcfg2 pmpaddr0 pmpaddr1 pmpaddr2
-				pmpaddr3 pmpaddr4 pmpaddr5 pmpaddr6 pmpaddr7 pmpaddr8)
+				mtvec mepc mstatus pmpcfg0 pmpcfg2 pmpaddr0 pmpaddr1 pmpaddr2
+				pmpaddr3 pmpaddr4 pmpaddr5 pmpaddr6 pmpaddr7 pmpaddr8 pmpaddr9
+				pmpaddr10 pmpaddr11 pmpaddr12 pmpaddr13 pmpaddr14 pmpaddr15)
 			(make-sym-vector 31 64 gpr)
 			0) ; be careful of -1 for offset
 		(vector-append

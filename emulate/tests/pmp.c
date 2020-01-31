@@ -39,6 +39,14 @@ uint64_t get_pmp_napot_addr(uint64_t base, uint64_t size) {
     return pmp_addr;
 }
 
+// Machine Status
+#define MSTATUS_MPP_MASK (3L << 11)
+#define MSTATUS_MPP_M (3L << 11)
+#define MSTATUS_MPP_U (0L << 11)
+CSR_GEN(mstatus)
+CSR_GEN(mepc)
+CSR_GEN(mtvec)
+
 CSR_GEN(pmpaddr0)
 CSR_GEN(pmpaddr1)
 CSR_GEN(pmpaddr2)
@@ -122,4 +130,12 @@ static void pmp_init(void) {
 
 int main() {
     pmp_init();
+        // set M Previous Privilege mode to User Mode, for mret.
+    unsigned long x = r_mstatus();
+    x &= ~MSTATUS_MPP_MASK; // clear specific mpp bits
+    x |= MSTATUS_MPP_U; // set mpp bits
+    w_mstatus(x);
+
+    w_mtvec(0x80000000L);
+    w_mepc(0x80800000L);
 }
