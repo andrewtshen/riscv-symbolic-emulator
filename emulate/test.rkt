@@ -217,7 +217,8 @@
 		(check-false (pmp-check m (bv #x807FFFFF 64) (bv #x81000000 64)))
 		(check-true (not (pmp-check m (bv #x00700001 64) (bv #x007FFFFF 64))))
 		(check-true (pmp-check m (bv #x10700001 64) (bv #x107FFFFF 64)))
-		(check-false (pmp-check m (bv #x00700001 64) (bv #x107FFFFF 64))))
+		(check-false (pmp-check m (bv #x00700001 64) (bv #x107FFFFF 64)))
+		(check-true (equal? (machine-mode m) 0)))
 	(test-case "pmp-napot-settings"
 		; test pmp_decode_cfg
 		(define setting1 (pmp-decode-cfg (bv #x0000000000001f1f 64) 1))

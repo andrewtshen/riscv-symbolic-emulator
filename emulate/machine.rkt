@@ -15,10 +15,10 @@
 	#:mutable #:transparent)
 (provide csrs)
 
-; cpu, ram, and mode (0 is machine, 1 is user)
+; cpu, ram, and mode (1 is machine, 0 is user)
 (struct machine
 	(cpu ram mode) #:mutable #:transparent)
-(provide machine)
+(provide (struct-out machine))
 
 ; Wrappers for Mutator and Accessor Functions
 ; be careful to decrement by 1 to access right location for gprs
@@ -90,9 +90,6 @@
 			(error "set zero vector invalid")])
 	(vector-set! (cpu-gprs (machine-cpu m)) (- idx 1) val))
 (provide gprs-set-x!)
-
-; get machine ram
-(provide machine-ram)
 
 ; get program counter
 (define (get-pc m)

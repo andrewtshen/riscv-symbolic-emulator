@@ -63,16 +63,16 @@ CSR_GEN(pmpaddr12)
 CSR_GEN(pmpaddr13)
 CSR_GEN(pmpaddr14)
 CSR_GEN(pmpaddr15)
-PMPICFG_GEN(0, pmpcfg0, 0)
-PMPICFG_GEN(1, pmpcfg0, 8)
-PMPICFG_GEN(2, pmpcfg0, 16)
-PMPICFG_GEN(3, pmpcfg0, 24)
-PMPICFG_GEN(4, pmpcfg0, 32)
-PMPICFG_GEN(5, pmpcfg0, 40)
-PMPICFG_GEN(6, pmpcfg0, 48)
-PMPICFG_GEN(7, pmpcfg0, 56)
-PMPICFG_GEN(8, pmpcfg2, 0)
-PMPICFG_GEN(9, pmpcfg2, 8)
+PMPICFG_GEN(0,  pmpcfg0, 0)
+PMPICFG_GEN(1,  pmpcfg0, 8)
+PMPICFG_GEN(2,  pmpcfg0, 16)
+PMPICFG_GEN(3,  pmpcfg0, 24)
+PMPICFG_GEN(4,  pmpcfg0, 32)
+PMPICFG_GEN(5,  pmpcfg0, 40)
+PMPICFG_GEN(6,  pmpcfg0, 48)
+PMPICFG_GEN(7,  pmpcfg0, 56)
+PMPICFG_GEN(8,  pmpcfg2, 0)
+PMPICFG_GEN(9,  pmpcfg2, 8)
 PMPICFG_GEN(10, pmpcfg2, 16)
 PMPICFG_GEN(11, pmpcfg2, 24)
 PMPICFG_GEN(12, pmpcfg2, 32)
@@ -130,12 +130,13 @@ static void pmp_init(void) {
 
 int main() {
     pmp_init();
-        // set M Previous Privilege mode to User Mode, for mret.
-    unsigned long x = r_mstatus();
+    // set M Previous Privilege mode to User Mode, for mret.
+    uint64_t x = r_mstatus();
     x &= ~MSTATUS_MPP_MASK; // clear specific mpp bits
     x |= MSTATUS_MPP_U; // set mpp bits
     w_mstatus(x);
 
     w_mtvec(0x80000000L);
     w_mepc(0x80800000L);
+    asm volatile ("mret");
 }

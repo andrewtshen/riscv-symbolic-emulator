@@ -46,7 +46,7 @@
 ; get instructions until reach mret
 (define (test-and-execute m)
 	(define op null)
-	(while (not (equal? op "mret"))
+	(while (not (equal? op "uret"))
 		(define next_instr (decode (get-next-instr m)))
 		(printf "PC: ~x INS: ~a~n" (get-pc m) next_instr)
 		(set! op (list-ref next_instr 0))

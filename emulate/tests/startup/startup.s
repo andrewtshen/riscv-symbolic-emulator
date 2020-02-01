@@ -6,6 +6,7 @@ _startup:
     la sp, estack
     call main
     mret
+    ret
 _fallthrough:
     j _fallthrough
 .size _startup, .-_startup

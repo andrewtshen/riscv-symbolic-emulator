@@ -30,7 +30,6 @@ CC_0 = @printf ' |%-10s| $@ \n' 'CC'; $(ACTUAL_CC)
 CC_1 = $(ACTUAL_CC)
 CC = $(CC_$(V))
 
-padlimit = 8
 ACTUAL_OBJDUMP := $(OBJDUMP)
 OBJDUMP_0 = @printf ' |%-10s| $@ \n' 'OBJDUMP'; $(ACTUAL_OBJDUMP)
 OBJDUMP_1 = $(ACTUAL_OBJDUMP)

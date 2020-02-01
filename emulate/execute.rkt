@@ -23,7 +23,7 @@
 	(define opcode (list-ref instr 0))
 	(define pc (get-pc m))
 	(cond
-		; RET Format
+		; SPECIAL Format
 		[(equal? opcode "ecall")
 			(error "ecall instruction not implemented yet")]
 		[(equal? opcode "ebreak")
@@ -31,7 +31,15 @@
 		[(equal? opcode "uret")
 			(error "uret instruction not implemented yet")]
 		[(equal? opcode "mret")
-			(set-pc! m 0)]
+			(define mstatus (get-csr m "mstatus"))
+			(define MPP (extract 12 11 mstatus))
+			(cond
+				; check that we are returning to user mode
+				[(equal? (bitvector->natural MPP) 0)
+					(set-machine-mode! m 0)]
+				[else (error "Unknown mstatus mode")])
+			(set-pc! m (get-csr m "mepc"))
+			(assert (equal? (machine-mode m) 0))]
 		[(equal? opcode "dret")
 			(error "dret instruction not implemented yet")]
 		[(equal? opcode "sfence_vma")
