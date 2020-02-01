@@ -46,10 +46,11 @@ BUILDS := \
 	$(patsubst tests/%.s,%.bin,$(wildcard tests/*.s)) \
 	$(patsubst tests/%.s,%.lst,$(wildcard tests/*.s)) \
 
+# keep all intermediate files
 .SECONDARY:
 
 .PHONY: all
-all: dir $(addprefix $(BUILD)/, $(BUILDS)) $(CBUILD)/startup.o
+all: dir $(addprefix $(BUILD)/, $(BUILDS)) $(CBUILD)/startup.o kernel/kernel.elf
 # 	$(info BUILDING: $(addprefix $(BUILD)/, $(BUILDS)))
 
 $(CBUILD)/startup.o: $(TESTS)/startup/startup.s
@@ -108,6 +109,8 @@ test: dir $(addprefix $(BUILD)/, $(BUILDS))
 clean:
 	rm -f *.elf *.o
 	rm -rf build
+	rm -f kernel/*.elf
+	rm -f kernel/*.o
 
 .PHONY: qemu
 qemu: $(BUILD)/pmp.elf
@@ -120,3 +123,6 @@ qemu-gdb: $(BUILD)/pmp.elf
 .PHONY: gdb
 gdb: $(BUILD)/pmp.elf
 	$(GDB) --data-directory=/usr/local/share/gdb $(BUILD)/pmp.elf
+
+
+include kernel.mk
