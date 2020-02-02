@@ -242,10 +242,6 @@
 		(print-pmp m)
 		(check-true (equal? (machine-mode m) 0))))
 
-(define-test-suite zero
-	(test-case "zero test"
-		(check-true #t)))
-
 (define res-instruction-check (run-tests instruction-check))
 (define res-utils (run-tests utils))
 (define res-high-level-test (run-tests high-level-test))

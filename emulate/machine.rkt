@@ -117,7 +117,8 @@
 		(printf "saddr: ~a~n" saddr)
 		(define eaddr (bv (+ addr (* nbytes 8) base_address) 64))
 		(printf "eaddr: ~a~n" eaddr)
-		(pmp-check m saddr eaddr))
+		(define legal (pmp-check m saddr eaddr))
+		(assert legal))
 	(bytearray-read (machine-ram m) addr nbytes))
 (provide machine-ram-read)
 
@@ -136,7 +137,8 @@
 		(printf "saddr: ~a~n" saddr)
 		(define eaddr (bv (+ addr nbits base_address) 64))
 		(printf "eaddr: ~a~n" eaddr)
-		(pmp-check m saddr eaddr))
+		(define legal (pmp-check m saddr eaddr))
+		(assert legal))
   (bytearray-write! (machine-ram m) addr value nbits))
 (provide machine-ram-write!)
 

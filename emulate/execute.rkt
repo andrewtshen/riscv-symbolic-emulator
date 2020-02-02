@@ -39,7 +39,9 @@
 					(set-machine-mode! m 0)]
 				[else (error "Unknown mstatus mode")])
 			(set-pc! m (- (bitvector->natural (get-csr m "mepc")) base_address))
-			(assert (equal? (machine-mode m) 0))]
+			; mret should always return to user mode
+			(unless (equal? (machine-mode m) 0)
+				(error "Should be in machine mode"))]
 		[(equal? opcode "dret")
 			(error "dret instruction not implemented yet")]
 		[(equal? opcode "sfence_vma")

@@ -19,7 +19,8 @@
 (define (file->bytearray filename)
 	(define contents (file->bytes filename))
 	(define length (bytes-length contents))
-	(assert (equal? (modulo length 4) 0))
+	(unless (equal? (modulo length 4) 0)
+		(error "Cannot read incomplete files"))
 	(list->vector
 	(for/list ([i (in-range 0 length)])
 		(bv (bytes-ref contents i) 8))))
@@ -30,7 +31,8 @@
 	(define proglength (vector-length program))
 	(printf "ramsize: ~a~n" ramsize)
 	(printf "proglength: ~a~n" proglength)
-	(assert (>= ramsize proglength))
+	(unless (>= ramsize proglength)
+		(error "Not enough RAM provided to run program"))
 	(define-symbolic* mtvec mepc mstatus pmpcfg0 pmpcfg2 pmpaddr0 pmpaddr1 pmpaddr2
 		pmpaddr3 pmpaddr4 pmpaddr5 pmpaddr6 pmpaddr7 pmpaddr8 pmpaddr9 pmpaddr10
 		pmpaddr11 pmpaddr12 pmpaddr13 pmpaddr14 pmpaddr15 (bitvector 64))
