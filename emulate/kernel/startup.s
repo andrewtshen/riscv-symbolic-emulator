@@ -5,7 +5,7 @@
 _startup:
     la sp, estack
     call main
-_fallthrough:
+_fallthrough:    
     j _fallthrough
 .size _startup, .-_startup
 

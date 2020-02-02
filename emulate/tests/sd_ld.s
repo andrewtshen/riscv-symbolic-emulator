@@ -7,8 +7,7 @@ _sd_ld:
     # lui a2, 0x10038
     sd a2, 0x200(a1)
     ld a3, 0x200(a1)
-
-    mret
+    uret
 _fallthrough:
     j _fallthrough
 .size _sd_ld, .-_sd_ld

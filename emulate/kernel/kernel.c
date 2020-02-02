@@ -15,8 +15,7 @@ static void pmp_decode_napot(uint64_t a);
 static inline int ctz64(uint64_t val);
 
 #define USER_BASE 0x80080000L
-// #define USER_SIZE 0x00002000L
-#define USER_SIZE 0x00000010L
+#define USER_SIZE 0x00002000L
 #define PROG_INDEX 0
 #define PROG_SIZE (512*1024)
 #define DATA_SIZE (512*1024)
@@ -70,17 +69,17 @@ static void pmp_decode_napot(uint64_t a) {
 }
 
 void main() {
-    // // set up pmp
-    // pmp_init();
+    // set up pmp
+    pmp_init();
 
-    // // set M Previous Privilege mode to User Mode, for mret.
-    // unsigned long x = r_mstatus();
-    // x &= ~MSTATUS_MPP_MASK; // clear specific mpp bits
-    // x |= MSTATUS_MPP_U; // set mpp bits
-    // w_mstatus(x);
+    // set M Previous Privilege mode to User Mode, for mret.
+    unsigned long x = r_mstatus();
+    x &= ~MSTATUS_MPP_MASK; // clear specific mpp bits
+    x |= MSTATUS_MPP_U; // set mpp bits
+    w_mstatus(x);
 
-    // // set up kernel trap vector
-    // w_mtvec((uint64_t)kernelvec);
+    // set up kernel trap vector
+    w_mtvec((uint64_t)kernelvec);
 
     load_user();
     run_user();

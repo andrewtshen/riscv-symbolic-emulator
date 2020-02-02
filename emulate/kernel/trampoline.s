@@ -6,6 +6,8 @@
 _trampoline:
     la sp, ustack
     call main
+    # for now use uret to finish execution
+    uret
 _fallthrough:
     j _fallthrough
 .size _trampoline, .-_trampoline

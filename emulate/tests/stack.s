@@ -14,7 +14,7 @@ _stack:
     mv a0, a5
     ld s0, 24(sp)
     addi sp, sp, 32
-    mret 
+    uret 
 _fallthrough:
     j _fallthrough
 .size _stack, .-_stack

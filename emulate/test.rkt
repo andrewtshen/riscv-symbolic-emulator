@@ -167,14 +167,13 @@
 		(define gprsx
 			(for/list ([i (in-range 10 18)])
 				(gprs-get-x m i)))
-		(displayln gprsx)
+		; (displayln gprsx)
 		(define model_addiw (verify (begin 
 			(assert (and (bveq (list-ref gprsx 1) (bv #x000000007fffffff 64))
 										(bveq (list-ref gprsx 2) (bv #xffffffff800007fe 64))
 										(bveq (list-ref gprsx 3) (bv #xffffffffffffffff 64))
 										(bveq (list-ref gprsx 4) (bv #x0000000000000000 64))
-										(bveq (list-ref gprsx 5) (bv #xfffffffffffffffe 64))
-				)))))
+										(bveq (list-ref gprsx 5) (bv #xfffffffffffffffe 64)))))))
 		(check-true (unsat? model_addiw)))
 	)
 
@@ -244,7 +243,7 @@
 		(print-pmp m)
 		(check-true (equal? (machine-mode m) 0))))
 
-; (run-tests instruction-check)
-; (run-tests utils)
-; (run-tests high-level-test)
+(run-tests instruction-check)
+(run-tests utils)
+(run-tests high-level-test)
 (run-tests kernel)

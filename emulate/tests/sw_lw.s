@@ -7,8 +7,7 @@ _sw_lw:
     # lui a2, 0x10038
     sw a2, 0x200(a1)
     lw a3, 0x200(a1)
-
-    mret
+    uret
 _fallthrough:
     j _fallthrough
 .size _sw_lw, .-_sw_lw

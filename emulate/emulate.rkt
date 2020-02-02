@@ -47,11 +47,6 @@
 (define (test-and-execute m)
 	(define op null)
 	(while (not (equal? op "uret"))
-		(cond
-			[(equal? #x80000 (get-pc m))
-				(print-memory m #x0 #x100)
-				; (print-memory m #x7FF00 #x80200)
-				])
 		(define next_instr (decode (get-next-instr m)))
 		(printf "PC: ~x INS: ~a~n" (get-pc m) next_instr)
 		(set! op (list-ref next_instr 0))

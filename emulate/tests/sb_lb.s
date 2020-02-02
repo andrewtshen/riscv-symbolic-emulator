@@ -7,8 +7,7 @@ _sb_lb:
     # lui a2, 0x10038
     sb a2, 0x200(a1)
     lb a3, 0x200(a1)
-
-    mret
+    uret
 _fallthrough:
     j _fallthrough
 .size _sb_lb, .-_sb_lb

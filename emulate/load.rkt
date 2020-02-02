@@ -58,18 +58,26 @@
 	(set! pmpaddr14 (bv 0 64))
 	(set! pmpaddr15 (bv 0 64))
 
-	(machine
-		(cpu 
-			(csrs
-				mtvec mepc mstatus pmpcfg0 pmpcfg2 pmpaddr0 pmpaddr1 pmpaddr2
-				pmpaddr3 pmpaddr4 pmpaddr5 pmpaddr6 pmpaddr7 pmpaddr8 pmpaddr9
-				pmpaddr10 pmpaddr11 pmpaddr12 pmpaddr13 pmpaddr14 pmpaddr15)
-			(make-sym-vector 31 64 gpr)
-			0) ; be careful of -1 for offset
-		(vector-append
-			program
-			(make-sym-vector (- ramsize proglength) 8 mem))
-		1)) ; start in machine mode
+	(define m
+		(machine
+			(cpu 
+				(csrs
+					mtvec mepc mstatus pmpcfg0 pmpcfg2 pmpaddr0 pmpaddr1 pmpaddr2
+					pmpaddr3 pmpaddr4 pmpaddr5 pmpaddr6 pmpaddr7 pmpaddr8 pmpaddr9
+					pmpaddr10 pmpaddr11 pmpaddr12 pmpaddr13 pmpaddr14 pmpaddr15)
+				(make-sym-vector 31 64 gpr)
+				0) ; be careful of -1 for offset
+			(vector-append
+				program
+				(make-sym-vector (- ramsize proglength) 8 mem))
+			1)) ; start in machine mode
+	; default all gprs to 0
+	(for [(i (in-range 1 32))]
+		(gprs-set-x! m i (bv 0 64)))
+	; do some special virt machine set up
+	(gprs-set-x! m 5 (bv #x80000000 64))
+	(gprs-set-x! m 10 (bv 1020 64))
+	m)
 (provide init-machine)
 
 ; ; get program example
