@@ -29,7 +29,7 @@
 		[(equal? opcode "ebreak")
 			(error "ebreak instruction not implemented yet")]
 		[(equal? opcode "uret")
-			(error "uret instruction not implemented yet")]
+			(printf "executing uret~n")]
 		[(equal? opcode "mret")
 			(define mstatus (get-csr m "mstatus"))
 			(define MPP (extract 12 11 mstatus))
@@ -38,7 +38,8 @@
 				[(equal? (bitvector->natural MPP) 0)
 					(set-machine-mode! m 0)]
 				[else (error "Unknown mstatus mode")])
-			(set-pc! m (get-csr m "mepc"))
+			(set-pc! m (- (bitvector->natural (get-csr m "mepc")) base_address))
+			(printf "setting pc: ~x~n" (- (bitvector->natural (get-csr m "mepc")) base_address))
 			(assert (equal? (machine-mode m) 0))]
 		[(equal? opcode "dret")
 			(error "dret instruction not implemented yet")]
@@ -87,6 +88,7 @@
 			(if (and (equal? rd 0) (equal? rs1 0) (bveq imm (bv 0 64)))
 				(set-pc! m (+ pc 4))
 				(gprs-set-x! m rd (bvadd (gprs-get-x m rs1) imm)))
+			(printf "new value: ~a~n" (bvadd (gprs-get-x m rs1) imm))
 			(set-pc! m (+ pc 4))]
 		[(equal? opcode "slli")
 			(define rd (list-ref-nat instr 1))
@@ -358,6 +360,8 @@
 		[(equal? opcode "bne")
 			(define v_rs1 (gprs-get-x m (list-ref-nat instr 1)))
 			(define v_rs2 (gprs-get-x m (list-ref-nat instr 2)))
+			(printf "v_rs2/v_rs1: ~a/~a~n" v_rs1 v_rs2)
+
 			(define imm (list-ref-int instr 3))
 			(if (not (equal? v_rs1 v_rs2))
 				(set-pc! m (+ pc (* imm 2)))
@@ -408,37 +412,49 @@
 		; S Format
 		[(equal? opcode "sb")
 			(define v_rs1 (gprs-get-x m (list-ref-nat instr 1)))
+			(printf "v_rs1: ~a~n" v_rs1)
 			(define v_rs2 (gprs-get-x m (list-ref-nat instr 2)))
+			(printf "v_rs2: ~a~n" v_rs2)
 			(define imm (sign-extend (list-ref instr 3) (bitvector 64)))
 			(define addr (bitvector->natural (bvadd v_rs1 imm)))
 			(define adj_addr (- addr base_address))
+			(printf "adj_addr: ~a~n" adj_addr)
 			(define nbits 8)
 			(bytearray-write! (machine-ram m) adj_addr v_rs2 nbits)
 			(set-pc! m (+ pc 4))]
 		[(equal? opcode "sh")
 			(define v_rs1 (gprs-get-x m (list-ref-nat instr 1)))
+			(printf "v_rs1: ~a~n" v_rs1)
 			(define v_rs2 (gprs-get-x m (list-ref-nat instr 2)))
+			(printf "v_rs2: ~a~n" v_rs2)
 			(define imm (sign-extend (list-ref instr 3) (bitvector 64)))
 			(define addr (bitvector->natural (bvadd v_rs1 imm)))
 			(define adj_addr (- addr base_address))
+			(printf "adj_addr: ~a~n" adj_addr)
 			(define nbits 16)
 			(bytearray-write! (machine-ram m) adj_addr v_rs2 nbits)
 			(set-pc! m (+ pc 4))]
 		[(equal? opcode "sw")
 			(define v_rs1 (gprs-get-x m (list-ref-nat instr 1)))
+			(printf "v_rs1: ~a~n" v_rs1)
 			(define v_rs2 (gprs-get-x m (list-ref-nat instr 2)))
+			(printf "v_rs2: ~a~n" v_rs2)
 			(define imm (sign-extend (list-ref instr 3) (bitvector 64)))
 			(define addr (bitvector->natural (bvadd v_rs1 imm)))
 			(define adj_addr (- addr base_address))
+			(printf "adj_addr: ~a~n" adj_addr)
 			(define nbits 32)
 			(bytearray-write! (machine-ram m) adj_addr v_rs2 nbits)
 			(set-pc! m (+ pc 4))]
 		[(equal? opcode "sd")
 			(define v_rs1 (gprs-get-x m (list-ref-nat instr 1)))
+			(printf "v_rs1: ~a~n" v_rs1)
 			(define v_rs2 (gprs-get-x m (list-ref-nat instr 2)))
+			(printf "v_rs2: ~a~n" v_rs2)
 			(define imm (sign-extend (list-ref instr 3) (bitvector 64)))
 			(define addr (bitvector->natural (bvadd v_rs1 imm)))
 			(define adj_addr (- addr base_address))
+			(printf "adj_addr: ~a~n" adj_addr)
 			(define nbits 64)
 			(bytearray-write! (machine-ram m) adj_addr v_rs2 nbits)
 			(set-pc! m (+ pc 4))]

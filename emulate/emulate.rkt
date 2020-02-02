@@ -18,13 +18,13 @@
 		(if (bvult i (bv 15 8))
 			(printf "0")
 			null)
-		(printf "~x " (bitvector->natural i)))
+		(printf "~a ~x " i (bitvector->natural i)))
 	(printf "~n~n"))
 (provide print-program)
 
 (define (print-memory m start end)
 	(for ([i (in-range start end)])
-		(printf "~a " (vector-ref (machine-ram m) i))))
+		(printf "~x: ~a~n" i (vector-ref (machine-ram m) i))))
 (provide print-memory)
 
 (define (print-csr m)
@@ -47,6 +47,11 @@
 (define (test-and-execute m)
 	(define op null)
 	(while (not (equal? op "uret"))
+		(cond
+			[(equal? #x80000 (get-pc m))
+				(print-memory m #x0 #x100)
+				; (print-memory m #x7FF00 #x80200)
+				])
 		(define next_instr (decode (get-next-instr m)))
 		(printf "PC: ~x INS: ~a~n" (get-pc m) next_instr)
 		(set! op (list-ref next_instr 0))

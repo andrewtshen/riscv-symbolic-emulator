@@ -11,7 +11,7 @@ _fallthrough:
 .size _trampoline, .-_trampoline
 
 .type ustack, %object
-.align 16
+.align 8
 ustack:
-    .fill 4096
+    .fill 1024
 .size ustack, .-ustack

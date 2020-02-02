@@ -192,8 +192,7 @@
 		(define m (init-machine program ramsize))
 		(test-and-execute m)
 		(print-pmp m)
-		(pmp-check m (bv #x00700001 64) (bv #x007FFFFF 64)))
-	)
+		(pmp-check m (bv #x00700001 64) (bv #x007FFFFF 64))))
 
 (define-test-suite utils
 	(test-case "ctz64"
@@ -218,7 +217,7 @@
 		(check-true (not (pmp-check m (bv #x00700001 64) (bv #x007FFFFF 64))))
 		(check-true (pmp-check m (bv #x10700001 64) (bv #x107FFFFF 64)))
 		(check-false (pmp-check m (bv #x00700001 64) (bv #x107FFFFF 64)))
-		(check-true (equal? (machine-mode m) 0)))
+		(check-true (equal? (machine-mode m) 1)))
 	(test-case "pmp-napot-settings"
 		; test pmp_decode_cfg
 		(define setting1 (pmp-decode-cfg (bv #x0000000000001f1f 64) 1))
@@ -235,6 +234,17 @@
 		(check-equal? (list-ref setting5 3) 0))
 	)
 
+(define-test-suite kernel
+	(test-case "kernel test"
+		(define program (file->bytearray "kernel/kernel.bin"))
+		(printf "~n* Running kernel.bin test ~n")
+		(define ramsize 1000000)
+		(define m (init-machine program ramsize))
+		(test-and-execute m)
+		(print-pmp m)
+		(check-true (equal? (machine-mode m) 0))))
+
 ; (run-tests instruction-check)
-(run-tests utils)
+; (run-tests utils)
 ; (run-tests high-level-test)
+(run-tests kernel)

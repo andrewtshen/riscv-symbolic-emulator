@@ -136,7 +136,9 @@ int main() {
     x |= MSTATUS_MPP_U; // set mpp bits
     w_mstatus(x);
 
-    w_mtvec(0x80000000L);
-    w_mepc(0x80800000L);
-    asm volatile ("mret");
+    
+    asm volatile ("uret");
+    // w_mtvec(0x80000000L);
+    // w_mepc(0x80800000L);
+    // asm volatile ("mret");
 }

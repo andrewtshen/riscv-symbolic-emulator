@@ -50,7 +50,8 @@ BUILDS := \
 .SECONDARY:
 
 .PHONY: all
-all: dir $(addprefix $(BUILD)/, $(BUILDS)) $(CBUILD)/startup.o kernel/kernel.elf
+all: dir $(addprefix $(BUILD)/, $(BUILDS)) $(CBUILD)/startup.o \
+	kernel/kernel.bin kernel/kernel.lst kernel/user.lst
 # 	$(info BUILDING: $(addprefix $(BUILD)/, $(BUILDS)))
 
 $(CBUILD)/startup.o: $(TESTS)/startup/startup.s
@@ -107,22 +108,24 @@ test: dir $(addprefix $(BUILD)/, $(BUILDS))
 
 .PHONY: clean
 clean:
-	rm -f *.elf *.o
+	rm -f *.elf *.o *.lst
 	rm -rf build
 	rm -f kernel/*.elf
 	rm -f kernel/*.o
+	rm -f kernel/*.bin
+	rm -f kernel/*.lst
 
 .PHONY: qemu
-qemu: $(BUILD)/pmp.elf
-	$(QEMU) $(QEMUFLAGS) -kernel $(BUILD)/pmp.elf
+qemu: kernel/kernel.elf
+	$(QEMU) $(QEMUFLAGS) -kernel kernel/kernel.elf
 
 .PHONY: qemu-gdb
-qemu-gdb: $(BUILD)/pmp.elf
-	$(QEMU) $(QEMUFLAGS) -S -s -kernel $(BUILD)/pmp.elf
+qemu-gdb: kernel/kernel.elf
+	$(QEMU) $(QEMUFLAGS) -S -s -kernel kernel/kernel.elf
 
 .PHONY: gdb
-gdb: $(BUILD)/pmp.elf
-	$(GDB) --data-directory=/usr/local/share/gdb $(BUILD)/pmp.elf
+gdb: kernel/kernel.elf
+	$(GDB) --data-directory=/usr/local/share/gdb kernel/kernel.elf
 
 
 include kernel.mk

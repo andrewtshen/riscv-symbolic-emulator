@@ -16,14 +16,12 @@ USER_OBJS := \
 	kernel/trampoline.o \
 
 $(KERNEL)/%.o: $(KERNEL)/%.c
-	@printf "building kernel.elf~n"
 	$(CC) $(CFLAGS) -c $< -o $@
 
 $(KERNEL)/%.o: $(KERNEL)/%.s
 	$(CC) $(CFLAGS) -c $< -o $@
 
 $(KERNEL)/kernel.elf: $(KERNEL_OBJS) $(KERNEL)/kernel.ld
-	@printf "building kernel.elf~n"
 	$(CC) $(CFLAGS) -T $(KERNEL)/kernel.ld $(KERNEL_OBJS) -o $@
 
 $(KERNEL)/user.elf: $(USER_OBJS) $(KERNEL)/user.ld

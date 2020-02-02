@@ -44,7 +44,7 @@
 		[(equal? opcode (bv #b1110011 7)) ; RDCYCLE RDTIME RDINSTRET RDCYCLEH RDTIMEH RDINSTRETH
 			(set! fmt "TODO FMT")]
 		[else
-			(printf "OPCODE: ~a~n" opcode)
+			; (printf "OPCODE: ~a~n" opcode)
 			(error "NO SUCH FMT")])
 	fmt)
 (provide get-fmt)

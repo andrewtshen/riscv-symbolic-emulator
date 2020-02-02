@@ -125,7 +125,6 @@
 			(set! op "bgeu")]
 		[else
 			(error "No such B op")])
-	(printf "BRANCH IMM: ~a~n" imm)
 	(list op rs1 rs2 imm))
 
 (define (decode-U b_instr)
@@ -271,7 +270,7 @@
 
 ; decode a 32 bit vector instruction
 (define (decode b_instr)
-	; (printf "decoding: ~a~n" b_instr)
+	(printf "decoding: ~a~n" b_instr)
 	(define instr null)
 	(define opcode (extract 6 0 b_instr))
 	(define fmt (get-fmt opcode))

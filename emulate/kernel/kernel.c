@@ -3,8 +3,8 @@
 #include "riscv.h"
 #include "string.h"
 
-extern const uint8_t _binary_user_bin_start[];
-extern const uint8_t _binary_user_bin_end[];
+extern const uint8_t _binary_kernel_user_bin_start[];
+extern const uint8_t _binary_kernel_user_bin_end[];
 extern void _trampoline();
 extern void kernelvec();
 static void load_user(void);
@@ -14,8 +14,9 @@ static void pmp_init(void);
 static void pmp_decode_napot(uint64_t a);
 static inline int ctz64(uint64_t val);
 
-#define USER_BASE 0x80800000L
-#define USER_SIZE 0x800000L
+#define USER_BASE 0x80080000L
+// #define USER_SIZE 0x00002000L
+#define USER_SIZE 0x00000010L
 #define PROG_INDEX 0
 #define PROG_SIZE (512*1024)
 #define DATA_SIZE (512*1024)
@@ -40,7 +41,7 @@ uint64_t get_pmp_napot_addr(uint64_t base, uint64_t size) {
 
 static void pmp_init(void) {
     // PMP region 0: user has RWX to their memory
-    w_pmpaddr0(get_pmp_napot_addr(0x80800000L, 0x800000L));
+    w_pmpaddr0(get_pmp_napot_addr(0x80080000L, 0x10000L));
     w_pmp0cfg(PMPCFG(0, PMPCFG_A_NAPOT, 1, 1, 1));
 
     // PMP region 1: enable uart for all users
@@ -69,25 +70,26 @@ static void pmp_decode_napot(uint64_t a) {
 }
 
 void main() {
-    // set up pmp
-    pmp_init();
+    // // set up pmp
+    // pmp_init();
 
-    // set M Previous Privilege mode to User Mode, for mret.
-    unsigned long x = r_mstatus();
-    x &= ~MSTATUS_MPP_MASK; // clear specific mpp bits
-    x |= MSTATUS_MPP_U; // set mpp bits
-    w_mstatus(x);
+    // // set M Previous Privilege mode to User Mode, for mret.
+    // unsigned long x = r_mstatus();
+    // x &= ~MSTATUS_MPP_MASK; // clear specific mpp bits
+    // x |= MSTATUS_MPP_U; // set mpp bits
+    // w_mstatus(x);
 
-    // set up kernel trap vector
-    w_mtvec((uint64_t)kernelvec);
+    // // set up kernel trap vector
+    // w_mtvec((uint64_t)kernelvec);
 
     load_user();
     run_user();
 }
 
 static void load_user(void) {
-    const void *prog_start = _binary_user_bin_start + PROG_INDEX * (PROG_SIZE + DATA_SIZE);
-    memcpy((void *) USER_BASE, prog_start, PROG_SIZE);
+    // const void *prog_start = _binary_kernel_user_bin_start + PROG_INDEX * (PROG_SIZE + DATA_SIZE);
+    // memcpy((void *) USER_BASE, prog_start, PROG_SIZE);
+    memcpy((void *) USER_BASE, _binary_kernel_user_bin_start, USER_SIZE);
 }
 
 static void run_user(void) {
