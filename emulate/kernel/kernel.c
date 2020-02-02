@@ -40,7 +40,7 @@ uint64_t get_pmp_napot_addr(uint64_t base, uint64_t size) {
 
 static void pmp_init(void) {
     // PMP region 0: user has RWX to their memory
-    w_pmpaddr0(get_pmp_napot_addr(0x80080000L, 0x10000L));
+    w_pmpaddr0(get_pmp_napot_addr(0x80080000L, 0x2000L));
     w_pmp0cfg(PMPCFG(0, PMPCFG_A_NAPOT, 1, 1, 1));
 
     // PMP region 1: enable uart for all users

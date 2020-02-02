@@ -263,18 +263,17 @@
 			(set! is_csr #t)]
 		[else
 			(error "No such SPECIAL op")])
-	; (printf "CSR CODE: ~a~n" csr)
 	(if is_csr
 		(list op rd rs1 (decode-csr csr))
 		(list op)))
 
 ; decode a 32 bit vector instruction
 (define (decode b_instr)
-	; (printf "decoding: ~a~n" b_instr)
 	(define instr null)
 	(define opcode (extract 6 0 b_instr))
 	(define fmt (get-fmt opcode))
-	(printf "FMT: ~a " fmt)
+	; (printf "decoding: ~a~n" b_instr)
+	; (printf "FMT: ~a " fmt)
 
 	(cond
 		[(equal? fmt "R")

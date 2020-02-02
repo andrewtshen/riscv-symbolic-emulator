@@ -4,7 +4,8 @@
 	"load.rkt"
 	"decode.rkt"
 	"execute.rkt"
-	"machine.rkt")
+	"machine.rkt"
+	"pmp.rkt")
 (require (only-in racket/base for for/list in-range in-vector))
 
 ; Set up the machine and execute each instruction.
@@ -12,15 +13,6 @@
 
 (define-syntax-rule (while test body ...) ; while loop
 	(let loop () (when test body ... (loop))))
-
-(define (print-program p)
-	(for ([i (in-vector p)])
-		(if (bvult i (bv 15 8))
-			(printf "0")
-			null)
-		(printf "~a ~x " i (bitvector->natural i)))
-	(printf "~n~n"))
-(provide print-program)
 
 (define (print-memory m start end)
 	(for ([i (in-range start end)])
@@ -48,18 +40,14 @@
 	(define op null)
 	(while (not (equal? op "uret"))
 		(define next_instr (decode (get-next-instr m)))
-		(printf "PC: ~x INS: ~a~n" (get-pc m) next_instr)
+		; (printf "PC: ~x INS: ~a~n" (get-pc m) next_instr)
 		(set! op (list-ref next_instr 0))
 		(execute next_instr m)))
 (provide test-and-execute)
 
 ; ; example execution
-; (define program (file->bytearray "build/sum.bin"))
-; (printf-program)
-; (printf "program: ~a~n" program)
-; make machine
-; (define ramsize 1000)
+; (define program (file->bytearray "build/pmp.bin"))
+; (printf "~n* Running pmp.bin test ~n")
+; (define ramsize 10000)
 ; (define m (init-machine program ramsize))
 ; (test-and-execute m)
-; (print-memory m ramsize)
-; (print-csr m)

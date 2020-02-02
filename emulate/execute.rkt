@@ -175,7 +175,7 @@
 			(define addr (bitvector->natural (bvadd v_rs1 imm)))
 			(define adj_addr (- addr base_address))
 			(define nbytes 1)
-			(define val (sign-extend (bytearray-read (machine-ram m) adj_addr nbytes) (bitvector 64)))
+			(define val (sign-extend (machine-ram-read m adj_addr nbytes) (bitvector 64)))
 			(gprs-set-x! m rd val)
 			(set-pc! m (+ pc 4))]
 		[(equal? opcode "lh")
@@ -185,7 +185,7 @@
 			(define addr (bitvector->natural (bvadd v_rs1 imm)))
 			(define adj_addr (- addr base_address))
 			(define nbytes 2)
-			(define val (sign-extend (bytearray-read (machine-ram m) adj_addr nbytes) (bitvector 64)))
+			(define val (sign-extend (machine-ram-read m adj_addr nbytes) (bitvector 64)))
 			(gprs-set-x! m rd val)
 			(set-pc! m (+ pc 4))]
 		[(equal? opcode "lw")
@@ -195,7 +195,7 @@
 			(define addr (bitvector->natural (bvadd v_rs1 imm)))
 			(define adj_addr (- addr base_address))
 			(define nbytes 4)
-			(define val (sign-extend (bytearray-read (machine-ram m) adj_addr nbytes) (bitvector 64)))
+			(define val (sign-extend (machine-ram-read m adj_addr nbytes) (bitvector 64)))
 			(gprs-set-x! m rd val)
 			(set-pc! m (+ pc 4))]
 		[(equal? opcode "ld")
@@ -205,7 +205,7 @@
 			(define addr (bitvector->natural (bvadd v_rs1 imm)))
 			(define adj_addr (- addr base_address))
 			(define nbytes 8)
-			(define val (bytearray-read (machine-ram m) adj_addr nbytes))
+			(define val (machine-ram-read m adj_addr nbytes))
 			(gprs-set-x! m rd val)
 			(set-pc! m (+ pc 4))]
 		[(equal? opcode "lbu")
@@ -215,7 +215,7 @@
 			(define addr (bitvector->natural (bvadd v_rs1 imm)))
 			(define adj_addr (- addr base_address))
 			(define nbytes 1)
-			(define val (zero-extend (bytearray-read (machine-ram m) adj_addr nbytes) (bitvector 64)))
+			(define val (zero-extend (machine-ram-read m adj_addr nbytes) (bitvector 64)))
 			(gprs-set-x! m rd val)
 			(set-pc! m (+ pc 4))]
 		[(equal? opcode "lhu")
@@ -225,7 +225,7 @@
 			(define addr (bitvector->natural (bvadd v_rs1 imm)))
 			(define adj_addr (- addr base_address))
 			(define nbytes 2)
-			(define val (zero-extend (bytearray-read (machine-ram m) adj_addr nbytes) (bitvector 64)))
+			(define val (zero-extend (machine-ram-read m adj_addr nbytes) (bitvector 64)))
 			(gprs-set-x! m rd val)
 			(set-pc! m (+ pc 4))]
 		[(equal? opcode "lwu")
@@ -235,7 +235,7 @@
 			(define addr (bitvector->natural (bvadd v_rs1 imm)))
 			(define adj_addr (- addr base_address))
 			(define nbytes 4)
-			(define val (zero-extend (bytearray-read (machine-ram m) adj_addr nbytes) (bitvector 64)))
+			(define val (zero-extend (machine-ram-read m adj_addr nbytes) (bitvector 64)))
 			(gprs-set-x! m rd val)
 				(set-pc! m (+ pc 4))]
 		[(equal? opcode "jalr")
@@ -413,7 +413,7 @@
 			(define addr (bitvector->natural (bvadd v_rs1 imm)))
 			(define adj_addr (- addr base_address))
 			(define nbits 8)
-			(bytearray-write! (machine-ram m) adj_addr v_rs2 nbits)
+			(machine-ram-write! m adj_addr v_rs2 nbits)
 			(set-pc! m (+ pc 4))]
 		[(equal? opcode "sh")
 			(define v_rs1 (gprs-get-x m (list-ref-nat instr 1)))
@@ -422,7 +422,7 @@
 			(define addr (bitvector->natural (bvadd v_rs1 imm)))
 			(define adj_addr (- addr base_address))
 			(define nbits 16)
-			(bytearray-write! (machine-ram m) adj_addr v_rs2 nbits)
+			(machine-ram-write! m adj_addr v_rs2 nbits)
 			(set-pc! m (+ pc 4))]
 		[(equal? opcode "sw")
 			(define v_rs1 (gprs-get-x m (list-ref-nat instr 1)))
@@ -431,7 +431,7 @@
 			(define addr (bitvector->natural (bvadd v_rs1 imm)))
 			(define adj_addr (- addr base_address))
 			(define nbits 32)
-			(bytearray-write! (machine-ram m) adj_addr v_rs2 nbits)
+			(machine-ram-write! m adj_addr v_rs2 nbits)
 			(set-pc! m (+ pc 4))]
 		[(equal? opcode "sd")
 			(define v_rs1 (gprs-get-x m (list-ref-nat instr 1)))
@@ -440,7 +440,7 @@
 			(define addr (bitvector->natural (bvadd v_rs1 imm)))
 			(define adj_addr (- addr base_address))
 			(define nbits 64)
-			(bytearray-write! (machine-ram m) adj_addr v_rs2 nbits)
+			(machine-ram-write! m adj_addr v_rs2 nbits)
 			(set-pc! m (+ pc 4))]
 
 		; J Format

@@ -230,8 +230,7 @@
 		(define setting5 (pmp-decode-cfg (bv #x0000000000001f1f 64) 5))
 		(check-equal? (list-ref setting5 1) 0)
 		(check-equal? (list-ref setting5 2) 0)
-		(check-equal? (list-ref setting5 3) 0))
-	)
+		(check-equal? (list-ref setting5 3) 0)))
 
 (define-test-suite kernel
 	(test-case "kernel test"
@@ -243,7 +242,11 @@
 		(print-pmp m)
 		(check-true (equal? (machine-mode m) 0))))
 
-(run-tests instruction-check)
-(run-tests utils)
-(run-tests high-level-test)
-(run-tests kernel)
+(define-test-suite zero
+	(test-case "zero test"
+		(check-true #t)))
+
+(define res-instruction-check (run-tests instruction-check))
+(define res-utils (run-tests utils))
+(define res-high-level-test (run-tests high-level-test))
+(define res-kernel (run-tests kernel))
