@@ -236,3 +236,10 @@
 		(printf "pmpaddr1 base/range: ~a~n" (pmp-decode-napot (get-csr m "pmpaddr1")))
 		(printf "pmpaddr8 base/range: ~a~n" (pmp-decode-napot (get-csr m "pmpaddr8"))))
 (provide print-pmp)
+
+(define (print-special-regs m)
+	(printf "mepc: ~a~n" (get-csr m "mepc"))
+	(printf "mtvec: ~a~n" (get-csr m "mtvec"))
+	(printf "mstatus: ~a~n" (get-csr m "mstatus"))
+	(printf "mode: ~a~n" (machine-mode m)))
+(provide print-special-regs)
