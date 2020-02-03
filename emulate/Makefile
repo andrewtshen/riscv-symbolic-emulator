@@ -91,7 +91,7 @@ proof: all
 .PHONY: test
 test: dir $(addprefix $(BUILD)/, $(BUILDS))
 	@echo "----------------------"
-	racket load.rkt
+	racket init.rkt
 	@echo "----------------------"
 	racket decode.rkt
 	@echo "----------------------"

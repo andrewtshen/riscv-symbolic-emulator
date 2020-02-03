@@ -106,7 +106,7 @@
 ; get next instruction using current program counter
 (define (get-next-instr m)
 	(define pc (get-pc m))
-	(machine-ram-read m pc 4))
+	(machine-ram-read m (bitvector->natural pc) 4))
 (provide get-next-instr)
 
 ; read an nbytes from a machine-ram ba starting at address addr

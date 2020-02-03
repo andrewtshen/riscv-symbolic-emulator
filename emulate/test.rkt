@@ -1,7 +1,7 @@
 #lang rosette/safe
 
 (require
-	"load.rkt"
+	"init.rkt"
 	"emulate.rkt"
 	"execute.rkt"
 	"machine.rkt"

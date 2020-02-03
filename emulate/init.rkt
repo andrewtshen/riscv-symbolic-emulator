@@ -67,8 +67,8 @@
 					mtvec mepc mstatus pmpcfg0 pmpcfg2 pmpaddr0 pmpaddr1 pmpaddr2
 					pmpaddr3 pmpaddr4 pmpaddr5 pmpaddr6 pmpaddr7 pmpaddr8 pmpaddr9
 					pmpaddr10 pmpaddr11 pmpaddr12 pmpaddr13 pmpaddr14 pmpaddr15)
-				(make-sym-vector 31 64 gpr)
-				0) ; be careful of -1 for offset
+				(make-sym-vector 31 64 gpr) ; be careful of -1 for offset
+				(bv 0 64))
 			(vector-append
 				program
 				(make-sym-vector (- ramsize proglength) 8 mem))

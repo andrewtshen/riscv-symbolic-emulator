@@ -1,12 +1,12 @@
 # RISC-V Symbolic Emulator
 
 ### Method
-The main program is `emulate.rkt` which sets up the machine from and loads the program to be run from `load.rkt`. Then instructions are read in 4-bytes, converted to their readable forms using `fmt.rkt` to get the format, `decode.rkt` to convert the binary to the normal format. `execute.rkt` finally performs that decoded symbolic value.
+The main program is `emulate.rkt` which sets up the machine from and loads the program to be run from `init.rkt`. Then instructions are read in 4-bytes, converted to their readable forms using `fmt.rkt` to get the format, `decode.rkt` to convert the binary to the normal format. `execute.rkt` finally performs that decoded symbolic value.
 
-`emulate.rkt` -> `load.rkt` -> `fmt.rkt` -> `decode.rkt` -> `execute.rkt`  
+`emulate.rkt` -> `init.rkt` -> `fmt.rkt` -> `decode.rkt` -> `execute.rkt`  
 
 ### Files
-##### `load.rkt`
+##### `init.rkt`
 Initialize the machine and load the program into the machine to run symbolically. 
 
 ##### `machine.rkt`

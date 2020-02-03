@@ -1,7 +1,7 @@
 #lang rosette/safe
 
 (require
-	"load.rkt"
+	"init.rkt"
 	"machine.rkt")
 (require (only-in racket/base for in-range))
 

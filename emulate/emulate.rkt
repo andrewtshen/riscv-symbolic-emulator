@@ -1,7 +1,7 @@
 #lang rosette/safe
 
 (require
-	"load.rkt"
+	"init.rkt"
 	"decode.rkt"
 	"execute.rkt"
 	"machine.rkt"
@@ -40,14 +40,14 @@
 	(define op null)
 	(while (not (equal? op "uret"))
 		(define next_instr (decode (get-next-instr m)))
-		; (printf "PC: ~x INS: ~a~n" (get-pc m) next_instr)
+		; (printf "PC: ~x INS: ~a~n" (bitvector->natural (get-pc m)) next_instr)
 		(set! op (list-ref next_instr 0))
 		(execute next_instr m)))
 (provide test-and-execute)
 
-; ; example execution
-; (define program (file->bytearray "build/pmp.bin"))
-; (printf "~n* Running pmp.bin test ~n")
-; (define ramsize 10000)
-; (define m (init-machine program ramsize))
-; (test-and-execute m)
+; example execution
+(define program (file->bytearray "build/pmp.bin"))
+(printf "~n* Running pmp.bin test ~n")
+(define ramsize 10000)
+(define m (init-machine program ramsize))
+(test-and-execute m)
