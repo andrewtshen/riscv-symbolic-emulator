@@ -1,12 +1,13 @@
 #lang rosette/safe
 
-(require (only-in racket/base error))
-(require "fmt.rkt")
+(require
+	"fmt.rkt"
+	"machine.rkt")
 
 ; Decode all of the binary instructions to a list similar to 
 ; objdump output so that it is easier to parse.
 
-(define (decode-R b_instr)
+(define (decode-R m b_instr)
 	(define op null)
 	(define rd (extract 11 7 b_instr))
 	(define funct3 (extract 14 12 b_instr))
@@ -34,10 +35,14 @@
 			(set! op "or")]
 		[(and (bveq funct3 (bv #b111 3)) (bveq funct7 (bv #b0000000 7)))
 			(set! op "and")]
-		[else (error "No such R op")])
+		[else
+			(printf "No such R FMT ~n")
+			; TODO: illegal instruction
+			(set-pc! m (bvsub (get-csr m "mtvec") (bv base_address 64)))
+			(set-machine-mode! m 1)])
 	(list op rd rs1 rs2))
 
-(define (decode-I b_instr)
+(define (decode-I m b_instr)
 	(define op null)
 	(define opcode (extract 6 0 b_instr))
 	(define rd (extract 11 7 b_instr))
@@ -95,11 +100,13 @@
 		[(and (bveq funct3 (bv #b000 3)) (bveq opcode (bv #b1100111 7)))
 			(set! op "jalr")]
 		[else
-			(printf "opcode: ~a~n" opcode)
-			(error "No such I op")])
+			(printf "No such I FMT ~n")
+			; TODO: illegal instruction
+			(set-pc! m (bvsub (get-csr m "mtvec") (bv base_address 64)))
+			(set-machine-mode! m 1)])
 	(list op rd rs1 imm))
 
-(define (decode-B b_instr)
+(define (decode-B m b_instr)
 	(define op null)
 	(define funct3 (extract 14 12 b_instr))
 	(define rs1 (extract 19 15 b_instr))
@@ -124,10 +131,13 @@
 		[(bveq funct3 (bv #b111 3))
 			(set! op "bgeu")]
 		[else
-			(error "No such B op")])
+			(printf "No such B FMT ~n")
+			; TODO: illegal instruction
+			(set-pc! m (bvsub (get-csr m "mtvec") (bv base_address 64)))
+			(set-machine-mode! m 1)])
 	(list op rs1 rs2 imm))
 
-(define (decode-U b_instr)
+(define (decode-U m b_instr)
 	(define op null)
 	(define opcode (extract 6 0 b_instr))
 	; append upper imm and lower imm into imm
@@ -139,10 +149,13 @@
 		[(bveq opcode (bv #b0010111 7))
 			(set! op "auipc")]
 		[else
-			(error "No such U op")])
+			(printf "No such U FMT ~n")
+			; TODO: illegal instruction
+			(set-pc! m (bvsub (get-csr m "mtvec") (bv base_address 64)))
+			(set-machine-mode! m 1)])
 	(list op rd imm))
 
-(define (decode-S b_instr)
+(define (decode-S m b_instr)
 	(define op null)
 	(define opcode (extract 6 0 b_instr))
 	(define funct3 (extract 14 12 b_instr))
@@ -161,10 +174,13 @@
 		[(and (bveq funct3 (bv #b011 3)) (bveq opcode (bv #b0100011 7)))
 			(set! op "sd")]
 		[else
-			(error "No such S op")])
+			(printf "No such S FMT ~n")
+			; TODO: illegal instruction
+			(set-pc! m (bvsub (get-csr m "mtvec") (bv base_address 64)))
+			(set-machine-mode! m 1)])
 	(list op rs1 rs2 imm))
 
-(define (decode-J b_instr)
+(define (decode-J m b_instr)
 	(define op null)
 	(define opcode (extract 6 0 b_instr))
 	(define rd (extract 11 7 b_instr))
@@ -177,10 +193,13 @@
 		[(bveq opcode (bv #b1101111 7))
 			(set! op "jal")]
 		[else
-			(error "No such J op")])
+			(printf "No such J FMT ~n")
+			; TODO: illegal instruction
+			(set-pc! m (bvsub (get-csr m "mtvec") (bv base_address 64)))
+			(set-machine-mode! m 1)])
 	(list op rd imm))
 
-(define (decode-csr b_csr)
+(define (decode-csr m b_csr)
 	(define csr null)
 	(cond
 		[(bveq b_csr (bv #x000 12)) (set! csr "ustatus")]
@@ -223,10 +242,13 @@
 		[(bveq b_csr (bv #x3BE 12)) (set! csr "pmpaddr14")]
 		[(bveq b_csr (bv #x3BF 12)) (set! csr "pmpaddr15")]
 		[else
-			error "No such CSR"])
+			(printf "No such CSR FMT ~n")
+			; TODO: illegal instruction
+			(set-pc! m (bvsub (get-csr m "mtvec") (bv base_address 64)))
+			(set-machine-mode! m 1)])
 	csr)
 
-(define (decode-SPECIAL b_instr)
+(define (decode-SPECIAL m b_instr)
 	(define op null)
 	(define is_csr #f)
 	(define opcode (extract 6 0 b_instr))
@@ -262,37 +284,43 @@
 			(set! op "csrrci")
 			(set! is_csr #t)]
 		[else
-			(error "No such SPECIAL op")])
+			(printf "No such SPECIAL FMT ~n")
+			; TODO: illegal instruction
+			(set-pc! m (bvsub (get-csr m "mtvec") (bv base_address 64)))
+			(set-machine-mode! m 1)])
 	(if is_csr
-		(list op rd rs1 (decode-csr csr))
+		(list op rd rs1 (decode-csr m csr))
 		(list op)))
 
 ; decode a 32 bit vector instruction
-(define (decode b_instr)
+(define (decode m b_instr)
 	(define instr null)
 	(define opcode (extract 6 0 b_instr))
-	(define fmt (get-fmt opcode))
+	(define fmt (get-fmt m opcode))
 	; (printf "decoding: ~a~n" b_instr)
 	; (printf "FMT: ~a " fmt)
 
 	(cond
 		[(equal? fmt "R")
-			(set! instr (decode-R b_instr))]
+			(set! instr (decode-R m b_instr))]
 		[(equal? fmt "I")
-			(set! instr (decode-I b_instr))]
+			(set! instr (decode-I m b_instr))]
 		[(equal? fmt "B")
-			(set! instr (decode-B b_instr))]
+			(set! instr (decode-B m b_instr))]
 		[(equal? fmt "U")
-			(set! instr (decode-U b_instr))]
+			(set! instr (decode-U m b_instr))]
 		[(equal? fmt "S")
-			(set! instr (decode-S b_instr))]
+			(set! instr (decode-S m b_instr))]
 		[(equal? fmt "J")
-			(set! instr (decode-J b_instr))]
+			(set! instr (decode-J m b_instr))]
 		[(equal? fmt "SPECIAL")
-			(set! instr (decode-SPECIAL b_instr))]
+			(set! instr (decode-SPECIAL m b_instr))]
 		[else
-			(error "No match for FMT")])
-	instr)
+			(printf "No such FMT~n")
+			; TODO: illegal instruction
+			(set-pc! m (bvsub (get-csr m "mtvec") (bv base_address 64)))
+			(set-machine-mode! m 1)])
+		instr)
 (provide decode)
 
 ; example: add x5, x6, x7

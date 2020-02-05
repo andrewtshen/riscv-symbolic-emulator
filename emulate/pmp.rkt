@@ -1,6 +1,6 @@
 #lang rosette/safe
 
-(require (only-in racket/base for in-range error))
+(require (only-in racket/base for in-range))
 
 ; PMP utilities for decoding registers and checking
 

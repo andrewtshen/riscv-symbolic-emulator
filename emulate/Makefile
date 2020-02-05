@@ -11,7 +11,7 @@ OBJCOPY := $(PREFIX)objcopy
 # OBJDUMPFLAGS := --disassemble-all --source --section-headers --demangle
 OBJDUMPFLAGS := --source --demangle
 
-CFLAGS := -ffreestanding -nostdlib -O0 -mcmodel=medany -march=rv64i -mabi=lp64
+CFLAGS := -ffreestanding -nostdlib -Os -mcmodel=medany -march=rv64i -mabi=lp64
 ifeq ($(DEBUG),1)
 	CFLAGS += -g
 endif

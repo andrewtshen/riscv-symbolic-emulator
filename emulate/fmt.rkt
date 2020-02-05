@@ -1,10 +1,12 @@
 #lang rosette/safe
 
-(require (only-in racket/base error))
+(require
+	"machine.rkt")
+(require (only-in racket/base))
 
 ; Return the instruction format for each of the opcodes.
 
-(define (get-fmt opcode)
+(define (get-fmt m opcode)
 	(define fmt null)
 	(cond
 		[(equal? opcode (bv #b1100011 7)) ; BEQ BNE BLT BGE BLTU BGEU
@@ -44,10 +46,12 @@
 		[(equal? opcode (bv #b1110011 7)) ; RDCYCLE RDTIME RDINSTRET RDCYCLEH RDTIMEH RDINSTRETH
 			(set! fmt "TODO FMT")]
 		[else
-			(error "NO SUCH FMT")])
+			; TODO: illegal instruction
+			(set-pc! m (bvsub (get-csr m "mtvec") (bv base_address 64)))
+			(set-machine-mode! m 1)])
 	fmt)
 (provide get-fmt)
 
 ; example get-fmt
-; (define fmt (get-fmt (bv #b1111011 7)))
+; (define fmt (get-fmt m (bv #b1111011 7)))
 ; (printf "~a~n" fmt)

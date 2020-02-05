@@ -12,5 +12,5 @@ _fallthrough:
 .type estack, %object
 .align 8
 estack:
-    .fill 64
+    .fill 1024
 .size estack, .-estack

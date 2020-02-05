@@ -2,7 +2,7 @@
 
 (require
 	"pmp.rkt")
-(require (only-in racket/base for for/list in-range string-append number->string error))
+(require (only-in racket/base for for/list in-range string-append number->string))
 
 ; 31 64-bit-vectors (x0 is not an actual gpr)
 (struct cpu
@@ -50,8 +50,10 @@
 		[(equal? csr "pmpaddr14")	(set! v_csr (csrs-pmpaddr14 (cpu-csrs (machine-cpu m))))]
 		[(equal? csr "pmpaddr15")	(set! v_csr (csrs-pmpaddr15 (cpu-csrs (machine-cpu m))))]
 		[else
-			(printf "get csr: ~a~n" csr)
-			(error "No CSR value found")])
+			(printf "No such CSR: ~a~n" csr)
+			; TODO: illegal instruction
+			(set-pc! m (bvsub (get-csr m "mtvec") (bv base_address 64)))
+			(set-machine-mode! m 1)])
 	v_csr)
 (provide get-csr)
 
@@ -80,8 +82,10 @@
 		[(equal? csr "pmpaddr14")	(set-csrs-pmpaddr14! (cpu-csrs (machine-cpu m)) val)]
 		[(equal? csr "pmpaddr15")	(set-csrs-pmpaddr15! (cpu-csrs (machine-cpu m)) val)]
 		[else 
-			(printf "set csr: ~a~n" csr)
-			(error "No CSR value found")])
+			(printf "No such CSR: ~a~n" csr)
+			; TODO: illegal instruction
+			(set-pc! m (bvsub (get-csr m "mtvec") (bv base_address 64)))
+			(set-machine-mode! m 1)])
 	v_csr)
 (provide set-csr!)
 
@@ -92,8 +96,11 @@
 (provide gprs-get-x)
 
 (define (gprs-set-x! m idx val)
-	(cond [(zero? idx)
-			(error "set zero vector invalid")])
+	(when (zero? idx)
+		(printf "Cannot set Zero Register~n")
+		; TODO: illegal instruction
+		(set-pc! m (bvsub (get-csr m "mtvec") (bv base_address 64)))
+		(set-machine-mode! m 1))
 	(vector-set! (cpu-gprs (machine-cpu m)) (- idx 1) val))
 (provide gprs-set-x!)
 
@@ -147,8 +154,6 @@
 (provide machine-ram-write!)
 
 (define (bytearray-write! ba addr value nbits)
-  (when (not (equal? (modulo nbits 8) 0))
-		(error "bytearray-write!: value has invalid width"))
   (define bytes (quotient nbits 8))
   (for ([i (in-range bytes)])
 		; little-endian
@@ -208,7 +213,9 @@
 							(set! legal #f)
 							(set! done #t)])]
 				[else
-					(error "Not possible decoding")])]))
+					; TODO: illegal instruction
+					(set-pc! m (bvsub (get-csr m "mtvec") (bv base_address 64)))
+					(set-machine-mode! m 1)])]))
 	legal)
 
 ; test address ranging from saddr to eaddr 
@@ -240,10 +247,3 @@
 	(printf "pmpaddr1 base/range: ~a~n" (pmp-decode-napot (get-csr m "pmpaddr1")))
 	(printf "pmpaddr8 base/range: ~a~n" (pmp-decode-napot (get-csr m "pmpaddr8"))))
 (provide print-pmp)
-
-(define (print-special-regs m)
-	(printf "mepc: ~a~n" (get-csr m "mepc"))
-	(printf "mtvec: ~a~n" (get-csr m "mtvec"))
-	(printf "mstatus: ~a~n" (get-csr m "mstatus"))
-	(printf "mode: ~a~n" (machine-mode m)))
-(provide print-special-regs)

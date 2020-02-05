@@ -1,7 +1,5 @@
 #lang rosette/safe
 
-(require (only-in racket/base error))
-
 (require 
 	"init.rkt"
 	"machine.rkt")
@@ -27,31 +25,33 @@
 		[(equal? opcode "ecall")
 			; TODO: real ecall implementation
 			(set-pc! m (bvsub (get-csr m "mtvec") (bv base_address 64)))
-			(set-machine-mode! m 1)
-			(unless (equal? (machine-mode m) 1)
-				(error "Should be in machine mode"))]
+			(set-machine-mode! m 1)]
 		[(equal? opcode "ebreak")
-			(error "ebreak instruction not implemented yet")]
+			; TODO: ebreak instruction not implemented yet
+			(set-pc! m (bvsub (get-csr m "mtvec") (bv base_address 64)))
+			(set-machine-mode! m 1)]
 		[(equal? opcode "uret")
-			(printf "executing uret~n")]
+			; TODO: uret instruction not implemented yet
+			(set-pc! m (bvsub (get-csr m "mtvec") (bv base_address 64)))
+			(set-machine-mode! m 1)]
 		[(equal? opcode "mret")
 			(define mstatus (get-csr m "mstatus"))
 			(define MPP (extract 12 11 mstatus))
-			(cond
-				; check that we are returning to user mode
-				[(equal? (bitvector->natural MPP) 0)
-					(set-machine-mode! m 0)]
-				[else (error "Unknown mstatus mode")])
-			(set-pc! m (bvsub (get-csr m "mepc") (bv base_address 64)))
-			; mret should always return to user mode
-			(unless (equal? (machine-mode m) 0)
-				(error "Should be in user mode"))]
+			; this is always user mode
+			(set-machine-mode! m (bitvector->natural MPP))
+			(set-pc! m (bvsub (get-csr m "mepc") (bv base_address 64)))]
 		[(equal? opcode "dret")
-			(error "dret instruction not implemented yet")]
+			; TODO: dret instruction not implemented yet
+			(set-pc! m (bvsub (get-csr m "mtvec") (bv base_address 64)))
+			(set-machine-mode! m 1)]
 		[(equal? opcode "sfence_vma")
-			(error "sfence_vma instruction not implemented yet")]
+			; TODO: sfence_vma instruction not implemented yet
+			(set-pc! m (bvsub (get-csr m "mtvec") (bv base_address 64)))
+			(set-machine-mode! m 1)]
 		[(equal? opcode "wfi")
-			(error "wfi instruction not implemented yet")]
+			; TODO: wfi instruction not implemented yet
+			(set-pc! m (bvsub (get-csr m "mtvec") (bv base_address 64)))
+			(set-machine-mode! m 1)]
 		[(equal? opcode "csrrw")
 			(define rd (list-ref-nat instr 1))
 			(define rs1 (list-ref-nat instr 2))
@@ -76,13 +76,21 @@
 			(set! v_csr (zero-extend (get-csr m csr) (bitvector 64)))
 			(set-pc! m (bvadd pc (bv 4 64)))]
 		[(equal? opcode "csrrc")
-			(error "csrrc instruction not implemented yet")]
+			; TODO: csrrc instruction not implemented yet
+			(set-pc! m (bvsub (get-csr m "mtvec") (bv base_address 64)))
+			(set-machine-mode! m 1)]
 		[(equal? opcode "csrrwi")
-			(error "csrrwi instruction not implemented yet")]
+			; TODO: csrrwi instruction not implemented yet
+			(set-pc! m (bvsub (get-csr m "mtvec") (bv base_address 64)))
+			(set-machine-mode! m 1)]
 		[(equal? opcode "csrrsi")
-			(error "csrrsi instruction not implemented yet")]
+			; TODO: csrrsi instruction not implemented yet
+			(set-pc! m (bvsub (get-csr m "mtvec") (bv base_address 64)))
+			(set-machine-mode! m 1)]
 		[(equal? opcode "csrrci")
-			(error "csrrci instruction not implemented yet")]
+			; TODO: csrrci instruction not implemented yet
+			(set-pc! m (bvsub (get-csr m "mtvec") (bv base_address 64)))
+			(set-machine-mode! m 1)]
 
 		; I Format
 		[(equal? opcode "addi")
@@ -116,9 +124,13 @@
 			(gprs-set-x! m rd shifted)
 			(set-pc! m (bvadd pc (bv 4 64)))]
 		[(equal? opcode "slti")
-			(error "slti instruction not implemented yet")]
+			; TODO: slti instruction not implemented yet
+			(set-pc! m (bvsub (get-csr m "mtvec") (bv base_address 64)))
+				(set-machine-mode! m 1)]
 		[(equal? opcode "sltiu")
-			(error "sltiu instruction not implemented yet")]
+			; TODO: sltiu instruction not implemented yet
+			(set-pc! m (bvsub (get-csr m "mtvec") (bv base_address 64)))
+			(set-machine-mode! m 1)]
 		[(equal? opcode "xori")
 			(define rd (list-ref-nat instr 1))
 			(define v_rs1 (gprs-get-x m (list-ref-nat instr 2)))
@@ -150,9 +162,10 @@
 			(define imm (zero-extend (list-ref instr 3) (bitvector 32)))
 			(define shifted (sign-extend (bvshl v_rs1 imm) (bitvector 64)))
 			(gprs-set-x! m rd shifted)
-			(cond
-				[(not (bveq (extract 5 5 imm) (bv 0 1)))
-					(error "TODO generate illegal instruction error")])
+			(when (not (bveq (extract 5 5 imm) (bv 0 1)))
+					; TODO: illegal instruction
+					(set-pc! m (bvsub (get-csr m "mtvec") (bv base_address 64)))
+					(set-machine-mode! m 1))
 			(set-pc! m (bvadd pc (bv 4 64)))]
 		[(equal? opcode "srliw")
 			(define rd (list-ref-nat instr 1))
@@ -160,9 +173,10 @@
 			(define imm (zero-extend (list-ref instr 3) (bitvector 32)))
 			(define shifted (sign-extend (bvlshr v_rs1 imm) (bitvector 64)))
 			(gprs-set-x! m rd shifted)
-			(cond
-				[(not (bveq (extract 5 5 imm) (bv 0 1)))
-					(error "TODO generate illegal instruction error")])
+			(when (not (bveq (extract 5 5 imm) (bv 0 1)))
+					; TODO: illegal instruction
+					(set-pc! m (bvsub (get-csr m "mtvec") (bv base_address 64)))
+					(set-machine-mode! m 1))
 			(set-pc! m (bvadd pc (bv 4 64)))]
 		[(equal? opcode "sraiw")
 			(define rd (list-ref-nat instr 1))
@@ -172,7 +186,9 @@
 			(gprs-set-x! m rd shifted)
 			(cond
 				[(not (bveq (extract 5 5 imm) (bv 0 1)))
-					(error "TODO generate illegal instruction error")])
+					; TODO: illegal instruction
+					(set-pc! m (bvsub (get-csr m "mtvec") (bv base_address 64)))
+					(set-machine-mode! m 1)])
 			(set-pc! m (bvadd pc (bv 4 64)))]
 		[(equal? opcode "lb")
 			(define rd (list-ref-nat instr 1))
@@ -281,9 +297,13 @@
 			(gprs-set-x! m rd shifted)
 			(set-pc! m (bvadd pc (bv 4 64)))]
 		[(equal? opcode "slt")
-			(error "sltu instruction not implemented yet")]
+			; TODO: slt instruction not implemented yet
+			(set-pc! m (bvsub (get-csr m "mtvec") (bv base_address 64)))
+			(set-machine-mode! m 1)]
 		[(equal? opcode "sltu")
-			(error "xor instruction not implemented yet")]
+			; TODO: sltu instruction not implemented yet
+			(set-pc! m (bvsub (get-csr m "mtvec") (bv base_address 64)))
+			(set-machine-mode! m 1)]
 		[(equal? opcode "xor")
 			(define rd (list-ref-nat instr 1))
 			(define v_rs1 (gprs-get-x m (list-ref-nat instr 2)))
@@ -317,41 +337,77 @@
 			(gprs-set-x! m rd (bvand v_rs1 v_rs2))
 			(set-pc! m (bvadd pc (bv 4 64)))]
 		[(equal? opcode "andw")
-			(error "and instruction not implemented yet")]
+			; TODO: andw instruction not implemented yet
+			(set-pc! m (bvsub (get-csr m "mtvec") (bv base_address 64)))
+			(set-machine-mode! m 1)]
 		[(equal? opcode "subw")
-			(error "subw instruction not implemented yet")]
+			; TODO: subw instruction not implemented yet
+			(set-pc! m (bvsub (get-csr m "mtvec") (bv base_address 64)))
+			(set-machine-mode! m 1)]
 		[(equal? opcode "sllw")
-			(error "sllw instruction not implemented yet")]
+			; TODO: sllw instruction not implemented yet
+			(set-pc! m (bvsub (get-csr m "mtvec") (bv base_address 64)))
+			(set-machine-mode! m 1)]
 		[(equal? opcode "srlw")
-			(error "srlw instruction not implemented yet")]
+			; TODO: srlw instruction not implemented yet
+			(set-pc! m (bvsub (get-csr m "mtvec") (bv base_address 64)))
+			(set-machine-mode! m 1)]
 		[(equal? opcode "sraw")
-			(error "sraw instruction not implemented yet")]
+			; TODO: sraw instruction not implemented yet
+			(set-pc! m (bvsub (get-csr m "mtvec") (bv base_address 64)))
+			(set-machine-mode! m 1)]
 		[(equal? opcode "mul")
-			(error "mul instruction not implemented yet")]
+			; TODO: mul instruction not implemented yet
+			(set-pc! m (bvsub (get-csr m "mtvec") (bv base_address 64)))
+			(set-machine-mode! m 1)]
 		[(equal? opcode "mulh")
-			(error "mulh instruction not implemented yet")]
+			; TODO: mulh instruction not implemented yet
+			(set-pc! m (bvsub (get-csr m "mtvec") (bv base_address 64)))
+			(set-machine-mode! m 1)]
 		[(equal? opcode "mulhsu")
-			(error "mulhsu instruction not implemented yet")]
+			; TODO: mulhsu instruction not implemented yet
+			(set-pc! m (bvsub (get-csr m "mtvec") (bv base_address 64)))
+			(set-machine-mode! m 1)]
 		[(equal? opcode "mulhu")
-			(error "mulhu instruction not implemented yet")]
+			; TODO: mulhu instruction not implemented yet
+			(set-pc! m (bvsub (get-csr m "mtvec") (bv base_address 64)))
+			(set-machine-mode! m 1)]
 		[(equal? opcode "div")
-			(error "div instruction not implemented yet")]
+			; TODO: div instruction not implemented yet
+			(set-pc! m (bvsub (get-csr m "mtvec") (bv base_address 64)))
+			(set-machine-mode! m 1)]
 		[(equal? opcode "divu")
-			(error "divu instruction not implemented yet")]
+			; TODO: divu instruction not implemented yet
+			(set-pc! m (bvsub (get-csr m "mtvec") (bv base_address 64)))
+			(set-machine-mode! m 1)]
 		[(equal? opcode "rem")
-			(error "rem instruction not implemented yet")]
+			; TODO: rem instruction not implemented yet
+			(set-pc! m (bvsub (get-csr m "mtvec") (bv base_address 64)))
+			(set-machine-mode! m 1)]
 		[(equal? opcode "remu")
-			(error "remu instruction not implemented yet")]
+			; TODO: remu instruction not implemented yet
+			(set-pc! m (bvsub (get-csr m "mtvec") (bv base_address 64)))
+			(set-machine-mode! m 1)]
 		[(equal? opcode "mulw")
-			(error "mulw instruction not implemented yet")]
+			; TODO: mulw instruction not implemented yet
+			(set-pc! m (bvsub (get-csr m "mtvec") (bv base_address 64)))
+			(set-machine-mode! m 1)]
 		[(equal? opcode "divw")
-			(error "divw instruction not implemented yet")]
+			; TODO: divw instruction not implemented yet
+			(set-pc! m (bvsub (get-csr m "mtvec") (bv base_address 64)))
+			(set-machine-mode! m 1)]
 		[(equal? opcode "divuw")
-			(error "divuw instruction not implemented yet")]
+			; TODO: divuw instruction not implemented yet
+			(set-pc! m (bvsub (get-csr m "mtvec") (bv base_address 64)))
+			(set-machine-mode! m 1)]
 		[(equal? opcode "remw")
-			(error "remw instruction not implemented yet")]
+			; TODO: remw instruction not implemented yet
+			(set-pc! m (bvsub (get-csr m "mtvec") (bv base_address 64)))
+			(set-machine-mode! m 1)]
 		[(equal? opcode "remuw")
-			(error "sraw instruction not implemented yet")]
+			; TODO: remuw instruction not implemented yet
+			(set-pc! m (bvsub (get-csr m "mtvec") (bv base_address 64)))
+			(set-machine-mode! m 1)]
 
 		; B Format
 		[(equal? opcode "beq")
@@ -464,8 +520,12 @@
 
 		; FENCE Format
 		[(equal? opcode "FENCE")
-			(error "FENCE instruction not implemented yet")]
+			; TODO: FENCE instruction not implemented yet
+			(set-pc! m (bvsub (get-csr m "mtvec") (bv base_address 64)))
+			(set-machine-mode! m 1)]
 		[(equal? opcode "FENCE_I")
-			(error "FENCE_I instruction not implemented yet")]
+			; TODO: FENCE_I instruction not implemented yet
+			(set-pc! m (bvsub (get-csr m "mtvec") (bv base_address 64)))
+			(set-machine-mode! m 1)]
 	))
 (provide execute)

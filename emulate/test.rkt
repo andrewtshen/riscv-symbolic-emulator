@@ -207,7 +207,6 @@
 		(define m (init-machine program ramsize))
 		(test-and-execute m)
 		(print-pmp m)
-		(print-special-regs m)
 		(check-true (pmp-check m (bv #x80800000 64) (bv #x80800000 64)))
 		(check-true (pmp-check m (bv #x80FFFFFF 64) (bv #x80FFFFFF 64)))
 		(check-false (pmp-check m (bv #x80FFFFFF 64) (bv #x81000000 64)))
@@ -264,7 +263,7 @@
 				(gprs-get-x m i)))
 
 		(print-csr m)
-		
+
 		(for/list ([i (in-range 10 18)])
 				(printf "gprs ~a: ~a~n" i (gprs-get-x m i)))
 
@@ -278,8 +277,8 @@
 		; (check-false (unsat? model_noninterference))
 		))
 
-; (define res-instruction-check (run-tests instruction-check))
-; (define res-utils (run-tests utils))
-; (define res-high-level-test (run-tests high-level-test))
-; (define res-kernel (run-tests kernel))
+(define res-instruction-check (run-tests instruction-check))
+(define res-utils (run-tests utils))
+(define res-high-level-test (run-tests high-level-test))
+(define res-kernel (run-tests kernel))
 (define res-noninterference (run-tests noninterference))

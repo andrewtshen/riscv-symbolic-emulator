@@ -21,6 +21,7 @@
 
 (define (print-csr m)
 	(printf "pc ~a~n" (get-pc m))
+	(printf "mode ~a~n" (machine-mode m))
 	(printf "mtvec ~a~n" (get-csr m "mtvec"))
 	(printf "mepc ~a~n" (get-csr m "mepc"))
 	(printf "pmpcfg0 ~a~n" (get-csr m "pmpcfg0"))
@@ -37,7 +38,7 @@
 (provide print-csr)
 
 (define (step m)
-	(define next_instr (decode (get-next-instr m)))
+	(define next_instr (decode m (get-next-instr m)))
 	(execute next_instr m)
 	next_instr)
 (provide step)
@@ -45,7 +46,7 @@
 ; get instructions until reach mret
 (define (test-and-execute m)
 	(define op null)
-	(while (not (equal? op "ecall"))
+	(while (not (equal? op "mret"))
 		(define next_instr (step m))
 		; (printf "PC: ~x INS: ~a~n" (bitvector->natural (get-pc m)) next_instr)
 		(set! op (list-ref next_instr 0))))

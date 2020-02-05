@@ -11,7 +11,7 @@ _sum:
 _add:
     add a6, a5, a7 # adding registers together
     # li a6, 3 # this causes a sat model to be produced
-    uret
+    mret
 _fallthrough:
     j _fallthrough
 .size _sum, .-_sum
