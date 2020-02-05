@@ -7,7 +7,7 @@ _sh_lh:
     # lui a2, 0x10038
     sh a2, 0x200(a1)
     lh a3, 0x200(a1)
-    uret
+    mret
 _fallthrough:
     j _fallthrough
 .size _sh_lh, .-_sh_lh

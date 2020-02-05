@@ -20,7 +20,7 @@
 		; make machine
 		(define ramsize 1000)
 		(define m (init-machine program ramsize))
-		(test-and-execute m)
+		(execute-until-mret m)
 
 		(define gprsx
 			(for/list ([i (in-range 10 18)])
@@ -35,7 +35,7 @@
 		(define ramsize 1000)
 		(printf "~n* Running addi.bin test ~n")
 		(define m (init-machine program ramsize))
-		(test-and-execute m)
+		(execute-until-mret m)
 		(define gprsx
 			(for/list ([i (in-range 10 18)])
 				(gprs-get-x m i)))
@@ -49,7 +49,7 @@
 		(define ramsize 1000)
 		(printf "~n* Running addw.bin test ~n")
 		(define m (init-machine program ramsize))
-		(test-and-execute m)
+		(execute-until-mret m)
 		(define gprsx
 			(for/list ([i (in-range 10 18)])
 				(gprs-get-x m i)))
@@ -61,22 +61,22 @@
 	(test-case "sub test"
 		; TODO: make this into an actual test case
 		(define program (file->bytearray "build/sub.bin"))
-		(define ramsize 1000)
+		(define ramsize 10000)
 		(printf "~n* Running sub.bin test ~n")
 		(define m (init-machine program ramsize))
-		(test-and-execute m))
+		(execute-until-mret m))
 	(test-case "jal test"
 		(define program (file->bytearray "build/jal.bin"))
-		(define ramsize 1000)
+		(define ramsize 10000)
 		(printf "~n* Running jal.bin test ~n")
 		(define m (init-machine program ramsize))
-		(test-and-execute m))
+		(execute-until-mret m))
 	(test-case "sd/ld test"
 		(define program (file->bytearray "build/sd_ld.bin"))
 		(printf "~n* Running sd_ld.bin test ~n")
 		(define ramsize 1000)
 		(define m (init-machine program ramsize))
-		(test-and-execute m)
+		(execute-until-mret m)
 
 		(define gprsx
 			(for/list ([i (in-range 10 18)])
@@ -91,7 +91,7 @@
 		(printf "~n* Running sw_lw.bin test ~n")
 		(define ramsize 1000)
 		(define m (init-machine program ramsize))
-		(test-and-execute m)
+		(execute-until-mret m)
 
 		(define gprsx
 			(for/list ([i (in-range 10 18)])
@@ -110,7 +110,7 @@
 		(printf "~n* Running sh_lh.bin test ~n")
 		(define ramsize 1000)
 		(define m (init-machine program ramsize))
-		(test-and-execute m)
+		(execute-until-mret m)
 
 		(define gprsx
 			(for/list ([i (in-range 10 18)])
@@ -126,7 +126,7 @@
 		(printf "~n* Running sb_lb.bin test ~n")
 		(define ramsize 1000)
 		(define m (init-machine program ramsize))
-		(test-and-execute m)
+		(execute-until-mret m)
 
 		(define gprsx
 			(for/list ([i (in-range 10 18)])
@@ -143,7 +143,7 @@
 		; make machine
 		(define ramsize 1000)
 		(define m (init-machine program ramsize))
-		(test-and-execute m)
+		(execute-until-mret m)
 
 		(define gprsx
 			(for/list ([i (in-range 10 18)])
@@ -161,7 +161,7 @@
 		; make machine
 		(define ramsize 1000)
 		(define m (init-machine program ramsize))
-		(test-and-execute m)
+		(execute-until-mret m)
 
 		(define gprsx
 			(for/list ([i (in-range 10 18)])
@@ -182,13 +182,13 @@
   	(printf "~n* Running stack.bin test ~n" )
   	(define ramsize 1000)
   	(define m (init-machine program ramsize))
-  	(test-and-execute m))
+  	(execute-until-mret m))
 	(test-case "pmp test"
 		(define program (file->bytearray "build/pmp.bin"))
 		(printf "~n* Running pmp.bin test ~n")
 		(define ramsize 10000)
 		(define m (init-machine program ramsize))
-		(test-and-execute m)
+		(execute-until-mret m)
 		(print-pmp m)
 		(pmp-check m (bv #x00700001 64) (bv #x007FFFFF 64))))
 
@@ -205,7 +205,7 @@
 		(printf "~n* Running pmp.bin test ~n")
 		(define ramsize 10000)
 		(define m (init-machine program ramsize))
-		(test-and-execute m)
+		(execute-until-mret m)
 		(print-pmp m)
 		(check-true (pmp-check m (bv #x80800000 64) (bv #x80800000 64)))
 		(check-true (pmp-check m (bv #x80FFFFFF 64) (bv #x80FFFFFF 64)))
@@ -244,17 +244,17 @@
 		(printf "~n* Running kernel.bin test ~n")
 		(define ramsize 1000000)
 		(define m (init-machine program ramsize))
-		(test-and-execute m)
+		(execute-until-mret m)
 		(print-pmp m)
 		(check-true (equal? (machine-mode m) 0))))
 
 (define-test-suite noninterference
-	(test-case "Running noninterference proof"
+	(test-case "~n* Running noninterference proof ~n"
 		(define reset_program (file->bytearray "kernel/kernel.bin"))
 		; set up our machine state
 		(define ramsize 1000000)
 		(define m (init-machine reset_program ramsize))
-		(test-and-execute m)
+		(execute-until-mret m)
 		(define next_instr1 (step m)) ; step!
 		(printf "next_instr1: ~a~n" next_instr1)
 

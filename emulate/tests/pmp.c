@@ -137,7 +137,7 @@ int main() {
     w_mstatus(x);
 
     
-    asm volatile ("uret");
+    asm volatile ("mret");
     // w_mtvec(0x80000000L);
     // w_mepc(0x80800000L);
     // asm volatile ("mret");

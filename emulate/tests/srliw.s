@@ -9,7 +9,7 @@ _srliw:
     srliw a3, a0, 7
     srliw a4, a0, 14
     srliw a5, a0, 31
-    uret
+    mret
 _fallthrough:
     j _fallthrough
 .size _srliw, .-_srliw

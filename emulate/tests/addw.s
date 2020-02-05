@@ -6,5 +6,5 @@
 _addw:
     # li a5, 231
     addw a6, a5, a3
-    uret
+    mret
 .size _addw, .-_addw

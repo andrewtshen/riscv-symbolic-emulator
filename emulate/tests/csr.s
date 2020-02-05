@@ -5,7 +5,7 @@
 _csr_test:
     lui a1, 0x23
     csrrw a4, mstatus, a4
-    uret
+    mret
 _fallthrough:
     j _fallthrough
 .size _csr_test, .-_csr_test
