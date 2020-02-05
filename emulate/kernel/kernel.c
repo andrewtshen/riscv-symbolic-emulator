@@ -79,8 +79,11 @@ void main() {
     w_mstatus(x);
 
     // set up kernel trap vector
-    w_mtvec((uint64_t)kernelvec);
+    // w_mtvec((uint64_t)kernelvec);
+    // TODO replace with real value
+    w_mtvec(0x80000080);
 
+    // prove without loading user so that we are execute symbolic instructions
     load_user();
     run_user();
 }

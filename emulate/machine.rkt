@@ -49,7 +49,9 @@
 		[(equal? csr "pmpaddr13")	(set! v_csr (csrs-pmpaddr13 (cpu-csrs (machine-cpu m))))]
 		[(equal? csr "pmpaddr14")	(set! v_csr (csrs-pmpaddr14 (cpu-csrs (machine-cpu m))))]
 		[(equal? csr "pmpaddr15")	(set! v_csr (csrs-pmpaddr15 (cpu-csrs (machine-cpu m))))]
-		[else (error "No CSR value found")])
+		[else
+			(printf "get csr: ~a~n" csr)
+			(error "No CSR value found")])
 	v_csr)
 (provide get-csr)
 
@@ -77,7 +79,9 @@
 		[(equal? csr "pmpaddr13")	(set-csrs-pmpaddr13! (cpu-csrs (machine-cpu m)) val)]
 		[(equal? csr "pmpaddr14")	(set-csrs-pmpaddr14! (cpu-csrs (machine-cpu m)) val)]
 		[(equal? csr "pmpaddr15")	(set-csrs-pmpaddr15! (cpu-csrs (machine-cpu m)) val)]
-		[else (error "No CSR value found")])
+		[else 
+			(printf "set csr: ~a~n" csr)
+			(error "No CSR value found")])
 	v_csr)
 (provide set-csr!)
 
@@ -112,11 +116,11 @@
 ; read an nbytes from a machine-ram ba starting at address addr
 (define (machine-ram-read m addr nbytes)
 	(when (equal? (machine-mode m) 0)
-		(printf "checking pmp! read~n")
+		; (printf "checking pmp! read~n")
 		(define saddr (bv (+ addr base_address) 64))
-		(printf "saddr: ~a~n" saddr)
+		; (printf "saddr: ~a~n" saddr)
 		(define eaddr (bv (+ addr (* nbytes 8) base_address) 64))
-		(printf "eaddr: ~a~n" eaddr)
+		; (printf "eaddr: ~a~n" eaddr)
 		(define legal (pmp-check m saddr eaddr))
 		(assert legal))
 	(bytearray-read (machine-ram m) addr nbytes))
@@ -132,11 +136,11 @@
 (define (machine-ram-write! m addr value nbits)
 	; check we aren't violating pmp
 	(when (equal? (machine-mode m) 0)
-		(printf "checking pmp! write~n")
+		; (printf "checking pmp! write~n")
 		(define saddr (bv (+ addr base_address) 64))
-		(printf "saddr: ~a~n" saddr)
+		; (printf "saddr: ~a~n" saddr)
 		(define eaddr (bv (+ addr nbits base_address) 64))
-		(printf "eaddr: ~a~n" eaddr)
+		; (printf "eaddr: ~a~n" eaddr)
 		(define legal (pmp-check m saddr eaddr))
 		(assert legal))
   (bytearray-write! (machine-ram m) addr value nbits))
@@ -221,20 +225,20 @@
 (provide pmp-check)
 
 (define (print-pmp m)
-		(printf "pmpcfg0: ~a~n" (get-csr m "pmpcfg0"))
-		(printf "pmpcfg2: ~a~n" (get-csr m "pmpcfg2"))
-		(printf "pmpaddr0: ~a~n" (get-csr m "pmpaddr0"))
-		(printf "pmpaddr1: ~a~n" (get-csr m "pmpaddr1"))
-		(printf "pmpaddr2: ~a~n" (get-csr m "pmpaddr2"))
-		(printf "pmpaddr3: ~a~n" (get-csr m "pmpaddr3"))
-		(printf "pmpaddr4: ~a~n" (get-csr m "pmpaddr4"))
-		(printf "pmpaddr5: ~a~n" (get-csr m "pmpaddr5"))
-		(printf "pmpaddr6: ~a~n" (get-csr m "pmpaddr6"))
-		(printf "pmpaddr7: ~a~n" (get-csr m "pmpaddr7"))
-		(printf "pmpaddr8: ~a~n" (get-csr m "pmpaddr8"))
-		(printf "pmpaddr0 base/range: ~a~n" (pmp-decode-napot (get-csr m "pmpaddr0")))
-		(printf "pmpaddr1 base/range: ~a~n" (pmp-decode-napot (get-csr m "pmpaddr1")))
-		(printf "pmpaddr8 base/range: ~a~n" (pmp-decode-napot (get-csr m "pmpaddr8"))))
+	(printf "pmpcfg0: ~a~n" (get-csr m "pmpcfg0"))
+	(printf "pmpcfg2: ~a~n" (get-csr m "pmpcfg2"))
+	(printf "pmpaddr0: ~a~n" (get-csr m "pmpaddr0"))
+	(printf "pmpaddr1: ~a~n" (get-csr m "pmpaddr1"))
+	(printf "pmpaddr2: ~a~n" (get-csr m "pmpaddr2"))
+	(printf "pmpaddr3: ~a~n" (get-csr m "pmpaddr3"))
+	(printf "pmpaddr4: ~a~n" (get-csr m "pmpaddr4"))
+	(printf "pmpaddr5: ~a~n" (get-csr m "pmpaddr5"))
+	(printf "pmpaddr6: ~a~n" (get-csr m "pmpaddr6"))
+	(printf "pmpaddr7: ~a~n" (get-csr m "pmpaddr7"))
+	(printf "pmpaddr8: ~a~n" (get-csr m "pmpaddr8"))
+	(printf "pmpaddr0 base/range: ~a~n" (pmp-decode-napot (get-csr m "pmpaddr0")))
+	(printf "pmpaddr1 base/range: ~a~n" (pmp-decode-napot (get-csr m "pmpaddr1")))
+	(printf "pmpaddr8 base/range: ~a~n" (pmp-decode-napot (get-csr m "pmpaddr8"))))
 (provide print-pmp)
 
 (define (print-special-regs m)

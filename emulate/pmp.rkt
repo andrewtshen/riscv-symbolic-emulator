@@ -31,9 +31,9 @@
 (define (pmp-decode-napot val)
 	(define t1 (ctz64 (bvnot val)))
 	(define base (bvshl (bvand val (bvnot (bvsub (bvshl (bv 1 64) (bv t1 64)) (bv 1 64)))) (bv 2 64)))
+	(define range (bvsub (bvshl (bv 1 64) (bvadd (bv t1 64) (bv 3 64))) (bv 1 64)))
 	; (printf "pmp-decode-napot base: ~a~n" base)
 	; (printf "pmp-decode-napot base: ~x~n" (bitvector->integer base))
-	(define range (bvsub (bvshl (bv 1 64) (bvadd (bv t1 64) (bv 3 64))) (bv 1 64)))
 	; (printf "pmp-decode-napot range: ~a~n" range)
 	(list base range))
 (provide pmp-decode-napot)
@@ -41,5 +41,4 @@
 ; check if bv1 satisfies bv2 <= bv1 <= bv3
 (define (bv-between bv1 bv2 bv3)
 	(and (bvule bv2 bv1) (bvule bv1 bv3)))
-
 (provide bv-between)

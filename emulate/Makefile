@@ -89,7 +89,7 @@ proof: all
 	raco test test.rkt
 
 .PHONY: test
-test: dir $(addprefix $(BUILD)/, $(BUILDS))
+test: all
 	@echo "----------------------"
 	racket init.rkt
 	@echo "----------------------"

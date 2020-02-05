@@ -16,6 +16,6 @@ void main() {
     uint64_t* ptr = (uint64_t *)0x80080000;
     *ptr = 5;
 
-    // asm volatile ("ecall");
+    asm volatile ("ecall");
     return;
 }

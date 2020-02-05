@@ -5,8 +5,7 @@
 	"emulate.rkt"
 	"execute.rkt"
 	"machine.rkt"
-	"pmp.rkt"
-	"priv.rkt")
+	"pmp.rkt")
 (require (only-in racket/base for for/list in-range in-vector))
 (require rackunit rackunit/text-ui)
 
@@ -232,6 +231,14 @@
 		(check-equal? (list-ref setting5 2) 0)
 		(check-equal? (list-ref setting5 3) 0)))
 
+; Assert that kernel memory is equal between two machines
+; (define (assert-kernel-mem-equal m1 m2)
+; 	(define m1-ram (machine-ram m1))
+; 	(define m(machine-ram m2))
+; 	(vector-ref (machine-ram m) i)
+; 	)
+; (provide machine)
+
 (define-test-suite kernel
 	(test-case "kernel test"
 		(define program (file->bytearray "kernel/kernel.bin"))
@@ -242,7 +249,37 @@
 		(print-pmp m)
 		(check-true (equal? (machine-mode m) 0))))
 
-(define res-instruction-check (run-tests instruction-check))
-(define res-utils (run-tests utils))
-(define res-high-level-test (run-tests high-level-test))
-(define res-kernel (run-tests kernel))
+(define-test-suite noninterference
+	(test-case "Running noninterference proof"
+		(define reset_program (file->bytearray "kernel/kernel.bin"))
+		; set up our machine state
+		(define ramsize 1000000)
+		(define m (init-machine reset_program ramsize))
+		(test-and-execute m)
+		(define next_instr1 (step m)) ; step!
+		(printf "next_instr1: ~a~n" next_instr1)
+
+		(define gprsx
+			(for/list ([i (in-range 10 18)])
+				(gprs-get-x m i)))
+
+		(print-csr m)
+		
+		(for/list ([i (in-range 10 18)])
+				(printf "gprs ~a: ~a~n" i (gprs-get-x m i)))
+
+		; (define next_instr2 (step m)) ; step!
+		; (printf "next_instr2: ~a~n" next_instr2)
+
+		; (printf "~n * Running noninterference proof ~n")
+		; (define model_noninterference (verify (begin 
+		; 	(assert-kernel-mem-equal))))
+		; (printf "model: ~a~n" model_noninterference)
+		; (check-false (unsat? model_noninterference))
+		))
+
+; (define res-instruction-check (run-tests instruction-check))
+; (define res-utils (run-tests utils))
+; (define res-high-level-test (run-tests high-level-test))
+; (define res-kernel (run-tests kernel))
+(define res-noninterference (run-tests noninterference))

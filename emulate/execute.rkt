@@ -25,7 +25,11 @@
 	(cond
 		; SPECIAL Format
 		[(equal? opcode "ecall")
-			(error "ecall instruction not implemented yet")]
+			; TODO: real ecall implementation
+			(set-pc! m (bvsub (get-csr m "mtvec") (bv base_address 64)))
+			(set-machine-mode! m 1)
+			(unless (equal? (machine-mode m) 1)
+				(error "Should be in machine mode"))]
 		[(equal? opcode "ebreak")
 			(error "ebreak instruction not implemented yet")]
 		[(equal? opcode "uret")
@@ -41,7 +45,7 @@
 			(set-pc! m (bvsub (get-csr m "mepc") (bv base_address 64)))
 			; mret should always return to user mode
 			(unless (equal? (machine-mode m) 0)
-				(error "Should be in machine mode"))]
+				(error "Should be in user mode"))]
 		[(equal? opcode "dret")
 			(error "dret instruction not implemented yet")]
 		[(equal? opcode "sfence_vma")

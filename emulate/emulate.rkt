@@ -20,6 +20,7 @@
 (provide print-memory)
 
 (define (print-csr m)
+	(printf "pc ~a~n" (get-pc m))
 	(printf "mtvec ~a~n" (get-csr m "mtvec"))
 	(printf "mepc ~a~n" (get-csr m "mepc"))
 	(printf "pmpcfg0 ~a~n" (get-csr m "pmpcfg0"))
@@ -35,19 +36,24 @@
 	(printf "pmpaddr8 ~a~n" (get-csr m "pmpaddr8")))
 (provide print-csr)
 
+(define (step m)
+	(define next_instr (decode (get-next-instr m)))
+	(execute next_instr m)
+	next_instr)
+(provide step)
+
 ; get instructions until reach mret
 (define (test-and-execute m)
 	(define op null)
-	(while (not (equal? op "uret"))
-		(define next_instr (decode (get-next-instr m)))
+	(while (not (equal? op "ecall"))
+		(define next_instr (step m))
 		; (printf "PC: ~x INS: ~a~n" (bitvector->natural (get-pc m)) next_instr)
-		(set! op (list-ref next_instr 0))
-		(execute next_instr m)))
+		(set! op (list-ref next_instr 0))))
 (provide test-and-execute)
 
-; example execution
-(define program (file->bytearray "build/pmp.bin"))
-(printf "~n* Running pmp.bin test ~n")
-(define ramsize 10000)
-(define m (init-machine program ramsize))
-(test-and-execute m)
+; ; example execution
+; (define program (file->bytearray "build/pmp.bin"))
+; (printf "~n* Running pmp.bin test ~n")
+; (define ramsize 10000)
+; (define m (init-machine program ramsize))
+; (test-and-execute m)
