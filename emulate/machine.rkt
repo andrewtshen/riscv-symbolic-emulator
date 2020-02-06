@@ -50,6 +50,7 @@
 		[(eq? csr 'pmpaddr14) (set! v_csr (csrs-pmpaddr14 (cpu-csrs (machine-cpu m))))]
 		[(eq? csr 'pmpaddr15) (set! v_csr (csrs-pmpaddr15 (cpu-csrs (machine-cpu m))))]
 		[else
+			(printf "??: ~a~n" (eq? csr 'mtvec))
 			(printf "No such CSR: ~a~n" csr)
 			; TODO: illegal instruction
 			(set-pc! m (bvsub (get-csr m 'mtvec) (bv base_address 64)))

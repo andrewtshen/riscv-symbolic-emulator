@@ -16,25 +16,25 @@
 	(define funct7 (extract 31 25 b_instr))
 	(cond
 		[(and (bveq funct3 (bv #b000 3)) (bveq funct7 (bv #b0000000 7)))
-			(set! op "add")]
+			(set! op 'add)]
 		[(and (bveq funct3 (bv #b000 3)) (bveq funct7 (bv #b0100000 7)))
-			(set! op "sub")]
+			(set! op 'sub)]
 		[(and (bveq funct3 (bv #b001 3)) (bveq funct7 (bv #b0000000 7)))
-			(set! op "sll")]
+			(set! op 'sll)]
 		[(and (bveq funct3 (bv #b010 3)) (bveq funct7 (bv #b0000000 7)))
-			(set! op "slt")]
+			(set! op 'slt)]
 		[(and (bveq funct3 (bv #b011 3)) (bveq funct7 (bv #b0000000 7)))
-			(set! op "sltu")]
+			(set! op 'sltu)]
 		[(and (bveq funct3 (bv #b100 3)) (bveq funct7 (bv #b0000000 7)))
-			(set! op "xor")]
+			(set! op 'xor)]
 		[(and (bveq funct3 (bv #b101 3)) (bveq funct7 (bv #b0000000 7)))
-			(set! op "srl")]
+			(set! op 'srl)]
 		[(and (bveq funct3 (bv #b101 3)) (bveq funct7 (bv #b0100000 7)))
-			(set! op "sra")]
+			(set! op 'sra)]
 		[(and (bveq funct3 (bv #b110 3)) (bveq funct7 (bv #b0000000 7)))
-			(set! op "or")]
+			(set! op 'or)]
 		[(and (bveq funct3 (bv #b111 3)) (bveq funct7 (bv #b0000000 7)))
-			(set! op "and")]
+			(set! op 'and)]
 		[else
 			(printf "No such R FMT ~n")
 			; TODO: illegal instruction
@@ -52,53 +52,53 @@
 	(define shift_type (extract 30 30 b_instr))
 	(cond
 		[(and (bveq funct3 (bv #b000 3)) (bveq opcode (bv #b0010011 7)))
-			(set! op "addi")]
+			(set! op 'addi)]
 		[(and (bveq funct3 (bv #b010 3)) (bveq opcode (bv #b0010011 7)))
-			(set! op "slti")]
+			(set! op 'slti)]
 		[(and (bveq funct3 (bv #b011 3)) (bveq opcode (bv #b0010011 7)))
-			(set! op "sltiu")]
+			(set! op 'sltiu)]
 		[(and (bveq funct3 (bv #b100 3)) (bveq opcode (bv #b0010011 7)))
-			(set! op "xori")]
+			(set! op 'xori)]
 		[(and (bveq funct3 (bv #b110 3)) (bveq opcode (bv #b0010011 7)))
-			(set! op "ori")]
+			(set! op 'ori)]
 		[(and (bveq funct3 (bv #b111 3)) (bveq opcode (bv #b0010011 7)))
-			(set! op "andi")]
+			(set! op 'andi)]
 		[(and (bveq funct3 (bv #b001 3)) (bveq opcode (bv #b0010011 7)))
 			(set! imm (extract 24 20 b_instr))
-			(set! op "slli")]
+			(set! op 'slli)]
 		[(and (bveq funct3 (bv #b101 3)) (bveq opcode (bv #b0010011 7)) (bveq shift_type (bv #b0 1)))
 			(set! imm (extract 25 20 b_instr))
-			(set! op "srli")]
+			(set! op 'srli)]
 		[(and (bveq funct3 (bv #b101 3)) (bveq opcode (bv #b0010011 7)) (bveq shift_type (bv #b1 1)))
 			(set! imm (extract 25 20 b_instr))
-			(set! op "srai")]
+			(set! op 'srai)]
 		[(and (bveq funct3 (bv #b000 3)) (bveq opcode (bv #b0011011 7)))
-			(set! op "addiw")]
+			(set! op 'addiw)]
 		[(and (bveq funct3 (bv #b001 3)) (bveq opcode (bv #b0011011 7)))
 			(set! imm (extract 25 20 b_instr))
-			(set! op "slliw")]
+			(set! op 'slliw)]
 		[(and (bveq funct3 (bv #b101 3)) (bveq opcode (bv #b0011011 7)) (bveq shift_type (bv #b0 1)))
 			(set! imm (extract 25 20 b_instr))
-			(set! op "srliw")]
+			(set! op 'srliw)]
 		[(and (bveq funct3 (bv #b101 3)) (bveq opcode (bv #b0011011 7)) (bveq shift_type (bv #b1 1)))
 			(set! imm (extract 25 20 b_instr))
-			(set! op "sraiw")]
+			(set! op 'sraiw)]
 		[(and (bveq funct3 (bv #b000 3)) (bveq opcode (bv #b0000011 7)))
-			(set! op "lb")]
+			(set! op 'lb)]
 		[(and (bveq funct3 (bv #b001 3)) (bveq opcode (bv #b0000011 7)))
-			(set! op "lh")]
+			(set! op 'lh)]
 		[(and (bveq funct3 (bv #b010 3)) (bveq opcode (bv #b0000011 7)))
-			(set! op "lw")]
+			(set! op 'lw)]
 		[(and (bveq funct3 (bv #b011 3)) (bveq opcode (bv #b0000011 7)))
-			(set! op "ld")]
+			(set! op 'ld)]
 		[(and (bveq funct3 (bv #b100 3)) (bveq opcode (bv #b0000011 7)))
-			(set! op "lbu")]
+			(set! op 'lbu)]
 		[(and (bveq funct3 (bv #b101 3)) (bveq opcode (bv #b0000011 7)))
-			(set! op "lhu")]
+			(set! op 'lhu)]
 		[(and (bveq funct3 (bv #b110 3)) (bveq opcode (bv #b0000011 7)))
-			(set! op "lwu")]
+			(set! op 'lwu)]
 		[(and (bveq funct3 (bv #b000 3)) (bveq opcode (bv #b1100111 7)))
-			(set! op "jalr")]
+			(set! op 'jalr)]
 		[else
 			(printf "No such I FMT ~n")
 			; TODO: illegal instruction
@@ -119,17 +119,17 @@
 		(extract 11 8 b_instr)))
 	(cond
 		[(bveq funct3 (bv #b000 3))
-			(set! op "beq")]
+			(set! op 'beq)]
 		[(bveq funct3 (bv #b001 3))
-			(set! op "bne")]
+			(set! op 'bne)]
 		[(bveq funct3 (bv #b100 3))
-			(set! op "blt")]
+			(set! op 'blt)]
 		[(bveq funct3 (bv #b101 3))
-			(set! op "bge")]
+			(set! op 'bge)]
 		[(bveq funct3 (bv #b110 3))
-			(set! op "bltu")]
+			(set! op 'bltu)]
 		[(bveq funct3 (bv #b111 3))
-			(set! op "bgeu")]
+			(set! op 'bgeu)]
 		[else
 			(printf "No such B FMT ~n")
 			; TODO: illegal instruction
@@ -145,9 +145,9 @@
 	(define imm (extract 31 12 b_instr))
 	(cond
 		[(bveq opcode (bv #b0110111 7))
-			(set! op "lui")]
+			(set! op 'lui)]
 		[(bveq opcode (bv #b0010111 7))
-			(set! op "auipc")]
+			(set! op 'auipc)]
 		[else
 			(printf "No such U FMT ~n")
 			; TODO: illegal instruction
@@ -166,13 +166,13 @@
 		(extract 11 7 b_instr)))
 	(cond
 		[(and (bveq funct3 (bv #b000 3)) (bveq opcode (bv #b0100011 7)))
-			(set! op "sb")]
+			(set! op 'sb)]
 		[(and (bveq funct3 (bv #b001 3)) (bveq opcode (bv #b0100011 7)))
-			(set! op "sh")]
+			(set! op 'sh)]
 		[(and (bveq funct3 (bv #b010 3)) (bveq opcode (bv #b0100011 7)))
-			(set! op "sw")]
+			(set! op 'sw)]
 		[(and (bveq funct3 (bv #b011 3)) (bveq opcode (bv #b0100011 7)))
-			(set! op "sd")]
+			(set! op 'sd)]
 		[else
 			(printf "No such S FMT ~n")
 			; TODO: illegal instruction
@@ -191,7 +191,7 @@
 		(extract 30 21 b_instr)))
 	(cond
 		[(bveq opcode (bv #b1101111 7))
-			(set! op "jal")]
+			(set! op 'jal)]
 		[else
 			(printf "No such J FMT ~n")
 			; TODO: illegal instruction
@@ -258,30 +258,30 @@
 	(define csr (extract 31 20 b_instr))
 	(cond
 		[(bveq b_instr (bv #b00110000001000000000000001110011 32))
-			(set! op "mret")]
+			(set! op 'mret)]
 		[(bveq b_instr (bv #b00000000001000000000000001110011 32))
-			(set! op "uret")]
+			(set! op 'uret)]
 		[(bveq b_instr (bv #b00000000000000000000000001110011 32))
-			(set! op "ecall")]
+			(set! op 'ecall)]
 		[(bveq b_instr (bv #b00000000000100000000000001110011 32))
-			(set! op "ebreak")]
+			(set! op 'ebreak)]
 		[(and (bveq funct3 (bv #b001 3)) (bveq opcode (bv #b1110011 7)))
-			(set! op "csrrw")
+			(set! op 'csrrw)
 			(set! is_csr #t)]
 		[(and (bveq funct3 (bv #b010 3)) (bveq opcode (bv #b1110011 7)))
-			(set! op "csrrs")
+			(set! op 'csrrs)
 			(set! is_csr #t)]
 		[(and (bveq funct3 (bv #b011 3)) (bveq opcode (bv #b1110011 7)))
-			(set! op "csrrc")
+			(set! op 'csrrc)
 			(set! is_csr #t)]
 		[(and (bveq funct3 (bv #b101 3)) (bveq opcode (bv #b1110011 7)))
-			(set! op "csrrwi")
+			(set! op 'csrrwi)
 			(set! is_csr #t)]
 		[(and (bveq funct3 (bv #b110 3)) (bveq opcode (bv #b1110011 7)))
-			(set! op "csrrsi")
+			(set! op 'csrrsi)
 			(set! is_csr #t)]
 		[(and (bveq funct3 (bv #b111 3)) (bveq opcode (bv #b1110011 7)))
-			(set! op "csrrci")
+			(set! op 'csrrci)
 			(set! is_csr #t)]
 		[else
 			(printf "No such SPECIAL FMT ~n")

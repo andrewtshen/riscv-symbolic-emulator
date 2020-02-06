@@ -47,7 +47,7 @@
 			(set! fmt "TODO FMT")]
 		[else
 			; TODO: illegal instruction
-			(set-pc! m (bvsub (get-csr m "mtvec") (bv base_address 64)))
+			(set-pc! m (bvsub (get-csr m 'mtvec) (bv base_address 64)))
 			(set-machine-mode! m 1)])
 	fmt)
 (provide get-fmt)

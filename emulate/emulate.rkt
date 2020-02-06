@@ -46,7 +46,7 @@
 ; get instructions until reach mret
 (define (execute-until-mret m)
 	(define op null)
-	(while (not (equal? op "mret"))
+	(while (not (eq? op 'mret))
 		(define next_instr (step m))
 		; (printf "PC: ~x INS: ~a~n" (bitvector->natural (get-pc m)) next_instr)
 		(set! op (list-ref next_instr 0))))
