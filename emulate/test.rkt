@@ -6,7 +6,7 @@
 	"execute.rkt"
 	"machine.rkt"
 	"pmp.rkt")
-(require (only-in racket/base for for/list in-range in-vector))
+(require (only-in racket/base for/list for/vector in-range))
 (require rackunit rackunit/text-ui)
 
 ; Test Cases for Symbolic Executions
@@ -173,8 +173,7 @@
 										(bveq (list-ref gprsx 3) (bv #xffffffffffffffff 64))
 										(bveq (list-ref gprsx 4) (bv #x0000000000000000 64))
 										(bveq (list-ref gprsx 5) (bv #xfffffffffffffffe 64)))))))
-		(check-true (unsat? model_addiw)))
-	)
+		(check-true (unsat? model_addiw))))
 
 (define-test-suite high-level-test
 	(test-case "stack test"
@@ -214,7 +213,7 @@
 		(check-true (not (pmp-check m (bv #x00700001 64) (bv #x007FFFFF 64))))
 		(check-true (pmp-check m (bv #x10700001 64) (bv #x107FFFFF 64)))
 		(check-false (pmp-check m (bv #x00700001 64) (bv #x107FFFFF 64)))
-		(check-true (equal? (machine-mode m) 1)))
+		(check-true (equal? (machine-mode m) 0)))
 	(test-case "pmp-napot-settings"
 		; test pmp_decode_cfg
 		(define setting1 (pmp-decode-cfg (bv #x0000000000001f1f 64) 1))
@@ -248,37 +247,68 @@
 		(print-pmp m)
 		(check-true (equal? (machine-mode m) 0))))
 
+(define (deep-copy-machine m)
+	(machine
+		(cpu
+			(csrs 
+				(get-csr m 'mtvec)
+				(get-csr m 'mepc)
+				(get-csr m 'mstatus)
+				(get-csr m 'pmpcfg0)
+				(get-csr m 'pmpcfg2)
+				(get-csr m 'pmpaddr0)
+				(get-csr m 'pmpaddr1)
+				(get-csr m 'pmpaddr2)
+				(get-csr m 'pmpaddr3)
+				(get-csr m 'pmpaddr4)
+				(get-csr m 'pmpaddr5)
+				(get-csr m 'pmpaddr6)
+				(get-csr m 'pmpaddr7)
+				(get-csr m 'pmpaddr8)
+				(get-csr m 'pmpaddr9)
+				(get-csr m 'pmpaddr10)
+				(get-csr m 'pmpaddr11)
+				(get-csr m 'pmpaddr12)
+				(get-csr m 'pmpaddr13)
+				(get-csr m 'pmpaddr14)
+				(get-csr m 'pmpaddr15))
+			(for/vector ([i (cpu-gprs (machine-cpu m))])
+				i)
+			(get-pc m))
+		; (machine-ram m)
+		(for/vector ([i (machine-ram m)])
+			i)
+		(machine-mode m)))
+
 (define-test-suite noninterference
-	(test-case "~n* Running noninterference proof ~n"
+	(test-case "noninterference"
+		(printf "~n* Running noninterference proof ~n")
+
 		(define reset_program (file->bytearray "kernel/kernel.bin"))
 		; set up our machine state
 		(define ramsize 1000000)
 		(define m (init-machine reset_program ramsize))
-		(execute-until-mret m)
-		(define next_instr1 (step m)) ; step!
-		(printf "next_instr1: ~a~n" next_instr1)
+		(define m1 (deep-copy-machine m))
 
-		(define gprsx
-			(for/list ([i (in-range 10 18)])
-				(gprs-get-x m i)))
+		; (define next_instr1 (step m)) ; step!
 
+		; show that they can execute independently, but
+		; still refer to the same symbolic variables.
 		(print-csr m)
+		(print-memory m #x80000 #x80010)
+		(execute-until-mret m)
+		(print-csr m)
+		(print-memory m #x80000 #x80010)
 
-		(for/list ([i (in-range 10 18)])
-				(printf "gprs ~a: ~a~n" i (gprs-get-x m i)))
+		(print-csr m1)
+		(print-memory m1 #x80000 #x80010)
+		(execute-until-mret m1)
+		(print-csr m1)
+		(print-memory m1 #x80000 #x80010)
+		(check-true #t)))
 
-		; (define next_instr2 (step m)) ; step!
-		; (printf "next_instr2: ~a~n" next_instr2)
-
-		; (printf "~n * Running noninterference proof ~n")
-		; (define model_noninterference (verify (begin 
-		; 	(assert-kernel-mem-equal))))
-		; (printf "model: ~a~n" model_noninterference)
-		; (check-false (unsat? model_noninterference))
-		))
-
-(define res-instruction-check (run-tests instruction-check))
-(define res-utils (run-tests utils))
-(define res-high-level-test (run-tests high-level-test))
-(define res-kernel (run-tests kernel))
+; (define res-instruction-check (run-tests instruction-check))
+; (define res-utils (run-tests utils))
+; (define res-high-level-test (run-tests high-level-test))
+; (define res-kernel (run-tests kernel))
 (define res-noninterference (run-tests noninterference))
