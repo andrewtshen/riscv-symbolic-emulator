@@ -2,7 +2,6 @@
 
 (require
 	"machine.rkt")
-(require (only-in racket/base))
 
 ; Return the instruction format for each of the opcodes.
 

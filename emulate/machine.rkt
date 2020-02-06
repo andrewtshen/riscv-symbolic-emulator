@@ -2,7 +2,7 @@
 
 (require
 	"pmp.rkt")
-(require (only-in racket/base for for/list in-range string-append gensym number->string))
+(require (only-in racket/base for for/list in-range))
 
 ; 31 64-bit-vectors (x0 is not an actual gpr)
 (struct cpu
@@ -185,9 +185,6 @@
 		(define A (list-ref settings 3))
 		; (printf "~a ~a ~a ~a~n" R W X A)
 		(cond [(equal? A 1)
-			; (printf "* Checking pmp~acfg~n" i)
-			; (define pmp_name (gensym (string-append "pmpaddr" (number->string i))))
-			; (printf "pmpaddr: ~a~n" pmp_name)
 			(define pmp (get-csr m pmp_name))
 			(define pmp_bounds (pmp-decode-napot pmp))
 			(define pmp_start (list-ref pmp_bounds 0))

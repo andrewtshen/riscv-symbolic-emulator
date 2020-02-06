@@ -6,7 +6,7 @@
 	"execute.rkt"
 	"machine.rkt"
 	"pmp.rkt")
-(require (only-in racket/base for for/list in-range in-vector))
+(require (only-in racket/base for in-range))
 
 ; Set up the machine and execute each instruction.
 ; Properties are proved at the end of the execution of the machine.

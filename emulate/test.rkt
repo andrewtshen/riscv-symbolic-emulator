@@ -307,8 +307,8 @@
 		(print-memory m1 #x80000 #x80010)
 		(check-true #t)))
 
-; (define res-instruction-check (run-tests instruction-check))
-; (define res-utils (run-tests utils))
-; (define res-high-level-test (run-tests high-level-test))
-; (define res-kernel (run-tests kernel))
+(define res-instruction-check (run-tests instruction-check))
+(define res-utils (run-tests utils))
+(define res-high-level-test (run-tests high-level-test))
+(define res-kernel (run-tests kernel))
 (define res-noninterference (run-tests noninterference))
