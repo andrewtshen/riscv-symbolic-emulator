@@ -19,7 +19,7 @@
     (printf "~n* Running add.bin test ~n" )
 		; make machine
 		(define ramsize 1000)
-		(define m (init-machine program ramsize))
+		(define m (init-machine-with-prog program ramsize))
 		(execute-until-mret m)
 
 		(define gprsx
@@ -34,7 +34,7 @@
 		(define program (file->bytearray "build/addi.bin"))
 		(define ramsize 1000)
 		(printf "~n* Running addi.bin test ~n")
-		(define m (init-machine program ramsize))
+		(define m (init-machine-with-prog program ramsize))
 		(execute-until-mret m)
 		(define gprsx
 			(for/list ([i (in-range 10 18)])
@@ -48,7 +48,7 @@
 		(define program (file->bytearray "build/addw.bin"))
 		(define ramsize 1000)
 		(printf "~n* Running addw.bin test ~n")
-		(define m (init-machine program ramsize))
+		(define m (init-machine-with-prog program ramsize))
 		(execute-until-mret m)
 		(define gprsx
 			(for/list ([i (in-range 10 18)])
@@ -63,19 +63,19 @@
 		(define program (file->bytearray "build/sub.bin"))
 		(define ramsize 10000)
 		(printf "~n* Running sub.bin test ~n")
-		(define m (init-machine program ramsize))
+		(define m (init-machine-with-prog program ramsize))
 		(execute-until-mret m))
 	(test-case "jal test"
 		(define program (file->bytearray "build/jal.bin"))
 		(define ramsize 10000)
 		(printf "~n* Running jal.bin test ~n")
-		(define m (init-machine program ramsize))
+		(define m (init-machine-with-prog program ramsize))
 		(execute-until-mret m))
 	(test-case "sd/ld test"
 		(define program (file->bytearray "build/sd_ld.bin"))
 		(printf "~n* Running sd_ld.bin test ~n")
 		(define ramsize 1000)
-		(define m (init-machine program ramsize))
+		(define m (init-machine-with-prog program ramsize))
 		(execute-until-mret m)
 
 		(define gprsx
@@ -90,7 +90,7 @@
 		(define program (file->bytearray "build/sw_lw.bin"))
 		(printf "~n* Running sw_lw.bin test ~n")
 		(define ramsize 1000)
-		(define m (init-machine program ramsize))
+		(define m (init-machine-with-prog program ramsize))
 		(execute-until-mret m)
 
 		(define gprsx
@@ -109,7 +109,7 @@
 		(define program (file->bytearray "build/sh_lh.bin"))
 		(printf "~n* Running sh_lh.bin test ~n")
 		(define ramsize 1000)
-		(define m (init-machine program ramsize))
+		(define m (init-machine-with-prog program ramsize))
 		(execute-until-mret m)
 
 		(define gprsx
@@ -125,7 +125,7 @@
 		(define program (file->bytearray "build/sb_lb.bin"))
 		(printf "~n* Running sb_lb.bin test ~n")
 		(define ramsize 1000)
-		(define m (init-machine program ramsize))
+		(define m (init-machine-with-prog program ramsize))
 		(execute-until-mret m)
 
 		(define gprsx
@@ -142,7 +142,7 @@
     (printf "~n* Running srliw.bin test ~n" )
 		; make machine
 		(define ramsize 1000)
-		(define m (init-machine program ramsize))
+		(define m (init-machine-with-prog program ramsize))
 		(execute-until-mret m)
 
 		(define gprsx
@@ -160,7 +160,7 @@
     (printf "~n* Running addiw.bin test ~n" )
 		; make machine
 		(define ramsize 1000)
-		(define m (init-machine program ramsize))
+		(define m (init-machine-with-prog program ramsize))
 		(execute-until-mret m)
 
 		(define gprsx
@@ -180,13 +180,13 @@
   	(define program (file->bytearray "build/stack.bin"))
   	(printf "~n* Running stack.bin test ~n" )
   	(define ramsize 1000)
-  	(define m (init-machine program ramsize))
+  	(define m (init-machine-with-prog program ramsize))
   	(execute-until-mret m))
 	(test-case "pmp test"
 		(define program (file->bytearray "build/pmp.bin"))
 		(printf "~n* Running pmp.bin test ~n")
 		(define ramsize 10000)
-		(define m (init-machine program ramsize))
+		(define m (init-machine-with-prog program ramsize))
 		(execute-until-mret m)
 		(print-pmp m)
 		(pmp-check m (bv #x00700001 64) (bv #x007FFFFF 64))))
@@ -203,7 +203,7 @@
 		(define program (file->bytearray "build/pmp.bin"))
 		(printf "~n* Running pmp.bin test ~n")
 		(define ramsize 10000)
-		(define m (init-machine program ramsize))
+		(define m (init-machine-with-prog program ramsize))
 		(execute-until-mret m)
 		(print-pmp m)
 		(check-true (pmp-check m (bv #x80800000 64) (bv #x80800000 64)))
@@ -242,7 +242,7 @@
 		(define program (file->bytearray "kernel/kernel.bin"))
 		(printf "~n* Running kernel.bin test ~n")
 		(define ramsize 1000000)
-		(define m (init-machine program ramsize))
+		(define m (init-machine-with-prog program ramsize))
 		(execute-until-mret m)
 		(print-pmp m)
 		(check-true (equal? (machine-mode m) 0))))
@@ -284,31 +284,50 @@
 	(test-case "noninterference"
 		(printf "~n* Running noninterference proof ~n")
 
-		(define reset_program (file->bytearray "kernel/kernel.bin"))
+		; (define program (file->bytearray "kernel/kernel.bin"))
 		; set up our machine state
 		(define ramsize 1000000)
-		(define m (init-machine reset_program ramsize))
+		; (define m (init-machine-with-prog program ramsize))
+		(define m (init-machine ramsize))
 		(define m1 (deep-copy-machine m))
 
-		; (define next_instr1 (step m)) ; step!
+		(define next_instr (step m)) ; step!
+		(printf "next_instr: ~a~n" next_instr)
 
 		; show that they can execute independently, but
 		; still refer to the same symbolic variables.
+		; (execute-until-mret m)
 		(print-csr m)
-		(print-memory m #x80000 #x80010)
-		(execute-until-mret m)
-		(print-csr m)
-		(print-memory m #x80000 #x80010)
-
 		(print-csr m1)
-		(print-memory m1 #x80000 #x80010)
-		(execute-until-mret m1)
-		(print-csr m1)
-		(print-memory m1 #x80000 #x80010)
+		; (print-memory m #x80000 #x80010)
 		(check-true #t)))
 
-(define res-instruction-check (run-tests instruction-check))
-(define res-utils (run-tests utils))
-(define res-high-level-test (run-tests high-level-test))
-(define res-kernel (run-tests kernel))
+; (define res-instruction-check (run-tests instruction-check))
+; (define res-utils (run-tests utils))
+; (define res-high-level-test (run-tests high-level-test))
+; (define res-kernel (run-tests kernel))
 (define res-noninterference (run-tests noninterference))
+
+(printf "~n* Running noninterference proof ~n")
+
+; ; set up our machine state
+; (define ramsize 1000000)
+; (define m (init-machine ramsize))
+; (define m1 (deep-copy-machine m))
+
+; ; (define next_instr1 (step m)) ; step!
+
+; ; show that they can execute independently, but
+; ; still refer to the same symbolic variables.
+; (print-csr m)
+; (print-memory m #x80000 #x80010)
+; (execute-until-mret m)
+; (print-csr m)
+; (print-memory m #x80000 #x80010)
+
+; (print-csr m1)
+; (print-memory m1 #x80000 #x80010)
+; (execute-until-mret m1)
+; (print-csr m1)
+; (print-memory m1 #x80000 #x80010)
+; (check-true #t)

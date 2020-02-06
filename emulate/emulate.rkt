@@ -56,5 +56,5 @@
 ; (define program (file->bytearray "build/pmp.bin"))
 ; (printf "~n* Running pmp.bin test ~n")
 ; (define ramsize 10000)
-; (define m (init-machine program ramsize))
+; (define m (init-machine-with-prog program ramsize))
 ; (execute-until-mret m)

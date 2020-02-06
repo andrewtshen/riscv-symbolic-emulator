@@ -136,8 +136,8 @@
 
 (define (bytearray-read ba addr nbytes)
 	(define bytes
-		(for/list ([pos (in-range addr (+ addr nbytes))])
-		  (vector-ref ba pos)))
+		(for/list ([i (in-range nbytes)])
+	  	(vector-ref ba (+ addr i))))
   ; little endian
   (apply concat (reverse bytes)))
 

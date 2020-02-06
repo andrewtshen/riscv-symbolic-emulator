@@ -53,27 +53,26 @@
 			(set-pc! m (bvsub (get-csr m 'mtvec) (bv base_address 64)))
 			(set-machine-mode! m 1)]
 		[(eq? opcode 'csrrw)
-			(define rd (list-ref-nat instr 1))
-			(define rs1 (list-ref-nat instr 2))
-			(define v_rs1 (gprs-get-x m rs1))
-			(define csr (list-ref instr 3))
-			(cond
-				[(zero? rd) null]
-				[else
+			(when (equal? (machine-mode m) 1)
+				(define rd (list-ref-nat instr 1))
+				(define rs1 (list-ref-nat instr 2))
+				(define v_rs1 (gprs-get-x m rs1))
+				(define csr (list-ref instr 3))
+				(when (not (zero? rd))
 					(define v_csr (zero-extend (get-csr m csr) (bitvector 64)))
-					(gprs-set-x! m rd v_csr)])
-			(set-csr! m (list-ref instr 3) (zero-extend v_rs1 (bitvector 64)))
+					(gprs-set-x! m rd v_csr))
+				(set-csr! m (list-ref instr 3) (zero-extend v_rs1 (bitvector 64))))
 			(set-pc! m (bvadd pc (bv 4 64)))]
 		[(eq? opcode 'csrrs)
-			(define rd (list-ref-nat instr 1))
-			(define rs1 (list-ref-nat instr 2))
-			(define bitmask (gprs-get-x m rs1))
-			(define csr (list-ref instr 3))
-			(define v_csr (zero-extend (get-csr m csr) (bitvector 64)))
-			(gprs-set-x! m rd v_csr)
-			
-			(set-csr! m csr (bvor v_csr bitmask))
-			(set! v_csr (zero-extend (get-csr m csr) (bitvector 64)))
+			(when (equal? (machine-mode m) 1)
+				(define rd (list-ref-nat instr 1))
+				(define rs1 (list-ref-nat instr 2))
+				(define bitmask (gprs-get-x m rs1))
+				(define csr (list-ref instr 3))
+				(define v_csr (zero-extend (get-csr m csr) (bitvector 64)))
+				(gprs-set-x! m rd v_csr)
+				(set-csr! m csr (bvor v_csr bitmask))
+				(set! v_csr (zero-extend (get-csr m csr) (bitvector 64))))
 			(set-pc! m (bvadd pc (bv 4 64)))]
 		[(eq? opcode 'csrrc)
 			; TODO: csrrc instruction not implemented yet

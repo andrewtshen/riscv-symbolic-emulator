@@ -3,7 +3,7 @@
 (require
 	"machine.rkt")
 (require (only-in racket/file file->bytes)
-		 (only-in racket/base bytes-length for for/list in-range subbytes bytes-ref error))
+		 (only-in racket/base bytes-length for for/list in-range subbytes bytes-ref))
 (require syntax/parse/define)
 (require (only-in racket/base build-vector))
 
@@ -20,19 +20,19 @@
 	(define contents (file->bytes filename))
 	(define length (bytes-length contents))
 	(unless (equal? (modulo length 4) 0)
-		(error "Cannot read incomplete files"))
+		(printf "Cannot read incomplete files~n"))
 	(list->vector
 	(for/list ([i (in-range 0 length)])
 		(bv (bytes-ref contents i) 8))))
 (provide file->bytearray)
 
 ; 32 64-bit gprs in the CPU and 32 bit-vectors for RAM
-(define (init-machine program ramsize)
+(define (init-machine-with-prog program ramsize)
 	(define proglength (vector-length program))
 	(printf "ramsize: ~a~n" ramsize)
 	(printf "proglength: ~a~n" proglength)
 	(unless (>= ramsize proglength)
-		(error "Not enough RAM provided to run program"))
+		(printf "Not enough RAM provided to run program~n"))
 	(define-symbolic* mtvec mepc mstatus pmpcfg0 pmpcfg2 pmpaddr0 pmpaddr1 pmpaddr2
 		pmpaddr3 pmpaddr4 pmpaddr5 pmpaddr6 pmpaddr7 pmpaddr8 pmpaddr9 pmpaddr10
 		pmpaddr11 pmpaddr12 pmpaddr13 pmpaddr14 pmpaddr15 (bitvector 64))
@@ -82,6 +82,44 @@
 	(gprs-set-x! m 5 (bv #x80000000 64))
 	(gprs-set-x! m 10 (bv 1020 64))
 	m)
+(provide init-machine-with-prog)
+
+(define (init-machine ramsize)
+	(define-symbolic* mtvec mepc mstatus pmpcfg0 pmpcfg2 pmpaddr0 pmpaddr1 pmpaddr2
+		pmpaddr3 pmpaddr4 pmpaddr5 pmpaddr6 pmpaddr7 pmpaddr8 pmpaddr9 pmpaddr10
+		pmpaddr11 pmpaddr12 pmpaddr13 pmpaddr14 pmpaddr15 pc (bitvector 64))
+
+	(set! pmpcfg0 (bv #x0000000000001f1f 64))
+	(set! pmpcfg2 (bv #x0000000000000018 64))
+	(set! pmpaddr0 (bv #x00000000200203ff 64))
+	(set! pmpaddr1 (bv #x00000000040fffff 64))
+	(set! pmpaddr1 (bv 0 64))
+	(set! pmpaddr2 (bv 0 64))
+	(set! pmpaddr3 (bv 0 64))
+	(set! pmpaddr4 (bv 0 64))
+	(set! pmpaddr5 (bv 0 64))
+	(set! pmpaddr6 (bv 0 64))
+	(set! pmpaddr7 (bv 0 64))
+	(set! pmpaddr8 (bv #xffffffffffffffff 64))
+	(set! pmpaddr9 (bv 0 64))
+	(set! pmpaddr10 (bv 0 64))
+	(set! pmpaddr11 (bv 0 64))
+	(set! pmpaddr12 (bv 0 64))
+	(set! pmpaddr13 (bv 0 64))
+	(set! pmpaddr14 (bv 0 64))
+	(set! pmpaddr15 (bv 0 64))
+	(define m
+		(machine
+			(cpu 
+				(csrs
+					mtvec mepc mstatus pmpcfg0 pmpcfg2 pmpaddr0 pmpaddr1 pmpaddr2
+					pmpaddr3 pmpaddr4 pmpaddr5 pmpaddr6 pmpaddr7 pmpaddr8 pmpaddr9
+					pmpaddr10 pmpaddr11 pmpaddr12 pmpaddr13 pmpaddr14 pmpaddr15)
+				(make-sym-vector 31 64 gpr) ; be careful of -1 for offset
+				pc) ; make pc symbolic
+			(make-sym-vector ramsize 8 mem)
+			1)) ; start in machine mode
+	m)
 (provide init-machine)
 
 ; ; get program example
@@ -90,7 +128,7 @@
 
 ; ; machine init example
 ; (define ramsize 100)
-; (define m (init-machine program ramsize))
+; (define m (init-machine-with-prog program ramsize))
 ; (printf "~a~n" (machine-ram m))
 ; (displayln (gprs-get-x m 2))
 ; (get-next-instr m)
