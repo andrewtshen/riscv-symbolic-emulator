@@ -118,7 +118,7 @@
 				(make-sym-vector 31 64 gpr) ; be careful of -1 for offset
 				pc) ; make pc symbolic
 			(make-sym-vector ramsize 8 mem)
-			1)) ; start in machine mode
+			0)) ; start in user mode
 	m)
 (provide init-machine)
 

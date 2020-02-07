@@ -297,16 +297,17 @@
 		; show that they can execute independently, but
 		; still refer to the same symbolic variables.
 		; (execute-until-mret m)
-		(print-csr m)
-		(print-csr m1)
-		; (print-memory m #x80000 #x80010)
+		; (print-csr m)
+		; (print-csr m1)
+		(print-memory m #x2000 #x2010)
+		(print-memory m1 #x2000 #x2010)
 		(check-true #t)))
 
-(define res-instruction-check (run-tests instruction-check))
-(define res-utils (run-tests utils))
-(define res-high-level-test (run-tests high-level-test))
-(define res-kernel (run-tests kernel))
-; (define res-noninterference (run-tests noninterference))
+; (define res-instruction-check (run-tests instruction-check))
+; (define res-utils (run-tests utils))
+; (define res-high-level-test (run-tests high-level-test))
+; (define res-kernel (run-tests kernel))
+(define res-noninterference (run-tests noninterference))
 
 ; (printf "~n* Running noninterference proof ~n")
 ; ; set up our machine state

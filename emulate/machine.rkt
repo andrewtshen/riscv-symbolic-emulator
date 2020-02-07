@@ -120,21 +120,18 @@
 ; get next instruction using current program counter
 (define (get-next-instr m)
 	(define pc (get-pc m))
-	(machine-ram-read m (bitvector->natural pc) 4))
+	(machine-ram-read m pc 4))
 (provide get-next-instr)
 
 ; read an nbytes from a machine-ram ba starting at address addr
 (define (machine-ram-read m addr nbytes)
-		; (printf "checking pmp! read~n")
-	(define saddr (bv (+ addr base_address) 64))
-	; (printf "saddr: ~a~n" saddr)
-	(define eaddr (bv (+ addr (* nbytes 8) base_address) 64))
-	; (printf "eaddr: ~a~n" eaddr)
+	(define saddr (bvadd addr (bv base_address 64)))
+	(define eaddr (bvadd addr (bv (* nbytes 8) 64) (bv base_address 64)))
 	(define legal (pmp-check m saddr eaddr))
 
 	; machine mode (1) or legal, we can read the memory
 	(when (or (equal? (machine-mode m) 1) legal)
-		(bytearray-read (machine-ram m) addr nbytes)))
+		(bytearray-read (machine-ram m) (bitvector->natural addr) nbytes)))
 (provide machine-ram-read)
 
 (define (bytearray-read ba addr nbytes)
@@ -145,16 +142,13 @@
   (apply concat (reverse bytes)))
 
 (define (machine-ram-write! m addr value nbits)
-	; check we aren't violating pmp
-	(when (equal? (machine-mode m) 0)
-		; (printf "checking pmp! write~n")
-		(define saddr (bv (+ addr base_address) 64))
-		; (printf "saddr: ~a~n" saddr)
-		(define eaddr (bv (+ addr nbits base_address) 64))
-		; (printf "eaddr: ~a~n" eaddr)
-		(define legal (pmp-check m saddr eaddr))
-		(assert legal))
-  (bytearray-write! (machine-ram m) addr value nbits))
+	(define saddr (bvadd addr (bv base_address 64)))
+	(define eaddr (bvadd addr (bv nbits 64) (bv base_address 64)))
+	(define legal (pmp-check m saddr eaddr))
+
+	; machine mode (1) or legal, we can read the memory
+	(when (or (equal? (machine-mode m) 1) legal)
+  	(bytearray-write! (machine-ram m) (bitvector->natural addr) value nbits)))
 (provide machine-ram-write!)
 
 (define (bytearray-write! ba addr value nbits)
