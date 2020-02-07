@@ -2,7 +2,7 @@ _stack_size = 0x1024;
 
 SECTIONS
 {
-    . = 0x80080000;         /* User prog from 0x80080000 - 0x80100000 */
+    . = 0x80002000;         /* User prog from 0x80002000 - 0x80004000 */
     .text : 
     {   
         KEEP(*(.init_text)) /* ASM to main function */
@@ -29,5 +29,5 @@ SECTIONS
     . = . + _stack_size;
     . = ALIGN(8);
     _ustack = .;
-    ASSERT((. < 0x80082000), "overflowed available area")
+    ASSERT((. < 0x80004000), "overflowed available area")
 }

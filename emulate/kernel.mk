@@ -2,16 +2,12 @@ KERNEL = kernel
 
 KERNEL_OBJS := \
 	kernel/startup.o \
-	kernel/traphandler.o \
-	kernel/kernelvec.o \
 	kernel/kernel.o \
-	kernel/math.o \
 	kernel/string.o \
 	kernel/user.bin.o \
 
 USER_OBJS := \
 	kernel/string.o \
-	kernel/math.o \
 	kernel/user.o \
 	kernel/trampoline.o \
 

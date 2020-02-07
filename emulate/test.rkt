@@ -286,13 +286,13 @@
 
 		; (define program (file->bytearray "kernel/kernel.bin"))
 		; set up our machine state
-		(define ramsize 1000000)
+		(define ramsize 15000)
 		; (define m (init-machine-with-prog program ramsize))
 		(define m (init-machine ramsize))
 		(define m1 (deep-copy-machine m))
 
 		(define next_instr (step m)) ; step!
-		(printf "next_instr: ~a~n" next_instr)
+		; (printf "next_instr: ~a~n" next_instr)
 
 		; show that they can execute independently, but
 		; still refer to the same symbolic variables.
@@ -302,14 +302,13 @@
 		; (print-memory m #x80000 #x80010)
 		(check-true #t)))
 
-; (define res-instruction-check (run-tests instruction-check))
-; (define res-utils (run-tests utils))
-; (define res-high-level-test (run-tests high-level-test))
-; (define res-kernel (run-tests kernel))
-(define res-noninterference (run-tests noninterference))
+(define res-instruction-check (run-tests instruction-check))
+(define res-utils (run-tests utils))
+(define res-high-level-test (run-tests high-level-test))
+(define res-kernel (run-tests kernel))
+; (define res-noninterference (run-tests noninterference))
 
-(printf "~n* Running noninterference proof ~n")
-
+; (printf "~n* Running noninterference proof ~n")
 ; ; set up our machine state
 ; (define ramsize 1000000)
 ; (define m (init-machine ramsize))

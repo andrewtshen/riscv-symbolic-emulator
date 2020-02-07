@@ -10,7 +10,7 @@ _fallthrough:
 .size _startup, .-_startup
 
 .type estack, %object
-.align 16
+.align 8
 estack:
-    .fill 4096
+    .fill 1024
 .size estack, .-estack

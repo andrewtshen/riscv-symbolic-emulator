@@ -14,8 +14,8 @@ static void pmp_init(void);
 static void pmp_decode_napot(uint64_t a);
 static inline int ctz64(uint64_t val);
 
-#define USER_BASE 0x80080000L
-#define USER_SIZE 0x00002000L
+#define USER_BASE 0x80002000L
+#define USER_SIZE 0x00001000L
 #define PROG_INDEX 0
 #define PROG_SIZE (512*1024)
 #define DATA_SIZE (512*1024)
@@ -40,12 +40,12 @@ uint64_t get_pmp_napot_addr(uint64_t base, uint64_t size) {
 
 static void pmp_init(void) {
     // PMP region 0: user has RWX to their memory
-    w_pmpaddr0(get_pmp_napot_addr(0x80080000L, 0x2000L));
+    w_pmpaddr0(get_pmp_napot_addr(0x80002000L, 0x2000L));
     w_pmp0cfg(PMPCFG(0, PMPCFG_A_NAPOT, 1, 1, 1));
 
-    // PMP region 1: enable uart for all users
-    w_pmpaddr1(get_pmp_napot_addr(0x10000000L, 0x800000L));
-    w_pmp1cfg(PMPCFG(0, PMPCFG_A_NAPOT, 1, 1, 1));
+    // // PMP region 1: enable uart for all users
+    // w_pmpaddr1(get_pmp_napot_addr(0x10000000L, 0x800000L));
+    // w_pmp1cfg(PMPCFG(0, PMPCFG_A_NAPOT, 1, 1, 1));
 
     // PMP region 2: user has no access to entire memory range
     w_pmpaddr8((~0L) >> 1);
@@ -89,8 +89,6 @@ void main() {
 }
 
 static void load_user(void) {
-    // const void *prog_start = _binary_kernel_user_bin_start + PROG_INDEX * (PROG_SIZE + DATA_SIZE);
-    // memcpy((void *) USER_BASE, prog_start, PROG_SIZE);
     memcpy((void *) USER_BASE, _binary_kernel_user_bin_start, USER_SIZE);
 }
 

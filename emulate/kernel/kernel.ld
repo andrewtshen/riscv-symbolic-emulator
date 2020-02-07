@@ -1,4 +1,4 @@
-_stack_size = 0x4096;
+_stack_size = 0x1024;
 /* Used to use from https://github.com/sifive/freedom-e-sdk/blob/v201908-branch/bsp/qemu-sifive-e31/metal.default.lds */
 /* Now uses virt memory mapping */
 MEMORY
@@ -47,6 +47,6 @@ SECTIONS
 
     . = . + _stack_size;
     /* Make sure that stack pointer is 16 byte aligned */
-    . = ALIGN(16);
+    . = ALIGN(8);
     _estack = .;
 }

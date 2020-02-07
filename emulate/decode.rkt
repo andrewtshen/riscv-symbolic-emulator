@@ -36,7 +36,7 @@
 		[(and (bveq funct3 (bv #b111 3)) (bveq funct7 (bv #b0000000 7)))
 			(set! op 'and)]
 		[else
-			(printf "No such R FMT ~n")
+			; (printf "No such R FMT ~n")
 			; TODO: illegal instruction
 			(set-pc! m (bvsub (get-csr m 'mtvec) (bv base_address 64)))
 			(set-machine-mode! m 1)])
@@ -100,7 +100,7 @@
 		[(and (bveq funct3 (bv #b000 3)) (bveq opcode (bv #b1100111 7)))
 			(set! op 'jalr)]
 		[else
-			(printf "No such I FMT ~n")
+			; (printf "No such I FMT ~n")
 			; TODO: illegal instruction
 			(set-pc! m (bvsub (get-csr m 'mtvec) (bv base_address 64)))
 			(set-machine-mode! m 1)])
@@ -131,7 +131,7 @@
 		[(bveq funct3 (bv #b111 3))
 			(set! op 'bgeu)]
 		[else
-			(printf "No such B FMT ~n")
+			; (printf "No such B FMT ~n")
 			; TODO: illegal instruction
 			(set-pc! m (bvsub (get-csr m 'mtvec) (bv base_address 64)))
 			(set-machine-mode! m 1)])
@@ -149,7 +149,7 @@
 		[(bveq opcode (bv #b0010111 7))
 			(set! op 'auipc)]
 		[else
-			(printf "No such U FMT ~n")
+			; (printf "No such U FMT ~n")
 			; TODO: illegal instruction
 			(set-pc! m (bvsub (get-csr m 'mtvec) (bv base_address 64)))
 			(set-machine-mode! m 1)])
@@ -174,7 +174,7 @@
 		[(and (bveq funct3 (bv #b011 3)) (bveq opcode (bv #b0100011 7)))
 			(set! op 'sd)]
 		[else
-			(printf "No such S FMT ~n")
+			; (printf "No such S FMT ~n")
 			; TODO: illegal instruction
 			(set-pc! m (bvsub (get-csr m 'mtvec) (bv base_address 64)))
 			(set-machine-mode! m 1)])
@@ -193,7 +193,7 @@
 		[(bveq opcode (bv #b1101111 7))
 			(set! op 'jal)]
 		[else
-			(printf "No such J FMT ~n")
+			; (printf "No such J FMT ~n")
 			; TODO: illegal instruction
 			(set-pc! m (bvsub (get-csr m 'mtvec) (bv base_address 64)))
 			(set-machine-mode! m 1)])
@@ -242,7 +242,7 @@
 		[(bveq b_csr (bv #x3BE 12)) (set! csr 'pmpaddr14)]
 		[(bveq b_csr (bv #x3BF 12)) (set! csr 'pmpaddr15)]
 		[else
-			(printf "No such CSR FMT ~n")
+			; (printf "No such CSR FMT ~n")
 			; TODO: illegal instruction
 			(set-pc! m (bvsub (get-csr m 'mtvec) (bv base_address 64)))
 			(set-machine-mode! m 1)])
@@ -284,7 +284,7 @@
 			(set! op 'csrrci)
 			(set! is_csr #t)]
 		[else
-			(printf "No such SPECIAL FMT ~n")
+			; (printf "No such SPECIAL FMT ~n")
 			; TODO: illegal instruction
 			(set-pc! m (bvsub (get-csr m 'mtvec) (bv base_address 64)))
 			(set-machine-mode! m 1)])
@@ -297,8 +297,8 @@
 	(define instr null)
 	(define opcode (extract 6 0 b_instr))
 	(define fmt (get-fmt m opcode))
-	; (printf "decoding: ~a~n" b_instr)
-	; (printf "FMT: ~a " fmt)
+	; ; (printf "decoding: ~a~n" b_instr)
+	; ; (printf "FMT: ~a " fmt)
 
 	(cond
 		[(equal? fmt "R")
@@ -316,7 +316,7 @@
 		[(equal? fmt "SPECIAL")
 			(set! instr (decode-SPECIAL m b_instr))]
 		[else
-			(printf "No such FMT~n")
+			; (printf "No such FMT~n")
 			; TODO: illegal instruction
 			(set-pc! m (bvsub (get-csr m 'mtvec) (bv base_address 64)))
 			(set-machine-mode! m 1)])
@@ -326,4 +326,4 @@
 ; example: add x5, x6, x7
 ; (define b_instr (bv #b00000000011100110000001010110011 32))
 ; (define instr (decode b_instr))
-; (printf "~a~n" instr)
+; ; (printf "~a~n" instr)

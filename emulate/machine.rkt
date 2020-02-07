@@ -83,7 +83,7 @@
 		[(eq? csr 'pmpaddr14)	(set-csrs-pmpaddr14! (cpu-csrs (machine-cpu m)) val)]
 		[(eq? csr 'pmpaddr15)	(set-csrs-pmpaddr15! (cpu-csrs (machine-cpu m)) val)]
 		[else 
-			(printf "No such CSR: ~a~n" csr)
+			; (printf "No such CSR: ~a~n" csr)
 			; TODO: illegal instruction
 			(set-pc! m (bvsub (get-csr m 'mtvec) (bv base_address 64)))
 			(set-machine-mode! m 1)])
@@ -97,12 +97,14 @@
 (provide gprs-get-x)
 
 (define (gprs-set-x! m idx val)
-	(when (zero? idx)
-		(printf "Cannot set Zero Register~n")
-		; TODO: illegal instruction
-		(set-pc! m (bvsub (get-csr m 'mtvec) (bv base_address 64)))
-		(set-machine-mode! m 1))
-	(vector-set! (cpu-gprs (machine-cpu m)) (- idx 1) val))
+	(cond 
+		[(zero? idx)
+			; (printf "Cannot set Zero Register~n")
+			; TODO: illegal instruction
+			(set-pc! m (bvsub (get-csr m 'mtvec) (bv base_address 64)))
+			(set-machine-mode! m 1)]
+		[else
+			(vector-set! (cpu-gprs (machine-cpu m)) (- idx 1) val)]))
 (provide gprs-set-x!)
 
 ; get program counter
@@ -123,15 +125,16 @@
 
 ; read an nbytes from a machine-ram ba starting at address addr
 (define (machine-ram-read m addr nbytes)
-	(when (equal? (machine-mode m) 0)
 		; (printf "checking pmp! read~n")
-		(define saddr (bv (+ addr base_address) 64))
-		; (printf "saddr: ~a~n" saddr)
-		(define eaddr (bv (+ addr (* nbytes 8) base_address) 64))
-		; (printf "eaddr: ~a~n" eaddr)
-		(define legal (pmp-check m saddr eaddr))
-		(assert legal))
-	(bytearray-read (machine-ram m) addr nbytes))
+	(define saddr (bv (+ addr base_address) 64))
+	; (printf "saddr: ~a~n" saddr)
+	(define eaddr (bv (+ addr (* nbytes 8) base_address) 64))
+	; (printf "eaddr: ~a~n" eaddr)
+	(define legal (pmp-check m saddr eaddr))
+
+	; machine mode (1) or legal, we can read the memory
+	(when (or (equal? (machine-mode m) 1) legal)
+		(bytearray-read (machine-ram m) addr nbytes)))
 (provide machine-ram-read)
 
 (define (bytearray-read ba addr nbytes)
