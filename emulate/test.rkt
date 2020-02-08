@@ -5,7 +5,8 @@
 	"emulate.rkt"
 	"execute.rkt"
 	"machine.rkt"
-	"pmp.rkt")
+	"pmp.rkt"
+	"decode.rkt")
 (require (only-in racket/base for/list for/vector in-range))
 (require rackunit rackunit/text-ui)
 
@@ -227,7 +228,25 @@
 		(define setting5 (pmp-decode-cfg (bv #x0000000000001f1f 64) 5))
 		(check-equal? (list-ref setting5 1) 0)
 		(check-equal? (list-ref setting5 2) 0)
-		(check-equal? (list-ref setting5 3) 0)))
+		(check-equal? (list-ref setting5 3) 0))
+	(test-case "decoding-instr-edge cases"
+		(printf "~n* decoding-instr-edge cases ~n")
+		(define ramsize 1000)
+		(define m (init-machine ramsize))
+		(check-equal? (decode m (bv #xffffffff 32)) null)
+		(check-equal? (list-ref (decode m (bv #x0107c663 32)) 0) 'blt)
+		; check decoding
+		(check-equal? (list-ref (decode m (bv #x00000117 32)) 0) 'auipc)
+		; check that produces null op if not applicable opcode
+		(check-equal? (decode m (bv #b11111111111111111111111110110011 32)) null))
+	(test-case "decoding-uncoded-instrs"
+		(printf "~n* decoding-uncoded-instrs ~n")
+		(define program (file->bytearray "build/dret.bin"))
+		(define ramsize 1000)
+		(define m (init-machine-with-prog program ramsize))
+		(step m)
+		; check that it has returned successfully
+		(check-true #t)))
 
 ; Assert that kernel memory is equal between two machines
 ; (define (assert-kernel-mem-equal m1 m2)
@@ -303,31 +322,14 @@
 		(print-memory m1 #x2000 #x2010)
 		(check-true #t)))
 
-; (define res-instruction-check (run-tests instruction-check))
-; (define res-utils (run-tests utils))
-; (define res-high-level-test (run-tests high-level-test))
-; (define res-kernel (run-tests kernel))
-(define res-noninterference (run-tests noninterference))
+(define res-instruction-check (run-tests instruction-check))
+(define res-utils (run-tests utils))
+(define res-high-level-test (run-tests high-level-test))
+(define res-kernel (run-tests kernel))
+; (define res-noninterference (run-tests noninterference))
 
-; (printf "~n* Running noninterference proof ~n")
-; ; set up our machine state
-; (define ramsize 1000000)
-; (define m (init-machine ramsize))
-; (define m1 (deep-copy-machine m))
-
-; ; (define next_instr1 (step m)) ; step!
-
-; ; show that they can execute independently, but
-; ; still refer to the same symbolic variables.
-; (print-csr m)
-; (print-memory m #x80000 #x80010)
+; (define program (file->bytearray "build/sw_lw.bin"))
+; (printf "~n* Running sw_lw.bin test ~n")
+; (define ramsize 1000)
+; (define m (init-machine-with-prog program ramsize))
 ; (execute-until-mret m)
-; (print-csr m)
-; (print-memory m #x80000 #x80010)
-
-; (print-csr m1)
-; (print-memory m1 #x80000 #x80010)
-; (execute-until-mret m1)
-; (print-csr m1)
-; (print-memory m1 #x80000 #x80010)
-; (check-true #t)

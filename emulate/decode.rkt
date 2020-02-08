@@ -14,33 +14,31 @@
 	(define rs1 (extract 19 15 b_instr))
 	(define rs2 (extract 24 20 b_instr))
 	(define funct7 (extract 31 25 b_instr))
+	(define valid null)
 	(cond
 		[(and (bveq funct3 (bv #b000 3)) (bveq funct7 (bv #b0000000 7)))
-			(set! op 'add)]
+			(list 'add rd rs1 rs2)]
 		[(and (bveq funct3 (bv #b000 3)) (bveq funct7 (bv #b0100000 7)))
-			(set! op 'sub)]
+			(list 'sub rd rs1 rs2)]
 		[(and (bveq funct3 (bv #b001 3)) (bveq funct7 (bv #b0000000 7)))
-			(set! op 'sll)]
+			(list 'sll rd rs1 rs2)]
 		[(and (bveq funct3 (bv #b010 3)) (bveq funct7 (bv #b0000000 7)))
-			(set! op 'slt)]
+			(list 'slt rd rs1 rs2)]
 		[(and (bveq funct3 (bv #b011 3)) (bveq funct7 (bv #b0000000 7)))
-			(set! op 'sltu)]
+			(list 'sltu rd rs1 rs2)]
 		[(and (bveq funct3 (bv #b100 3)) (bveq funct7 (bv #b0000000 7)))
-			(set! op 'xor)]
+			(list 'xor rd rs1 rs2)]
 		[(and (bveq funct3 (bv #b101 3)) (bveq funct7 (bv #b0000000 7)))
-			(set! op 'srl)]
+			(list 'srl rd rs1 rs2)]
 		[(and (bveq funct3 (bv #b101 3)) (bveq funct7 (bv #b0100000 7)))
-			(set! op 'sra)]
+			(list 'sra rd rs1 rs2)]
 		[(and (bveq funct3 (bv #b110 3)) (bveq funct7 (bv #b0000000 7)))
-			(set! op 'or)]
+			(list 'or rd rs1 rs2)]
 		[(and (bveq funct3 (bv #b111 3)) (bveq funct7 (bv #b0000000 7)))
-			(set! op 'and)]
+			(list 'and rd rs1 rs2)]
 		[else
 			; (printf "No such R FMT ~n")
-			; TODO: illegal instruction
-			(set-pc! m (bvsub (get-csr m 'mtvec) (bv base_address 64)))
-			(set-machine-mode! m 1)])
-	(list op rd rs1 rs2))
+			(illegal-instr m)]))
 
 (define (decode-I m b_instr)
 	(define op null)
@@ -52,59 +50,56 @@
 	(define shift_type (extract 30 30 b_instr))
 	(cond
 		[(and (bveq funct3 (bv #b000 3)) (bveq opcode (bv #b0010011 7)))
-			(set! op 'addi)]
+			(list 'addi rd rs1 imm)]
 		[(and (bveq funct3 (bv #b010 3)) (bveq opcode (bv #b0010011 7)))
-			(set! op 'slti)]
+			(list 'slti rd rs1 imm)]
 		[(and (bveq funct3 (bv #b011 3)) (bveq opcode (bv #b0010011 7)))
-			(set! op 'sltiu)]
+			(list 'sltiu rd rs1 imm)]
 		[(and (bveq funct3 (bv #b100 3)) (bveq opcode (bv #b0010011 7)))
-			(set! op 'xori)]
+			(list 'xori rd rs1 imm)]
 		[(and (bveq funct3 (bv #b110 3)) (bveq opcode (bv #b0010011 7)))
-			(set! op 'ori)]
+			(list 'ori rd rs1 imm)]
 		[(and (bveq funct3 (bv #b111 3)) (bveq opcode (bv #b0010011 7)))
-			(set! op 'andi)]
+			(list 'andi rd rs1 imm)]
 		[(and (bveq funct3 (bv #b001 3)) (bveq opcode (bv #b0010011 7)))
 			(set! imm (extract 24 20 b_instr))
-			(set! op 'slli)]
+			(list 'slli rd rs1 imm)]
 		[(and (bveq funct3 (bv #b101 3)) (bveq opcode (bv #b0010011 7)) (bveq shift_type (bv #b0 1)))
 			(set! imm (extract 25 20 b_instr))
-			(set! op 'srli)]
+			(list 'srli rd rs1 imm)]
 		[(and (bveq funct3 (bv #b101 3)) (bveq opcode (bv #b0010011 7)) (bveq shift_type (bv #b1 1)))
 			(set! imm (extract 25 20 b_instr))
-			(set! op 'srai)]
+			(list 'srai rd rs1 imm)]
 		[(and (bveq funct3 (bv #b000 3)) (bveq opcode (bv #b0011011 7)))
-			(set! op 'addiw)]
+			(list 'addiw rd rs1 imm)]
 		[(and (bveq funct3 (bv #b001 3)) (bveq opcode (bv #b0011011 7)))
 			(set! imm (extract 25 20 b_instr))
-			(set! op 'slliw)]
+			(list 'slliw rd rs1 imm)]
 		[(and (bveq funct3 (bv #b101 3)) (bveq opcode (bv #b0011011 7)) (bveq shift_type (bv #b0 1)))
 			(set! imm (extract 25 20 b_instr))
-			(set! op 'srliw)]
+			(list 'srliw rd rs1 imm)]
 		[(and (bveq funct3 (bv #b101 3)) (bveq opcode (bv #b0011011 7)) (bveq shift_type (bv #b1 1)))
 			(set! imm (extract 25 20 b_instr))
-			(set! op 'sraiw)]
+			(list 'sraiw rd rs1 imm)]
 		[(and (bveq funct3 (bv #b000 3)) (bveq opcode (bv #b0000011 7)))
-			(set! op 'lb)]
+			(list 'lb rd rs1 imm)]
 		[(and (bveq funct3 (bv #b001 3)) (bveq opcode (bv #b0000011 7)))
-			(set! op 'lh)]
+			(list 'lh rd rs1 imm)]
 		[(and (bveq funct3 (bv #b010 3)) (bveq opcode (bv #b0000011 7)))
-			(set! op 'lw)]
+			(list 'lw rd rs1 imm)]
 		[(and (bveq funct3 (bv #b011 3)) (bveq opcode (bv #b0000011 7)))
-			(set! op 'ld)]
+			(list 'ld rd rs1 imm)]
 		[(and (bveq funct3 (bv #b100 3)) (bveq opcode (bv #b0000011 7)))
-			(set! op 'lbu)]
+			(list 'lbu rd rs1 imm)]
 		[(and (bveq funct3 (bv #b101 3)) (bveq opcode (bv #b0000011 7)))
-			(set! op 'lhu)]
+			(list 'lhu rd rs1 imm)]
 		[(and (bveq funct3 (bv #b110 3)) (bveq opcode (bv #b0000011 7)))
-			(set! op 'lwu)]
+			(list 'lwu rd rs1 imm)]
 		[(and (bveq funct3 (bv #b000 3)) (bveq opcode (bv #b1100111 7)))
-			(set! op 'jalr)]
+			(list 'jalr rd rs1 imm)]
 		[else
 			; (printf "No such I FMT ~n")
-			; TODO: illegal instruction
-			(set-pc! m (bvsub (get-csr m 'mtvec) (bv base_address 64)))
-			(set-machine-mode! m 1)])
-	(list op rd rs1 imm))
+			(illegal-instr m)]))
 
 (define (decode-B m b_instr)
 	(define op null)
@@ -119,23 +114,20 @@
 		(extract 11 8 b_instr)))
 	(cond
 		[(bveq funct3 (bv #b000 3))
-			(set! op 'beq)]
+			(list 'beq rs1 rs2 imm)]
 		[(bveq funct3 (bv #b001 3))
-			(set! op 'bne)]
+			(list 'bne rs1 rs2 imm)]
 		[(bveq funct3 (bv #b100 3))
-			(set! op 'blt)]
+			(list 'blt rs1 rs2 imm)]
 		[(bveq funct3 (bv #b101 3))
-			(set! op 'bge)]
+			(list 'bge rs1 rs2 imm)]
 		[(bveq funct3 (bv #b110 3))
-			(set! op 'bltu)]
+			(list 'bltu rs1 rs2 imm)]
 		[(bveq funct3 (bv #b111 3))
-			(set! op 'bgeu)]
+			(list 'bgeu rs1 rs2 imm)]
 		[else
 			; (printf "No such B FMT ~n")
-			; TODO: illegal instruction
-			(set-pc! m (bvsub (get-csr m 'mtvec) (bv base_address 64)))
-			(set-machine-mode! m 1)])
-	(list op rs1 rs2 imm))
+			(illegal-instr m)]))
 
 (define (decode-U m b_instr)
 	(define op null)
@@ -145,15 +137,12 @@
 	(define imm (extract 31 12 b_instr))
 	(cond
 		[(bveq opcode (bv #b0110111 7))
-			(set! op 'lui)]
+			(list 'lui rd imm)]
 		[(bveq opcode (bv #b0010111 7))
-			(set! op 'auipc)]
+			(list 'auipc rd imm)]
 		[else
 			; (printf "No such U FMT ~n")
-			; TODO: illegal instruction
-			(set-pc! m (bvsub (get-csr m 'mtvec) (bv base_address 64)))
-			(set-machine-mode! m 1)])
-	(list op rd imm))
+			(illegal-instr m)]))
 
 (define (decode-S m b_instr)
 	(define op null)
@@ -166,19 +155,16 @@
 		(extract 11 7 b_instr)))
 	(cond
 		[(and (bveq funct3 (bv #b000 3)) (bveq opcode (bv #b0100011 7)))
-			(set! op 'sb)]
+			(list 'sb rs1 rs2 imm)]
 		[(and (bveq funct3 (bv #b001 3)) (bveq opcode (bv #b0100011 7)))
-			(set! op 'sh)]
+			(list 'sh rs1 rs2 imm)]
 		[(and (bveq funct3 (bv #b010 3)) (bveq opcode (bv #b0100011 7)))
-			(set! op 'sw)]
+			(list 'sw rs1 rs2 imm)]
 		[(and (bveq funct3 (bv #b011 3)) (bveq opcode (bv #b0100011 7)))
-			(set! op 'sd)]
+			(list 'sd rs1 rs2 imm)]
 		[else
 			; (printf "No such S FMT ~n")
-			; TODO: illegal instruction
-			(set-pc! m (bvsub (get-csr m 'mtvec) (bv base_address 64)))
-			(set-machine-mode! m 1)])
-	(list op rs1 rs2 imm))
+			(illegal-instr m)]))
 
 (define (decode-J m b_instr)
 	(define op null)
@@ -194,9 +180,7 @@
 			(set! op 'jal)]
 		[else
 			; (printf "No such J FMT ~n")
-			; TODO: illegal instruction
-			(set-pc! m (bvsub (get-csr m 'mtvec) (bv base_address 64)))
-			(set-machine-mode! m 1)])
+			(illegal-instr m)])
 	(list op rd imm))
 
 (define (decode-csr m b_csr)
@@ -243,9 +227,7 @@
 		[(bveq b_csr (bv #x3BF 12)) (set! csr 'pmpaddr15)]
 		[else
 			; (printf "No such CSR FMT ~n")
-			; TODO: illegal instruction
-			(set-pc! m (bvsub (get-csr m 'mtvec) (bv base_address 64)))
-			(set-machine-mode! m 1)])
+			(illegal-instr m)])
 	csr)
 
 (define (decode-SPECIAL m b_instr)
@@ -258,69 +240,53 @@
 	(define csr (extract 31 20 b_instr))
 	(cond
 		[(bveq b_instr (bv #b00110000001000000000000001110011 32))
-			(set! op 'mret)]
+			(list 'mret)]
 		[(bveq b_instr (bv #b00000000001000000000000001110011 32))
-			(set! op 'uret)]
+			(list 'uret)]
 		[(bveq b_instr (bv #b00000000000000000000000001110011 32))
-			(set! op 'ecall)]
+			(list 'ecall)]
 		[(bveq b_instr (bv #b00000000000100000000000001110011 32))
-			(set! op 'ebreak)]
+			(list 'ebreak)]
 		[(and (bveq funct3 (bv #b001 3)) (bveq opcode (bv #b1110011 7)))
-			(set! op 'csrrw)
-			(set! is_csr #t)]
+			(list 'csrrw rd rs1 (decode-csr m csr))]
 		[(and (bveq funct3 (bv #b010 3)) (bveq opcode (bv #b1110011 7)))
-			(set! op 'csrrs)
-			(set! is_csr #t)]
+			(list 'csrrs rd rs1 (decode-csr m csr))]
 		[(and (bveq funct3 (bv #b011 3)) (bveq opcode (bv #b1110011 7)))
-			(set! op 'csrrc)
-			(set! is_csr #t)]
+			(list 'csrrc rd rs1 (decode-csr m csr))]
 		[(and (bveq funct3 (bv #b101 3)) (bveq opcode (bv #b1110011 7)))
-			(set! op 'csrrwi)
-			(set! is_csr #t)]
+			(list 'csrrwi rd rs1 (decode-csr m csr))]
 		[(and (bveq funct3 (bv #b110 3)) (bveq opcode (bv #b1110011 7)))
-			(set! op 'csrrsi)
-			(set! is_csr #t)]
+			(list 'csrrsi rd rs1 (decode-csr m csr))]
 		[(and (bveq funct3 (bv #b111 3)) (bveq opcode (bv #b1110011 7)))
-			(set! op 'csrrci)
-			(set! is_csr #t)]
+			(list 'csrrci rd rs1 (decode-csr m csr))]
 		[else
 			; (printf "No such SPECIAL FMT ~n")
-			; TODO: illegal instruction
-			(set-pc! m (bvsub (get-csr m 'mtvec) (bv base_address 64)))
-			(set-machine-mode! m 1)])
-	(if is_csr
-		(list op rd rs1 (decode-csr m csr))
-		(list op)))
+			(illegal-instr m)]))
 
 ; decode a 32 bit vector instruction
 (define (decode m b_instr)
 	(define instr null)
 	(define opcode (extract 6 0 b_instr))
 	(define fmt (get-fmt m opcode))
-	; ; (printf "decoding: ~a~n" b_instr)
-	; ; (printf "FMT: ~a " fmt)
-
+	; (printf "FMT: ~a~n" fmt)
 	(cond
-		[(equal? fmt "R")
-			(set! instr (decode-R m b_instr))]
-		[(equal? fmt "I")
-			(set! instr (decode-I m b_instr))]
-		[(equal? fmt "B")
-			(set! instr (decode-B m b_instr))]
-		[(equal? fmt "U")
-			(set! instr (decode-U m b_instr))]
-		[(equal? fmt "S")
-			(set! instr (decode-S m b_instr))]
-		[(equal? fmt "J")
-			(set! instr (decode-J m b_instr))]
-		[(equal? fmt "SPECIAL")
-			(set! instr (decode-SPECIAL m b_instr))]
+		[(eq? fmt 'R)
+			(decode-R m b_instr)]
+		[(eq? fmt 'I)
+			(decode-I m b_instr)]
+		[(eq? fmt 'B)
+			(decode-B m b_instr)]
+		[(eq? fmt 'U)
+			(decode-U m b_instr)]
+		[(eq? fmt 'S)
+			(decode-S m b_instr)]
+		[(eq? fmt 'J)
+			(decode-J m b_instr)]
+		[(eq? fmt 'SPECIAL)
+			(decode-SPECIAL m b_instr)]
 		[else
 			; (printf "No such FMT~n")
-			; TODO: illegal instruction
-			(set-pc! m (bvsub (get-csr m 'mtvec) (bv base_address 64)))
-			(set-machine-mode! m 1)])
-	instr)
+			(illegal-instr m)]))
 (provide decode)
 
 ; example: add x5, x6, x7

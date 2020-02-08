@@ -38,18 +38,27 @@
 (provide print-csr)
 
 (define (step m)
-	(define next_instr (decode m (get-next-instr m)))
-	(execute next_instr m)
-	next_instr)
+	(define next_instr (get-next-instr m))
+	(cond
+		[(eq? next_instr null) null]
+		[else
+			(define decoded_instr (decode m next_instr))
+			(cond
+				[(eq? decoded_instr null) null]
+				[else
+					(execute decoded_instr m)])]))
 (provide step)
 
 ; get instructions until reach mret
 (define (execute-until-mret m)
 	(define op null)
 	(while (not (eq? op 'mret))
-		(define next_instr (step m))
+		(define next_decoded_instr (step m))
 		; (printf "PC: ~x INS: ~a~n" (bitvector->natural (get-pc m)) next_instr)
-		(set! op (list-ref next_instr 0))))
+		(cond
+			[(eq? next_decoded_instr null) null]
+			[else
+				(set! op (list-ref next_decoded_instr 0))])))
 (provide execute-until-mret)
 
 ; ; example execution

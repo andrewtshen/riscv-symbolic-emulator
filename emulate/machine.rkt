@@ -52,8 +52,7 @@
 		[else
 			(printf "??: ~a~n" (eq? csr 'mtvec))
 			(printf "No such CSR: ~a~n" csr)
-			; TODO: illegal instruction
-			(set-pc! m (bvsub (get-csr m 'mtvec) (bv base_address 64)))
+			(set-pc! m (bvsub (get-csr m 'mtvec) base_address))
 			(set-machine-mode! m 1)])
 	v_csr)
 (provide get-csr)
@@ -84,8 +83,7 @@
 		[(eq? csr 'pmpaddr15)	(set-csrs-pmpaddr15! (cpu-csrs (machine-cpu m)) val)]
 		[else 
 			; (printf "No such CSR: ~a~n" csr)
-			; TODO: illegal instruction
-			(set-pc! m (bvsub (get-csr m 'mtvec) (bv base_address 64)))
+			(set-pc! m (bvsub (get-csr m 'mtvec) base_address))
 			(set-machine-mode! m 1)])
 	v_csr)
 (provide set-csr!)
@@ -100,8 +98,7 @@
 	(cond 
 		[(zero? idx)
 			; (printf "Cannot set Zero Register~n")
-			; TODO: illegal instruction
-			(set-pc! m (bvsub (get-csr m 'mtvec) (bv base_address 64)))
+			(set-pc! m (bvsub (get-csr m 'mtvec) base_address))
 			(set-machine-mode! m 1)]
 		[else
 			(vector-set! (cpu-gprs (machine-cpu m)) (- idx 1) val)]))
@@ -123,15 +120,24 @@
 	(machine-ram-read m pc 4))
 (provide get-next-instr)
 
+; set up state for illegal instruction and return null to signal end of exec
+(define (illegal-instr m)
+	(set-pc! m (bvsub (get-csr m 'mtvec) base_address))
+	(set-machine-mode! m 1)
+	; stop execution of instruction
+	null)
+(provide illegal-instr)
+
 ; read an nbytes from a machine-ram ba starting at address addr
 (define (machine-ram-read m addr nbytes)
-	(define saddr (bvadd addr (bv base_address 64)))
-	(define eaddr (bvadd addr (bv (* nbytes 8) 64) (bv base_address 64)))
+	(define saddr (bvadd addr base_address))
+	(define eaddr (bvadd addr (bv (* nbytes 8) 64) base_address))
 	(define legal (pmp-check m saddr eaddr))
 
 	; machine mode (1) or legal, we can read the memory
-	(when (or (equal? (machine-mode m) 1) legal)
-		(bytearray-read (machine-ram m) (bitvector->natural addr) nbytes)))
+	(if (or (equal? (machine-mode m) 1) legal)
+		(bytearray-read (machine-ram m) (bitvector->natural addr) nbytes)
+		null))
 (provide machine-ram-read)
 
 (define (bytearray-read ba addr nbytes)
@@ -142,13 +148,14 @@
   (apply concat (reverse bytes)))
 
 (define (machine-ram-write! m addr value nbits)
-	(define saddr (bvadd addr (bv base_address 64)))
-	(define eaddr (bvadd addr (bv nbits 64) (bv base_address 64)))
+	(define saddr (bvadd addr base_address))
+	(define eaddr (bvadd addr (bv nbits 64) base_address))
 	(define legal (pmp-check m saddr eaddr))
 
 	; machine mode (1) or legal, we can read the memory
 	(when (or (equal? (machine-mode m) 1) legal)
-  	(bytearray-write! (machine-ram m) (bitvector->natural addr) value nbits)))
+  	(bytearray-write! (machine-ram m) (bitvector->natural addr) value nbits))
+	legal)
 (provide machine-ram-write!)
 
 (define (bytearray-write! ba addr value nbits)
@@ -161,7 +168,7 @@
 			[v (extract hi low value)])
 		(vector-set! ba pos v))))
 
-(define base_address #x80000000)
+(define base_address (bv #x80000000 64))
 (provide base_address)
 
 ; PMP Checking Stuff
@@ -213,9 +220,7 @@
 							(set! legal #f)
 							(set! done #t)])]
 				[else
-					; TODO: illegal instruction
-					(set-pc! m (bvsub (get-csr m 'mtvec) (bv base_address 64)))
-					(set-machine-mode! m 1)])]))
+					(illegal-instr m)])]))
 	legal)
 
 ; test address ranging from saddr to eaddr 
