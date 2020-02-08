@@ -310,23 +310,34 @@
 		(define m (init-machine ramsize))
 		(define m1 (deep-copy-machine m))
 
-		(define next_instr (step m)) ; step!
+		; (define next_instr (step m)) ; step!
 		; (printf "next_instr: ~a~n" next_instr)
 
 		; show that they can execute independently, but
 		; still refer to the same symbolic variables.
 		; (execute-until-mret m)
-		; (print-csr m)
-		; (print-csr m1)
+		(print-csr m)
+		(print-csr m1)
 		(print-memory m #x2000 #x2010)
 		(print-memory m1 #x2000 #x2010)
-		(check-true #t)))
+		(define m2000 (vector-ref (machine-ram m) #x2000))
+		(define m12000 (vector-ref (machine-ram m1) #x2000))
+		(printf "m: ~a~nm1: ~a~n" m2000 m12000)
+		(asserts)
+		(define model_noninterference (verify (begin
+			(assert
+				(bveq m2000 m12000)
+				; (bveq (get-csr m 'mtvec) (get-csr m1 'mtvec))
+				))))
+		(printf "res: ~a~n" model_noninterference)
+		; (check-true (unsat? model_addiw))
+		))
 
-(define res-instruction-check (run-tests instruction-check))
-(define res-utils (run-tests utils))
-(define res-high-level-test (run-tests high-level-test))
-(define res-kernel (run-tests kernel))
-; (define res-noninterference (run-tests noninterference))
+; (define res-instruction-check (run-tests instruction-check))
+; (define res-utils (run-tests utils))
+; (define res-high-level-test (run-tests high-level-test))
+; (define res-kernel (run-tests kernel))
+(define res-noninterference (run-tests noninterference))
 
 ; (define program (file->bytearray "build/sw_lw.bin"))
 ; (printf "~n* Running sw_lw.bin test ~n")

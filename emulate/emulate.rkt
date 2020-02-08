@@ -54,7 +54,7 @@
 	(define op null)
 	(while (not (eq? op 'mret))
 		(define next_decoded_instr (step m))
-		; (printf "PC: ~x INS: ~a~n" (bitvector->natural (get-pc m)) next_instr)
+		; (printf "PC: ~x INS: ~a~n" (bitvector->natural (get-pc m)) next_decoded_instr)
 		(cond
 			[(eq? next_decoded_instr null) null]
 			[else

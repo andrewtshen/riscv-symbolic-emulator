@@ -35,7 +35,9 @@
 			(define mstatus (get-csr m 'mstatus))
 			(define MPP (extract 12 11 mstatus))
 			; this is always user mode
-			(set-machine-mode! m (bitvector->natural MPP))
+			; TODO: fix this and set mstatus to concrete value
+			; (set-machine-mode! m (bitvector->natural MPP))
+			(set-machine-mode! m 0)
 			(set-pc! m (bvsub (get-csr m 'mepc) base_address))
 			instr]
 		[(eq? opcode 'dret)
@@ -48,29 +50,43 @@
 			; TODO: wfi instruction not implemented yet
 			(illegal-instr m)]
 		[(eq? opcode 'csrrw)
-			(when (equal? (machine-mode m) 1)
-				(define rd (list-ref-nat instr 1))
-				(define rs1 (list-ref-nat instr 2))
-				(define v_rs1 (gprs-get-x m rs1))
-				(define csr (list-ref instr 3))
-				(when (not (zero? rd))
-					(define v_csr (zero-extend (get-csr m csr) (bitvector 64)))
-					(gprs-set-x! m rd v_csr))
-				(set-csr! m (list-ref instr 3) (zero-extend v_rs1 (bitvector 64))))
-			(set-pc! m (bvadd pc (bv 4 64)))
-			instr]
+			(cond
+				[(equal? (machine-mode m) 1)
+					(define rd (list-ref-nat instr 1))
+					(define rs1 (list-ref-nat instr 2))
+					(define v_rs1 (gprs-get-x m rs1))
+					(define csr (list-ref instr 3))
+					(define v_csr (get-csr m csr))
+					(cond
+						[(and (not (eq? v_rs1 null)) (not (eq? v_csr null)))
+							(when (not (zero? rd))
+								(gprs-set-x! m rd v_csr))
+							(set-csr! m csr v_rs1)
+							(set-pc! m (bvadd pc (bv 4 64)))
+							instr]
+						[else
+							(illegal-instr)])]
+				[else
+					(illegal-instr)])]
 		[(eq? opcode 'csrrs)
-			(when (equal? (machine-mode m) 1)
-				(define rd (list-ref-nat instr 1))
-				(define rs1 (list-ref-nat instr 2))
-				(define bitmask (gprs-get-x m rs1))
-				(define csr (list-ref instr 3))
-				(define v_csr (zero-extend (get-csr m csr) (bitvector 64)))
-				(gprs-set-x! m rd v_csr)
-				(set-csr! m csr (bvor v_csr bitmask))
-				(set! v_csr (zero-extend (get-csr m csr) (bitvector 64))))
-			(set-pc! m (bvadd pc (bv 4 64)))
-			instr]
+			(cond
+				[(equal? (machine-mode m) 1)
+					(define rd (list-ref-nat instr 1))
+					(define rs1 (list-ref-nat instr 2))
+					(define bitmask (gprs-get-x m rs1))
+					(define csr (list-ref instr 3))
+					(define v_csr (get-csr m csr))
+					(cond
+						[(and (not (eq? bitmask null)) (not (eq? v_csr null)))
+							(gprs-set-x! m rd v_csr)
+							(set-csr! m csr (bvor v_csr bitmask))
+							(set! v_csr (zero-extend (get-csr m csr) (bitvector 64)))
+							(set-pc! m (bvadd pc (bv 4 64)))
+							instr]
+						[else
+							(illegal-instr)])]
+				[else
+					(illegal-instr)])]
 		[(eq? opcode 'csrrc)
 			; TODO: csrrc instruction not implemented yet
 			(illegal-instr m)]
@@ -84,452 +100,449 @@
 			; TODO: csrrci instruction not implemented yet
 			(illegal-instr m)]
 
-		; I Format
-		[(eq? opcode 'addi)
-			(define rd (list-ref-nat instr 1))
-			(define rs1 (list-ref-nat instr 2))
-			(define imm (sign-extend (list-ref instr 3) (bitvector 64)))
-			; nop op pseudo code
-			(if (and (equal? rd 0) (equal? rs1 0) (bveq imm (bv 0 64)))
-				null
-				(gprs-set-x! m rd (bvadd (gprs-get-x m rs1) imm)))
-			(set-pc! m (bvadd pc (bv 4 64)))
-			instr]
-		[(eq? opcode 'slli)
-			(define rd (list-ref-nat instr 1))
-			(define v_rs1 (gprs-get-x m (list-ref-nat instr 2)))
-			(define imm (zero-extend (list-ref instr 3) (bitvector 64)))
-			(define shifted (bvshl v_rs1 imm))
-			(gprs-set-x! m rd shifted)
-			(set-pc! m (bvadd pc (bv 4 64)))
-			instr]
-		[(eq? opcode 'srli)
-			(define rd (list-ref-nat instr 1))
-			(define v_rs1 (gprs-get-x m (list-ref-nat instr 2)))
-			(define imm (zero-extend (list-ref instr 3) (bitvector 64)))
-			(define shifted (bvlshr v_rs1 imm))
-			(gprs-set-x! m rd shifted)
-			(set-pc! m (bvadd pc (bv 4 64)))
-			instr]
-		[(eq? opcode 'srai)
-			(define rd (list-ref-nat instr 1))
-			(define v_rs1 (gprs-get-x m (list-ref-nat instr 2)))
-			(define imm (zero-extend (list-ref instr 3) (bitvector 64)))
-			(define shifted (bvashr v_rs1 imm))
-			(gprs-set-x! m rd shifted)
-			(set-pc! m (bvadd pc (bv 4 64)))
-			instr]
-		[(eq? opcode 'slti)
-			; TODO: slti instruction not implemented yet
-			(illegal-instr m)]
-		[(eq? opcode 'sltiu)
-			; TODO: sltiu instruction not implemented yet
-			(illegal-instr m)]
-		[(eq? opcode 'xori)
-			(define rd (list-ref-nat instr 1))
-			(define v_rs1 (gprs-get-x m (list-ref-nat instr 2)))
-			(define imm (sign-extend (list-ref instr 3) (bitvector 64)))
-			(gprs-set-x! m rd (bvxor v_rs1 imm))
-			(set-pc! m (bvadd pc (bv 4 64)))
-			instr]
-		[(eq? opcode 'ori)
-			(define rd (list-ref-nat instr 1))
-			(define v_rs1 (gprs-get-x m (list-ref-nat instr 2)))
-			(define imm (sign-extend (list-ref instr 3) (bitvector 64)))
-			(gprs-set-x! m rd (bvor v_rs1 imm))
-			(set-pc! m (bvadd pc (bv 4 64)))
-			instr]
-		[(eq? opcode 'andi)
-			(define rd (list-ref-nat instr 1))
-			(define v_rs1 (gprs-get-x m (list-ref-nat instr 2)))
-			(define imm (sign-extend (list-ref instr 3) (bitvector 64)))
-			(gprs-set-x! m rd (bvand v_rs1 imm))
-			(set-pc! m (bvadd pc (bv 4 64)))
-			instr]
-		[(eq? opcode 'addiw)
-			(define rd (list-ref-nat instr 1))
-			(define v_rs1 (gprs-get-x m (list-ref-nat instr 2)))
-			(define imm (sign-extend (list-ref instr 3) (bitvector 64)))
-			(define 32bit_sum (extract 31 0 (bvadd v_rs1 imm)))
-			(gprs-set-x! m rd (sign-extend 32bit_sum (bitvector 64)))
-			(set-pc! m (bvadd pc (bv 4 64)))
-			instr]
-		[(eq? opcode 'slliw)
-			(define rd (list-ref-nat instr 1))
-			(define v_rs1 (extract 31 0 (gprs-get-x m (list-ref-nat instr 2))))
-			(define imm (zero-extend (list-ref instr 3) (bitvector 32)))
-			(define shifted (sign-extend (bvshl v_rs1 imm) (bitvector 64)))
-			(gprs-set-x! m rd shifted)
-			(when (not (bveq (extract 5 5 imm) (bv 0 1)))
-					(illegal-instr m))
-			(set-pc! m (bvadd pc (bv 4 64)))
-			instr]
-		[(eq? opcode 'srliw)
-			(define rd (list-ref-nat instr 1))
-			(define v_rs1 (extract 31 0 (gprs-get-x m (list-ref-nat instr 2))))
-			(define imm (zero-extend (list-ref instr 3) (bitvector 32)))
-			(define shifted (sign-extend (bvlshr v_rs1 imm) (bitvector 64)))
-			(gprs-set-x! m rd shifted)
-			(when (not (bveq (extract 5 5 imm) (bv 0 1)))
-					(illegal-instr m))
-			(set-pc! m (bvadd pc (bv 4 64)))
-			instr]
-		[(eq? opcode 'sraiw)
-			(define rd (list-ref-nat instr 1))
-			(define v_rs1 (extract 31 0 (gprs-get-x m (list-ref-nat instr 2))))
-			(define imm (zero-extend (list-ref instr 3) (bitvector 32)))
-			(define shifted (sign-extend (bvashr v_rs1 imm) (bitvector 64)))
-			(gprs-set-x! m rd shifted)
-			(cond
-				[(not (bveq (extract 5 5 imm) (bv 0 1)))
-					(illegal-instr m)])
-			(set-pc! m (bvadd pc (bv 4 64)))
-			instr]
-		[(eq? opcode 'lb)
-			(define rd (list-ref-nat instr 1))
-			(define v_rs1 (gprs-get-x m (list-ref-nat instr 2)))
-			(define imm (sign-extend (list-ref instr 3) (bitvector 64)))
-			(define addr (bvadd v_rs1 imm))
-			(define adj_addr (bvsub addr base_address))
-			(define nbytes 1)
-			(define val (sign-extend (machine-ram-read m adj_addr nbytes) (bitvector 64)))
-			(gprs-set-x! m rd val)
-			(set-pc! m (bvadd pc (bv 4 64)))
-			instr]
-		[(eq? opcode 'lh)
-			(define rd (list-ref-nat instr 1))
-			(define v_rs1 (gprs-get-x m (list-ref-nat instr 2)))
-			(define imm (sign-extend (list-ref instr 3) (bitvector 64)))
-			(define addr (bvadd v_rs1 imm))
-			(define adj_addr (bvsub addr base_address))
-			(define nbytes 2)
-			(define val (sign-extend (machine-ram-read m adj_addr nbytes) (bitvector 64)))
-			(gprs-set-x! m rd val)
-			(set-pc! m (bvadd pc (bv 4 64)))
-			instr]
-		[(eq? opcode 'lw)
-			(define rd (list-ref-nat instr 1))
-			(define v_rs1 (gprs-get-x m (list-ref-nat instr 2)))
-			(define imm (sign-extend (list-ref instr 3) (bitvector 64)))
-			(define addr (bvadd v_rs1 imm))
-			(define adj_addr (bvsub addr base_address))
-			(define nbytes 4)
-			(define val (sign-extend (machine-ram-read m adj_addr nbytes) (bitvector 64)))
-			(gprs-set-x! m rd val)
-			(set-pc! m (bvadd pc (bv 4 64)))
-			instr]
-		[(eq? opcode 'ld)
-			(define rd (list-ref-nat instr 1))
-			(define v_rs1 (gprs-get-x m (list-ref-nat instr 2)))
-			(define imm (sign-extend (list-ref instr 3) (bitvector 64)))
-			(define addr (bvadd v_rs1 imm))
-			(define adj_addr (bvsub addr base_address))
-			(define nbytes 8)
-			(define val (machine-ram-read m adj_addr nbytes))
-			(gprs-set-x! m rd val)
-			(set-pc! m (bvadd pc (bv 4 64)))
-			instr]
-		[(eq? opcode 'lbu)
-			(define rd (list-ref-nat instr 1))
-			(define v_rs1 (gprs-get-x m (list-ref-nat instr 2)))
-			(define imm (sign-extend (list-ref instr 3) (bitvector 64)))
-			(define addr (bvadd v_rs1 imm))
-			(define adj_addr (bvsub addr base_address))
-			(define nbytes 1)
-			(define val (zero-extend (machine-ram-read m adj_addr nbytes) (bitvector 64)))
-			(gprs-set-x! m rd val)
-			(set-pc! m (bvadd pc (bv 4 64)))
-			instr]
-		[(eq? opcode 'lhu)
-			(define rd (list-ref-nat instr 1))
-			(define v_rs1 (gprs-get-x m (list-ref-nat instr 2)))
-			(define imm (sign-extend (list-ref instr 3) (bitvector 64)))
-			(define addr (bvadd v_rs1 imm))
-			(define adj_addr (bvsub addr base_address))
-			(define nbytes 2)
-			(define val (zero-extend (machine-ram-read m adj_addr nbytes) (bitvector 64)))
-			(gprs-set-x! m rd val)
-			(set-pc! m (bvadd pc (bv 4 64)))
-			instr]
-		[(eq? opcode 'lwu)
-			(define rd (list-ref-nat instr 1))
-			(define v_rs1 (gprs-get-x m (list-ref-nat instr 2)))
-			(define imm (sign-extend (list-ref instr 3) (bitvector 64)))
-			(define addr (bvadd v_rs1 imm))
-			(define adj_addr (bvsub addr base_address))
-			(define nbytes 4)
-			(define val (zero-extend (machine-ram-read m adj_addr nbytes) (bitvector 64)))
-			(gprs-set-x! m rd val)
-				(set-pc! m (bvadd pc (bv 4 64)))
-				instr]
-		[(eq? opcode 'jalr)
-			(define rd (list-ref-nat instr 1))
-			(define v_rs1 (gprs-get-x m (list-ref-nat instr 2)))
-			(define imm (sign-extend (list-ref instr 3) (bitvector 64)))
-			; addr is bitvector 64 correct address
-			(define addr (bvand (bvadd v_rs1 imm) (bvnot (bv 1 64))))
-			; adj_addr is adjusted for offset
-			(define adj_addr (bvsub addr base_address))
+		; ; I Format
+		; [(eq? opcode 'addi)
+		; 	(define rd (list-ref-nat instr 1))
+		; 	(define rs1 (list-ref-nat instr 2))
+		; 	(define imm (sign-extend (list-ref instr 3) (bitvector 64)))
+		; 	; nop op pseudo code
+		; 	(if (and (equal? rd 0) (equal? rs1 0) (bveq imm (bv 0 64)))
+		; 		null
+		; 		(gprs-set-x! m rd (bvadd (gprs-get-x m rs1) imm)))
+		; 	(set-pc! m (bvadd pc (bv 4 64)))
+		; 	instr]
+		; [(eq? opcode 'slli)
+		; 	(define rd (list-ref-nat instr 1))
+		; 	(define v_rs1 (gprs-get-x m (list-ref-nat instr 2)))
+		; 	(define imm (zero-extend (list-ref instr 3) (bitvector 64)))
+		; 	(define shifted (bvshl v_rs1 imm))
+		; 	(gprs-set-x! m rd shifted)
+		; 	(set-pc! m (bvadd pc (bv 4 64)))
+		; 	instr]
+		; [(eq? opcode 'srli)
+		; 	(define rd (list-ref-nat instr 1))
+		; 	(define v_rs1 (gprs-get-x m (list-ref-nat instr 2)))
+		; 	(define imm (zero-extend (list-ref instr 3) (bitvector 64)))
+		; 	(define shifted (bvlshr v_rs1 imm))
+		; 	(gprs-set-x! m rd shifted)
+		; 	(set-pc! m (bvadd pc (bv 4 64)))
+		; 	instr]
+		; [(eq? opcode 'srai)
+		; 	(define rd (list-ref-nat instr 1))
+		; 	(define v_rs1 (gprs-get-x m (list-ref-nat instr 2)))
+		; 	(define imm (zero-extend (list-ref instr 3) (bitvector 64)))
+		; 	(define shifted (bvashr v_rs1 imm))
+		; 	(gprs-set-x! m rd shifted)
+		; 	(set-pc! m (bvadd pc (bv 4 64)))
+		; 	instr]
+		; [(eq? opcode 'slti)
+		; 	; TODO: slti instruction not implemented yet
+		; 	(illegal-instr m)]
+		; [(eq? opcode 'sltiu)
+		; 	; TODO: sltiu instruction not implemented yet
+		; 	(illegal-instr m)]
+		; [(eq? opcode 'xori)
+		; 	(define rd (list-ref-nat instr 1))
+		; 	(define v_rs1 (gprs-get-x m (list-ref-nat instr 2)))
+		; 	(define imm (sign-extend (list-ref instr 3) (bitvector 64)))
+		; 	(gprs-set-x! m rd (bvxor v_rs1 imm))
+		; 	(set-pc! m (bvadd pc (bv 4 64)))
+		; 	instr]
+		; [(eq? opcode 'ori)
+		; 	(define rd (list-ref-nat instr 1))
+		; 	(define v_rs1 (gprs-get-x m (list-ref-nat instr 2)))
+		; 	(define imm (sign-extend (list-ref instr 3) (bitvector 64)))
+		; 	(gprs-set-x! m rd (bvor v_rs1 imm))
+		; 	(set-pc! m (bvadd pc (bv 4 64)))
+		; 	instr]
+		; [(eq? opcode 'andi)
+		; 	(define rd (list-ref-nat instr 1))
+		; 	(define v_rs1 (gprs-get-x m (list-ref-nat instr 2)))
+		; 	(define imm (sign-extend (list-ref instr 3) (bitvector 64)))
+		; 	(gprs-set-x! m rd (bvand v_rs1 imm))
+		; 	(set-pc! m (bvadd pc (bv 4 64)))
+		; 	instr]
+		; [(eq? opcode 'addiw)
+		; 	(define rd (list-ref-nat instr 1))
+		; 	(define v_rs1 (gprs-get-x m (list-ref-nat instr 2)))
+		; 	(define imm (sign-extend (list-ref instr 3) (bitvector 64)))
+		; 	(define 32bit_sum (extract 31 0 (bvadd v_rs1 imm)))
+		; 	(gprs-set-x! m rd (sign-extend 32bit_sum (bitvector 64)))
+		; 	(set-pc! m (bvadd pc (bv 4 64)))
+		; 	instr]
+		; [(eq? opcode 'slliw)
+		; 	(define rd (list-ref-nat instr 1))
+		; 	(define v_rs1 (extract 31 0 (gprs-get-x m (list-ref-nat instr 2))))
+		; 	(define imm (zero-extend (list-ref instr 3) (bitvector 32)))
+		; 	(define shifted (sign-extend (bvshl v_rs1 imm) (bitvector 64)))
+		; 	(gprs-set-x! m rd shifted)
+		; 	(when (not (bveq (extract 5 5 imm) (bv 0 1)))
+		; 		(illegal-instr m))
+		; 	(set-pc! m (bvadd pc (bv 4 64)))
+		; 	instr]
+		; [(eq? opcode 'srliw)
+		; 	(define rd (list-ref-nat instr 1))
+		; 	(define v_rs1 (extract 31 0 (gprs-get-x m (list-ref-nat instr 2))))
+		; 	(define imm (zero-extend (list-ref instr 3) (bitvector 32)))
+		; 	(define shifted (sign-extend (bvlshr v_rs1 imm) (bitvector 64)))
+		; 	(gprs-set-x! m rd shifted)
+		; 	(when (not (bveq (extract 5 5 imm) (bv 0 1)))
+		; 		(illegal-instr m))
+		; 	(set-pc! m (bvadd pc (bv 4 64)))
+		; 	instr]
+		; [(eq? opcode 'sraiw)
+		; 	(define rd (list-ref-nat instr 1))
+		; 	(define v_rs1 (extract 31 0 (gprs-get-x m (list-ref-nat instr 2))))
+		; 	(define imm (zero-extend (list-ref instr 3) (bitvector 32)))
+		; 	(define shifted (sign-extend (bvashr v_rs1 imm) (bitvector 64)))
+		; 	(gprs-set-x! m rd shifted)
+		; 	(when (not (bveq (extract 5 5 imm) (bv 0 1)))
+		; 			(illegal-instr m))
+		; 	(set-pc! m (bvadd pc (bv 4 64)))
+		; 	instr]
+		; [(eq? opcode 'lb)
+		; 	(define rd (list-ref-nat instr 1))
+		; 	(define v_rs1 (gprs-get-x m (list-ref-nat instr 2)))
+		; 	(define imm (sign-extend (list-ref instr 3) (bitvector 64)))
+		; 	(define addr (bvadd v_rs1 imm))
+		; 	(define adj_addr (bvsub addr base_address))
+		; 	(define nbytes 1)
+		; 	(define val (sign-extend (machine-ram-read m adj_addr nbytes) (bitvector 64)))
+		; 	(gprs-set-x! m rd val)
+		; 	(set-pc! m (bvadd pc (bv 4 64)))
+		; 	instr]
+		; [(eq? opcode 'lh)
+		; 	(define rd (list-ref-nat instr 1))
+		; 	(define v_rs1 (gprs-get-x m (list-ref-nat instr 2)))
+		; 	(define imm (sign-extend (list-ref instr 3) (bitvector 64)))
+		; 	(define addr (bvadd v_rs1 imm))
+		; 	(define adj_addr (bvsub addr base_address))
+		; 	(define nbytes 2)
+		; 	(define val (sign-extend (machine-ram-read m adj_addr nbytes) (bitvector 64)))
+		; 	(gprs-set-x! m rd val)
+		; 	(set-pc! m (bvadd pc (bv 4 64)))
+		; 	instr]
+		; [(eq? opcode 'lw)
+		; 	(define rd (list-ref-nat instr 1))
+		; 	(define v_rs1 (gprs-get-x m (list-ref-nat instr 2)))
+		; 	(define imm (sign-extend (list-ref instr 3) (bitvector 64)))
+		; 	(define addr (bvadd v_rs1 imm))
+		; 	(define adj_addr (bvsub addr base_address))
+		; 	(define nbytes 4)
+		; 	(define val (sign-extend (machine-ram-read m adj_addr nbytes) (bitvector 64)))
+		; 	(gprs-set-x! m rd val)
+		; 	(set-pc! m (bvadd pc (bv 4 64)))
+		; 	instr]
+		; [(eq? opcode 'ld)
+		; 	(define rd (list-ref-nat instr 1))
+		; 	(define v_rs1 (gprs-get-x m (list-ref-nat instr 2)))
+		; 	(define imm (sign-extend (list-ref instr 3) (bitvector 64)))
+		; 	(define addr (bvadd v_rs1 imm))
+		; 	(define adj_addr (bvsub addr base_address))
+		; 	(define nbytes 8)
+		; 	(define val (machine-ram-read m adj_addr nbytes))
+		; 	(gprs-set-x! m rd val)
+		; 	(set-pc! m (bvadd pc (bv 4 64)))
+		; 	instr]
+		; [(eq? opcode 'lbu)
+		; 	(define rd (list-ref-nat instr 1))
+		; 	(define v_rs1 (gprs-get-x m (list-ref-nat instr 2)))
+		; 	(define imm (sign-extend (list-ref instr 3) (bitvector 64)))
+		; 	(define addr (bvadd v_rs1 imm))
+		; 	(define adj_addr (bvsub addr base_address))
+		; 	(define nbytes 1)
+		; 	(define val (zero-extend (machine-ram-read m adj_addr nbytes) (bitvector 64)))
+		; 	(gprs-set-x! m rd val)
+		; 	(set-pc! m (bvadd pc (bv 4 64)))
+		; 	instr]
+		; [(eq? opcode 'lhu)
+		; 	(define rd (list-ref-nat instr 1))
+		; 	(define v_rs1 (gprs-get-x m (list-ref-nat instr 2)))
+		; 	(define imm (sign-extend (list-ref instr 3) (bitvector 64)))
+		; 	(define addr (bvadd v_rs1 imm))
+		; 	(define adj_addr (bvsub addr base_address))
+		; 	(define nbytes 2)
+		; 	(define val (zero-extend (machine-ram-read m adj_addr nbytes) (bitvector 64)))
+		; 	(gprs-set-x! m rd val)
+		; 	(set-pc! m (bvadd pc (bv 4 64)))
+		; 	instr]
+		; [(eq? opcode 'lwu)
+		; 	(define rd (list-ref-nat instr 1))
+		; 	(define v_rs1 (gprs-get-x m (list-ref-nat instr 2)))
+		; 	(define imm (sign-extend (list-ref instr 3) (bitvector 64)))
+		; 	(define addr (bvadd v_rs1 imm))
+		; 	(define adj_addr (bvsub addr base_address))
+		; 	(define nbytes 4)
+		; 	(define val (zero-extend (machine-ram-read m adj_addr nbytes) (bitvector 64)))
+		; 	(gprs-set-x! m rd val)
+		; 		(set-pc! m (bvadd pc (bv 4 64)))
+		; 		instr]
+		; [(eq? opcode 'jalr)
+		; 	(define rd (list-ref-nat instr 1))
+		; 	(define v_rs1 (gprs-get-x m (list-ref-nat instr 2)))
+		; 	(define imm (sign-extend (list-ref instr 3) (bitvector 64)))
+		; 	; addr is bitvector 64 correct address
+		; 	(define addr (bvand (bvadd v_rs1 imm) (bvnot (bv 1 64))))
+		; 	; adj_addr is adjusted for offset
+		; 	(define adj_addr (bvsub addr base_address))
 
-			(define save (bvadd pc (bv 4 64)))
-			(cond
-				[(not (equal? rd 0))
-					(gprs-set-x! m rd save)])
+		; 	(define save (bvadd pc (bv 4 64)))
+		; 	(cond
+		; 		[(not (equal? rd 0))
+		; 			(gprs-set-x! m rd save)])
 
-			(set-pc! m adj_addr)
-			instr]
+		; 	(set-pc! m adj_addr)
+		; 	instr]
 
-		; R Format
-		[(eq? opcode 'add)
-			(define rd (list-ref-nat instr 1))
-			(define v_rs1 (gprs-get-x m (list-ref-nat instr 2)))
-			(define v_rs2 (gprs-get-x m (list-ref-nat instr 3)))
-			(gprs-set-x! m rd (bvadd v_rs1 v_rs2))
-			(set-pc! m (bvadd pc (bv 4 64)))
-			instr]
-		[(eq? opcode 'sub)
-			(define rd (list-ref-nat instr 1))
-			(define v_rs1 (gprs-get-x m (list-ref-nat instr 2)))
-			(define v_rs2 (gprs-get-x m (list-ref-nat instr 3)))
-			(gprs-set-x! m rd (bvsub v_rs1 v_rs2))
-			(set-pc! m (bvadd pc (bv 4 64)))
-			instr]
-		[(eq? opcode 'sll)
-			(define rd (list-ref-nat instr 1))
-			(define v_rs1 (gprs-get-x m (list-ref-nat instr 2)))
-			(define v_rs2 (gprs-get-x m (list-ref-nat instr 3)))
-			(define shifted (bvshl v_rs1 v_rs2))
-			(gprs-set-x! m rd shifted)
-			(set-pc! m (bvadd pc (bv 4 64)))
-			instr]
-		[(eq? opcode 'slt)
-			; TODO: slt instruction not implemented yet
-			(set-pc! m (bvsub (get-csr m 'mtvec) base_address))
-			(set-machine-mode! m 1)]
-		[(eq? opcode 'sltu)
-			; TODO: sltu instruction not implemented yet
-			(set-pc! m (bvsub (get-csr m 'mtvec) base_address))
-			(set-machine-mode! m 1)
-			instr]
-		[(eq? opcode 'xor)
-			(define rd (list-ref-nat instr 1))
-			(define v_rs1 (gprs-get-x m (list-ref-nat instr 2)))
-			(define v_rs2 (gprs-get-x m (list-ref-nat instr 3)))
-			(gprs-set-x! m rd (bvxor v_rs1 v_rs2))
-			(set-pc! m (bvadd pc (bv 4 64)))
-			instr]
-		[(eq? opcode 'srl)
-			(define rd (list-ref-nat instr 1))
-			(define v_rs1 (gprs-get-x m (list-ref-nat instr 2)))
-			(define v_rs2 (gprs-get-x m (list-ref-nat instr 3)))
-			(define shifted (bvlshr v_rs1 v_rs2))
-			(gprs-set-x! m rd shifted)
-			(set-pc! m (bvadd pc (bv 4 64)))
-			instr]
-		[(eq? opcode 'sra)
-			(define rd (list-ref-nat instr 1))
-			(define v_rs1 (gprs-get-x m (list-ref-nat instr 2)))
-			(define v_rs2 (gprs-get-x m (list-ref-nat instr 3)))
-			(define shifted (bvashr v_rs1 v_rs2))
-			(gprs-set-x! m rd shifted)
-			(set-pc! m (bvadd pc (bv 4 64)))
-			instr]
-		[(eq? opcode 'or)
-			(define rd (list-ref-nat instr 1))
-			(define v_rs1 (gprs-get-x m (list-ref-nat instr 2)))
-			(define v_rs2 (gprs-get-x m (list-ref-nat instr 3)))
-			(gprs-set-x! m rd (bvor v_rs1 v_rs2))
-			(set-pc! m (bvadd pc (bv 4 64)))
-			instr]
-		[(eq? opcode 'and)
-			(define rd (list-ref-nat instr 1))
-			(define v_rs1 (gprs-get-x m (list-ref-nat instr 2)))
-			(define v_rs2 (gprs-get-x m (list-ref-nat instr 3)))
-			(gprs-set-x! m rd (bvand v_rs1 v_rs2))
-			(set-pc! m (bvadd pc (bv 4 64)))
-			instr]
-		[(eq? opcode 'andw)
-			; TODO: andw instruction not implemented yet
-			(illegal-instr m)]
-		[(eq? opcode 'subw)
-			; TODO: subw instruction not implemented yet
-			(illegal-instr m)]
-		[(eq? opcode 'sllw)
-			; TODO: sllw instruction not implemented yet
-			(illegal-instr m)]
-		[(eq? opcode 'srlw)
-			; TODO: srlw instruction not implemented yet
-			(illegal-instr m)]
-		[(eq? opcode 'sraw)
-			; TODO: sraw instruction not implemented yet
-			(illegal-instr m)]
-		[(eq? opcode 'mul)
-			; TODO: mul instruction not implemented yet
-			(illegal-instr m)]
-		[(eq? opcode 'mulh)
-			; TODO: mulh instruction not implemented yet
-			(illegal-instr m)]
-		[(eq? opcode 'mulhsu)
-			; TODO: mulhsu instruction not implemented yet
-			(illegal-instr m)]
-		[(eq? opcode 'mulhu)
-			; TODO: mulhu instruction not implemented yet
-			(illegal-instr m)]
-		[(eq? opcode 'div)
-			; TODO: div instruction not implemented yet
-			(illegal-instr m)]
-		[(eq? opcode 'divu)
-			; TODO: divu instruction not implemented yet
-			(illegal-instr m)]
-		[(eq? opcode 'rem)
-			; TODO: rem instruction not implemented yet
-			(illegal-instr m)]
-		[(eq? opcode 'remu)
-			; TODO: remu instruction not implemented yet
-			(illegal-instr m)]
-		[(eq? opcode 'mulw)
-			; TODO: mulw instruction not implemented yet
-			(illegal-instr m)]
-		[(eq? opcode 'divw)
-			; TODO: divw instruction not implemented yet
-			(illegal-instr m)]
-		[(eq? opcode 'divuw)
-			; TODO: divuw instruction not implemented yet
-			(illegal-instr m)]
-		[(eq? opcode 'remw)
-			; TODO: remw instruction not implemented yet
-			(illegal-instr m)]
-		[(eq? opcode 'remuw)
-			; TODO: remuw instruction not implemented yet
-			(illegal-instr m)]
+		; ; R Format
+		; [(eq? opcode 'add)
+		; 	(define rd (list-ref-nat instr 1))
+		; 	(define v_rs1 (gprs-get-x m (list-ref-nat instr 2)))
+		; 	(define v_rs2 (gprs-get-x m (list-ref-nat instr 3)))
+		; 	(gprs-set-x! m rd (bvadd v_rs1 v_rs2))
+		; 	(set-pc! m (bvadd pc (bv 4 64)))
+		; 	instr]
+		; [(eq? opcode 'sub)
+		; 	(define rd (list-ref-nat instr 1))
+		; 	(define v_rs1 (gprs-get-x m (list-ref-nat instr 2)))
+		; 	(define v_rs2 (gprs-get-x m (list-ref-nat instr 3)))
+		; 	(gprs-set-x! m rd (bvsub v_rs1 v_rs2))
+		; 	(set-pc! m (bvadd pc (bv 4 64)))
+		; 	instr]
+		; [(eq? opcode 'sll)
+		; 	(define rd (list-ref-nat instr 1))
+		; 	(define v_rs1 (gprs-get-x m (list-ref-nat instr 2)))
+		; 	(define v_rs2 (gprs-get-x m (list-ref-nat instr 3)))
+		; 	(define shifted (bvshl v_rs1 v_rs2))
+		; 	(gprs-set-x! m rd shifted)
+		; 	(set-pc! m (bvadd pc (bv 4 64)))
+		; 	instr]
+		; [(eq? opcode 'slt)
+		; 		; TODO: slt instruction not implemented yet
+		; 		(illegal-instr m)]
+		; [(eq? opcode 'sltu)
+		; 	; TODO: sltu instruction not implemented yet
+		; 		(illegal-instr m)]
+		; [(eq? opcode 'xor)
+		; 	(define rd (list-ref-nat instr 1))
+		; 	(define v_rs1 (gprs-get-x m (list-ref-nat instr 2)))
+		; 	(define v_rs2 (gprs-get-x m (list-ref-nat instr 3)))
+		; 	(gprs-set-x! m rd (bvxor v_rs1 v_rs2))
+		; 	(set-pc! m (bvadd pc (bv 4 64)))
+		; 	instr]
+		; [(eq? opcode 'srl)
+		; 	(define rd (list-ref-nat instr 1))
+		; 	(define v_rs1 (gprs-get-x m (list-ref-nat instr 2)))
+		; 	(define v_rs2 (gprs-get-x m (list-ref-nat instr 3)))
+		; 	(define shifted (bvlshr v_rs1 v_rs2))
+		; 	(gprs-set-x! m rd shifted)
+		; 	(set-pc! m (bvadd pc (bv 4 64)))
+		; 	instr]
+		; [(eq? opcode 'sra)
+		; 	(define rd (list-ref-nat instr 1))
+		; 	(define v_rs1 (gprs-get-x m (list-ref-nat instr 2)))
+		; 	(define v_rs2 (gprs-get-x m (list-ref-nat instr 3)))
+		; 	(define shifted (bvashr v_rs1 v_rs2))
+		; 	(gprs-set-x! m rd shifted)
+		; 	(set-pc! m (bvadd pc (bv 4 64)))
+		; 	instr]
+		; [(eq? opcode 'or)
+		; 	(define rd (list-ref-nat instr 1))
+		; 	(define v_rs1 (gprs-get-x m (list-ref-nat instr 2)))
+		; 	(define v_rs2 (gprs-get-x m (list-ref-nat instr 3)))
+		; 	(gprs-set-x! m rd (bvor v_rs1 v_rs2))
+		; 	(set-pc! m (bvadd pc (bv 4 64)))
+		; 	instr]
+		; [(eq? opcode 'and)
+		; 	(define rd (list-ref-nat instr 1))
+		; 	(define v_rs1 (gprs-get-x m (list-ref-nat instr 2)))
+		; 	(define v_rs2 (gprs-get-x m (list-ref-nat instr 3)))
+		; 	(gprs-set-x! m rd (bvand v_rs1 v_rs2))
+		; 	(set-pc! m (bvadd pc (bv 4 64)))
+		; 	instr]
+		; [(eq? opcode 'andw)
+		; 	; TODO: andw instruction not implemented yet
+		; 	(illegal-instr m)]
+		; [(eq? opcode 'subw)
+		; 	; TODO: subw instruction not implemented yet
+		; 	(illegal-instr m)]
+		; [(eq? opcode 'sllw)
+		; 	; TODO: sllw instruction not implemented yet
+		; 	(illegal-instr m)]
+		; [(eq? opcode 'srlw)
+		; 	; TODO: srlw instruction not implemented yet
+		; 	(illegal-instr m)]
+		; [(eq? opcode 'sraw)
+		; 	; TODO: sraw instruction not implemented yet
+		; 	(illegal-instr m)]
+		; [(eq? opcode 'mul)
+		; 	; TODO: mul instruction not implemented yet
+		; 	(illegal-instr m)]
+		; [(eq? opcode 'mulh)
+		; 	; TODO: mulh instruction not implemented yet
+		; 	(illegal-instr m)]
+		; [(eq? opcode 'mulhsu)
+		; 	; TODO: mulhsu instruction not implemented yet
+		; 	(illegal-instr m)]
+		; [(eq? opcode 'mulhu)
+		; 	; TODO: mulhu instruction not implemented yet
+		; 	(illegal-instr m)]
+		; [(eq? opcode 'div)
+		; 	; TODO: div instruction not implemented yet
+		; 	(illegal-instr m)]
+		; [(eq? opcode 'divu)
+		; 	; TODO: divu instruction not implemented yet
+		; 	(illegal-instr m)]
+		; [(eq? opcode 'rem)
+		; 	; TODO: rem instruction not implemented yet
+		; 	(illegal-instr m)]
+		; [(eq? opcode 'remu)
+		; 	; TODO: remu instruction not implemented yet
+		; 	(illegal-instr m)]
+		; [(eq? opcode 'mulw)
+		; 	; TODO: mulw instruction not implemented yet
+		; 	(illegal-instr m)]
+		; [(eq? opcode 'divw)
+		; 	; TODO: divw instruction not implemented yet
+		; 	(illegal-instr m)]
+		; [(eq? opcode 'divuw)
+		; 	; TODO: divuw instruction not implemented yet
+		; 	(illegal-instr m)]
+		; [(eq? opcode 'remw)
+		; 	; TODO: remw instruction not implemented yet
+		; 	(illegal-instr m)]
+		; [(eq? opcode 'remuw)
+		; 	; TODO: remuw instruction not implemented yet
+		; 	(illegal-instr m)]
 
-		; B Format
-		[(eq? opcode 'beq)
-			(define v_rs1 (gprs-get-x m (list-ref-nat instr 1)))
-			(define v_rs2 (gprs-get-x m (list-ref-nat instr 2)))
-			(define imm (list-ref instr 3))
-			(if (equal? v_rs1 v_rs2)
-				(set-pc! m (bvadd pc (bvmul (sign-extend imm (bitvector 64)) (bv 2 64))))
-				(set-pc! m (bvadd pc (bv 4 64))))
-			instr]
-		[(eq? opcode 'bne)
-			(define v_rs1 (gprs-get-x m (list-ref-nat instr 1)))
-			(define v_rs2 (gprs-get-x m (list-ref-nat instr 2)))
-			(define imm (list-ref instr 3))
-			(if (not (equal? v_rs1 v_rs2))
-				(set-pc! m (bvadd pc (bvmul (sign-extend imm (bitvector 64)) (bv 2 64))))
-				(set-pc! m (bvadd pc (bv 4 64))))
-			instr]
-		[(eq? opcode 'blt)
-			(define v_rs1 (gprs-get-x m (list-ref-nat instr 1)))
-			(define v_rs2 (gprs-get-x m (list-ref-nat instr 2)))
-			(define imm (list-ref instr 3))
-			(if (bvslt v_rs1 v_rs2)
-				(set-pc! m (bvadd pc (bvmul (sign-extend imm (bitvector 64)) (bv 2 64))))
-				(set-pc! m (bvadd pc (bv 4 64))))
-			instr]
-		[(eq? opcode 'bge)
-			(define v_rs1 (gprs-get-x m (list-ref-nat instr 1)))
-			(define v_rs2 (gprs-get-x m (list-ref-nat instr 2)))
-			(define imm (list-ref instr 3))
-			(if (bvsge v_rs1 v_rs2)
-				(set-pc! m (bvadd pc (bvmul (sign-extend imm (bitvector 64)) (bv 2 64))))
-				(set-pc! m (bvadd pc (bv 4 64))))
-			instr]
-		[(eq? opcode 'bltu)
-			(define v_rs1 (gprs-get-x m (list-ref-nat instr 1)))
-			(define v_rs2 (gprs-get-x m (list-ref-nat instr 2)))
-			(define imm (list-ref instr 3))
-			(if (bvult v_rs1 v_rs2)
-				(set-pc! m (bvadd pc (bvmul (sign-extend imm (bitvector 64)) (bv 2 64))))
-				(set-pc! m (bvadd pc (bv 4 64))))
-			instr]
-		[(eq? opcode 'bgeu)
-			(define v_rs1 (gprs-get-x m (list-ref-nat instr 1)))
-			(define v_rs2 (gprs-get-x m (list-ref-nat instr 2)))
-			(define imm (list-ref instr 3))
-			(if (bvuge v_rs1 v_rs2)
-				(set-pc! m (bvadd pc (bvmul (sign-extend imm (bitvector 64)) (bv 2 64))))
-				(set-pc! m (bvadd pc (bv 4 64))))
-			instr]
+		; ; B Format
+		; [(eq? opcode 'beq)
+		; 	(define v_rs1 (gprs-get-x m (list-ref-nat instr 1)))
+		; 	(define v_rs2 (gprs-get-x m (list-ref-nat instr 2)))
+		; 	(define imm (list-ref instr 3))
+		; 	(if (equal? v_rs1 v_rs2)
+		; 		(set-pc! m (bvadd pc (bvmul (sign-extend imm (bitvector 64)) (bv 2 64))))
+		; 		(set-pc! m (bvadd pc (bv 4 64))))
+		; 	instr]
+		; [(eq? opcode 'bne)
+		; 	(define v_rs1 (gprs-get-x m (list-ref-nat instr 1)))
+		; 	(define v_rs2 (gprs-get-x m (list-ref-nat instr 2)))
+		; 	(define imm (list-ref instr 3))
+		; 	(if (not (equal? v_rs1 v_rs2))
+		; 		(set-pc! m (bvadd pc (bvmul (sign-extend imm (bitvector 64)) (bv 2 64))))
+		; 		(set-pc! m (bvadd pc (bv 4 64))))
+		; 	instr]
+		; [(eq? opcode 'blt)
+		; 	(define v_rs1 (gprs-get-x m (list-ref-nat instr 1)))
+		; 	(define v_rs2 (gprs-get-x m (list-ref-nat instr 2)))
+		; 	(define imm (list-ref instr 3))
+		; 	(if (bvslt v_rs1 v_rs2)
+		; 		(set-pc! m (bvadd pc (bvmul (sign-extend imm (bitvector 64)) (bv 2 64))))
+		; 		(set-pc! m (bvadd pc (bv 4 64))))
+		; 	instr]
+		; [(eq? opcode 'bge)
+		; 	(define v_rs1 (gprs-get-x m (list-ref-nat instr 1)))
+		; 	(define v_rs2 (gprs-get-x m (list-ref-nat instr 2)))
+		; 	(define imm (list-ref instr 3))
+		; 	(if (bvsge v_rs1 v_rs2)
+		; 		(set-pc! m (bvadd pc (bvmul (sign-extend imm (bitvector 64)) (bv 2 64))))
+		; 		(set-pc! m (bvadd pc (bv 4 64))))
+		; 	instr]
+		; [(eq? opcode 'bltu)
+		; 	(define v_rs1 (gprs-get-x m (list-ref-nat instr 1)))
+		; 	(define v_rs2 (gprs-get-x m (list-ref-nat instr 2)))
+		; 	(define imm (list-ref instr 3))
+		; 	(if (bvult v_rs1 v_rs2)
+		; 		(set-pc! m (bvadd pc (bvmul (sign-extend imm (bitvector 64)) (bv 2 64))))
+		; 		(set-pc! m (bvadd pc (bv 4 64))))
+		; 	instr]
+		; [(eq? opcode 'bgeu)
+		; 	(define v_rs1 (gprs-get-x m (list-ref-nat instr 1)))
+		; 	(define v_rs2 (gprs-get-x m (list-ref-nat instr 2)))
+		; 	(define imm (list-ref instr 3))
+		; 	(if (bvuge v_rs1 v_rs2)
+		; 		(set-pc! m (bvadd pc (bvmul (sign-extend imm (bitvector 64)) (bv 2 64))))
+		; 		(set-pc! m (bvadd pc (bv 4 64))))
+		; 	instr]
 
-		; U Format
-		[(eq? opcode 'lui)
-			(define rd (list-ref-nat instr 1))
-			; extend immediate by 12 bits
-			(define imm (zero-extend (concat (list-ref instr 2) (bv 0 12)) (bitvector 64)))
-			(gprs-set-x! m rd imm)
-			(set-pc! m (bvadd pc (bv 4 64)))
-			instr]
-		[(eq? opcode 'auipc)
-			(define rd (list-ref-nat instr 1))
-			; extend immediate by 12 bits, then zero-extend to 64 bits
-			(define imm (zero-extend (concat (list-ref instr 2) (bv 0 12)) (bitvector 64)))
-			(gprs-set-x! m rd (bvadd pc base_address imm))
-			(set-pc! m (bvadd pc (bv 4 64)))
-			instr]
+		; ; U Format
+		; [(eq? opcode 'lui)
+		; 	(define rd (list-ref-nat instr 1))
+		; 	; extend immediate by 12 bits
+		; 	(define imm (zero-extend (concat (list-ref instr 2) (bv 0 12)) (bitvector 64)))
+		; 	(gprs-set-x! m rd imm)
+		; 	(set-pc! m (bvadd pc (bv 4 64)))
+		; 	instr]
+		; [(eq? opcode 'auipc)
+		; 	(define rd (list-ref-nat instr 1))
+		; 	; extend immediate by 12 bits, then zero-extend to 64 bits
+		; 	(define imm (zero-extend (concat (list-ref instr 2) (bv 0 12)) (bitvector 64)))
+		; 	(gprs-set-x! m rd (bvadd pc base_address imm))
+		; 	(set-pc! m (bvadd pc (bv 4 64)))
+		; 	instr]
 
-		; S Format
-		[(eq? opcode 'sb)
-			(define v_rs1 (gprs-get-x m (list-ref-nat instr 1)))
-			(define v_rs2 (gprs-get-x m (list-ref-nat instr 2)))
-			(define imm (sign-extend (list-ref instr 3) (bitvector 64)))
-			(define addr (bvadd v_rs1 imm))
-			(define adj_addr (bvsub addr base_address))
-			(define nbits 8)
-			(machine-ram-write! m adj_addr v_rs2 nbits)
-			(set-pc! m (bvadd pc (bv 4 64)))
-			instr]
-		[(eq? opcode 'sh)
-			(define v_rs1 (gprs-get-x m (list-ref-nat instr 1)))
-			(define v_rs2 (gprs-get-x m (list-ref-nat instr 2)))
-			(define imm (sign-extend (list-ref instr 3) (bitvector 64)))
-			(define addr (bvadd v_rs1 imm))
-			(define adj_addr (bvsub addr base_address))
-			(define nbits 16)
-			(machine-ram-write! m adj_addr v_rs2 nbits)
-			(set-pc! m (bvadd pc (bv 4 64)))
-			instr]
-		[(eq? opcode 'sw)
-			(define v_rs1 (gprs-get-x m (list-ref-nat instr 1)))
-			(define v_rs2 (gprs-get-x m (list-ref-nat instr 2)))
-			(define imm (sign-extend (list-ref instr 3) (bitvector 64)))
-			(define addr (bvadd v_rs1 imm))
-			(define adj_addr (bvsub addr base_address))
-			(define nbits 32)
-			(machine-ram-write! m adj_addr v_rs2 nbits)
-			(set-pc! m (bvadd pc (bv 4 64)))
-			instr]
-		[(eq? opcode 'sd)
-			(define v_rs1 (gprs-get-x m (list-ref-nat instr 1)))
-			(define v_rs2 (gprs-get-x m (list-ref-nat instr 2)))
-			(define imm (sign-extend (list-ref instr 3) (bitvector 64)))
-			(define addr (bvadd v_rs1 imm))
-			(define adj_addr (bvsub addr base_address))
-			(define nbits 64)
-			(machine-ram-write! m adj_addr v_rs2 nbits)
-			(set-pc! m (bvadd pc (bv 4 64)))
-			instr]
+		; ; S Format
+		; [(eq? opcode 'sb)
+		; 	(define v_rs1 (gprs-get-x m (list-ref-nat instr 1)))
+		; 	(define v_rs2 (gprs-get-x m (list-ref-nat instr 2)))
+		; 	(define imm (sign-extend (list-ref instr 3) (bitvector 64)))
+		; 	(define addr (bvadd v_rs1 imm))
+		; 	(define adj_addr (bvsub addr base_address))
+		; 	(define nbits 8)
+		; 	(machine-ram-write! m adj_addr v_rs2 nbits)
+		; 	(set-pc! m (bvadd pc (bv 4 64)))
+		; 	instr]
+		; [(eq? opcode 'sh)
+		; 	(define v_rs1 (gprs-get-x m (list-ref-nat instr 1)))
+		; 	(define v_rs2 (gprs-get-x m (list-ref-nat instr 2)))
+		; 	(define imm (sign-extend (list-ref instr 3) (bitvector 64)))
+		; 	(define addr (bvadd v_rs1 imm))
+		; 	(define adj_addr (bvsub addr base_address))
+		; 	(define nbits 16)
+		; 	(machine-ram-write! m adj_addr v_rs2 nbits)
+		; 	(set-pc! m (bvadd pc (bv 4 64)))
+		; 	instr]
+		; [(eq? opcode 'sw)
+		; 	(define v_rs1 (gprs-get-x m (list-ref-nat instr 1)))
+		; 	(define v_rs2 (gprs-get-x m (list-ref-nat instr 2)))
+		; 	(define imm (sign-extend (list-ref instr 3) (bitvector 64)))
+		; 	(define addr (bvadd v_rs1 imm))
+		; 	(define adj_addr (bvsub addr base_address))
+		; 	(define nbits 32)
+		; 	(machine-ram-write! m adj_addr v_rs2 nbits)
+		; 	(set-pc! m (bvadd pc (bv 4 64)))
+		; 	instr]
+		; [(eq? opcode 'sd)
+		; 	(define v_rs1 (gprs-get-x m (list-ref-nat instr 1)))
+		; 	(define v_rs2 (gprs-get-x m (list-ref-nat instr 2)))
+		; 	(define imm (sign-extend (list-ref instr 3) (bitvector 64)))
+		; 	(define addr (bvadd v_rs1 imm))
+		; 	(define adj_addr (bvsub addr base_address))
+		; 	(define nbits 64)
+		; 	(machine-ram-write! m adj_addr v_rs2 nbits)
+		; 	(set-pc! m (bvadd pc (bv 4 64)))
+		; 	instr]
 
-		; J Format
-		[(eq? opcode 'jal)
-			(define rd (list-ref-nat instr 1))
-			(define imm (sign-extend (concat (list-ref instr 2) (bv 0 1)) (bitvector 64)))
-			; adjust for base_address
-			(define save_addr (bvadd (bvadd pc (bv 4 64)) base_address))
-			; imm is the offset from pc, so we don't need to do anything with base_address
-			(define jump_addr (bvadd imm pc))
-			(cond
-				[(not (equal? rd 0))
-					(gprs-set-x! m rd save_addr)])
-			(set-pc! m jump_addr)
-			instr]
+		; ; J Format
+		; [(eq? opcode 'jal)
+		; 	(define rd (list-ref-nat instr 1))
+		; 	(define imm (sign-extend (concat (list-ref instr 2) (bv 0 1)) (bitvector 64)))
+		; 	; adjust for base_address
+		; 	(define save_addr (bvadd (bvadd pc (bv 4 64)) base_address))
+		; 	; imm is the offset from pc, so we don't need to do anything with base_address
+		; 	(define jump_addr (bvadd imm pc))
+		; 	(cond
+		; 		[(not (equal? rd 0))
+		; 			(gprs-set-x! m rd save_addr)])
+		; 	(set-pc! m jump_addr)
+		; 	instr]
 
-		; FENCE Format
-		[(eq? opcode 'FENCE)
-			; TODO: FENCE instruction not implemented yet
-			(illegal-instr m)]
-		[(eq? opcode 'FENCE_I)
-			; TODO: FENCE_I instruction not implemented yet
-			(illegal-instr m)]))
+		; ; FENCE Format
+		; [(eq? opcode 'FENCE)
+		; 	; TODO: FENCE instruction not implemented yet
+		; 	(illegal-instr m)]
+		; [(eq? opcode 'FENCE_I)
+		; 	; TODO: FENCE_I instruction not implemented yet
+		; 	(illegal-instr m)]
+	))
 (provide execute)

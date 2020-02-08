@@ -248,17 +248,35 @@
 		[(bveq b_instr (bv #b00000000000100000000000001110011 32))
 			(list 'ebreak)]
 		[(and (bveq funct3 (bv #b001 3)) (bveq opcode (bv #b1110011 7)))
-			(list 'csrrw rd rs1 (decode-csr m csr))]
+			(define sym_csr (decode-csr m csr))
+			(if (eq? sym_csr null)
+				null
+				(list 'csrrw rd rs1 sym_csr))]
 		[(and (bveq funct3 (bv #b010 3)) (bveq opcode (bv #b1110011 7)))
-			(list 'csrrs rd rs1 (decode-csr m csr))]
+			(define sym_csr (decode-csr m csr))
+			(if (eq? sym_csr null)
+				null
+				(list 'csrrs rd rs1 sym_csr))]
 		[(and (bveq funct3 (bv #b011 3)) (bveq opcode (bv #b1110011 7)))
-			(list 'csrrc rd rs1 (decode-csr m csr))]
+			(define sym_csr (decode-csr m csr))
+			(if (eq? sym_csr null)
+				null
+				(list 'csrrc rd rs1 sym_csr))]
 		[(and (bveq funct3 (bv #b101 3)) (bveq opcode (bv #b1110011 7)))
-			(list 'csrrwi rd rs1 (decode-csr m csr))]
+			(define sym_csr (decode-csr m csr))
+			(if (eq? sym_csr null)
+				null
+				(list 'csrrwi rd rs1 sym_csr))]
 		[(and (bveq funct3 (bv #b110 3)) (bveq opcode (bv #b1110011 7)))
-			(list 'csrrsi rd rs1 (decode-csr m csr))]
+			(define sym_csr (decode-csr m csr))
+			(if (eq? sym_csr null)
+				null
+				(list 'csrrsi rd rs1 sym_csr))]
 		[(and (bveq funct3 (bv #b111 3)) (bveq opcode (bv #b1110011 7)))
-			(list 'csrrci rd rs1 (decode-csr m csr))]
+			(define sym_csr (decode-csr m csr))
+			(if (eq? sym_csr null)
+				null
+				(list 'csrrci rd rs1 sym_csr))]
 		[else
 			; (printf "No such SPECIAL FMT ~n")
 			(illegal-instr m)]))
@@ -270,18 +288,18 @@
 	(define fmt (get-fmt m opcode))
 	; (printf "FMT: ~a~n" fmt)
 	(cond
-		[(eq? fmt 'R)
-			(decode-R m b_instr)]
-		[(eq? fmt 'I)
-			(decode-I m b_instr)]
-		[(eq? fmt 'B)
-			(decode-B m b_instr)]
-		[(eq? fmt 'U)
-			(decode-U m b_instr)]
-		[(eq? fmt 'S)
-			(decode-S m b_instr)]
-		[(eq? fmt 'J)
-			(decode-J m b_instr)]
+		; [(eq? fmt 'R)
+		; 	(decode-R m b_instr)]
+		; [(eq? fmt 'I)
+		; 	(decode-I m b_instr)]
+		; [(eq? fmt 'B)
+		; 	(decode-B m b_instr)]
+		; [(eq? fmt 'U)
+		; 	(decode-U m b_instr)]
+		; [(eq? fmt 'S)
+		; 	(decode-S m b_instr)]
+		; [(eq? fmt 'J)
+		; 	(decode-J m b_instr)]
 		[(eq? fmt 'SPECIAL)
 			(decode-SPECIAL m b_instr)]
 		[else

@@ -50,10 +50,8 @@
 		[(eq? csr 'pmpaddr14) (set! v_csr (csrs-pmpaddr14 (cpu-csrs (machine-cpu m))))]
 		[(eq? csr 'pmpaddr15) (set! v_csr (csrs-pmpaddr15 (cpu-csrs (machine-cpu m))))]
 		[else
-			(printf "??: ~a~n" (eq? csr 'mtvec))
-			(printf "No such CSR: ~a~n" csr)
-			(set-pc! m (bvsub (get-csr m 'mtvec) base_address))
-			(set-machine-mode! m 1)])
+			; (printf "No such CSR: ~a~n" csr)
+			(illegal-instr m)])
 	v_csr)
 (provide get-csr)
 
@@ -83,25 +81,29 @@
 		[(eq? csr 'pmpaddr15)	(set-csrs-pmpaddr15! (cpu-csrs (machine-cpu m)) val)]
 		[else 
 			; (printf "No such CSR: ~a~n" csr)
-			(set-pc! m (bvsub (get-csr m 'mtvec) base_address))
-			(set-machine-mode! m 1)])
+			(illegal-instr m)])
 	v_csr)
 (provide set-csr!)
 
 (define (gprs-get-x m idx)
-	(if (positive? idx)
-		(vector-ref (cpu-gprs (machine-cpu m)) (- idx 1))
-		(bv 0 64)))
+	(cond
+		[(and (< 0 idx) (< idx 32))
+			(vector-ref (cpu-gprs (machine-cpu m)) (- idx 1))]
+		[(zero? idx)
+			(bv 0 64)]
+		[else
+			null]))
 (provide gprs-get-x)
 
 (define (gprs-set-x! m idx val)
 	(cond 
 		[(zero? idx)
 			; (printf "Cannot set Zero Register~n")
-			(set-pc! m (bvsub (get-csr m 'mtvec) base_address))
-			(set-machine-mode! m 1)]
+			(illegal-instr m)]
 		[else
-			(vector-set! (cpu-gprs (machine-cpu m)) (- idx 1) val)]))
+			(vector-set! (cpu-gprs (machine-cpu m)) (- idx 1) val)
+			; TODO: replace with something else more informative
+			#t]))
 (provide gprs-set-x!)
 
 ; get program counter
