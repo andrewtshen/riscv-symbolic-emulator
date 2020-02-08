@@ -92,18 +92,17 @@
 		[(zero? idx)
 			(bv 0 64)]
 		[else
-			null]))
+			(illegal-instr m)]))
 (provide gprs-get-x)
 
 (define (gprs-set-x! m idx val)
 	(cond 
-		[(zero? idx)
-			; (printf "Cannot set Zero Register~n")
-			(illegal-instr m)]
-		[else
+		[(and (< 0 idx) (< idx 32))
 			(vector-set! (cpu-gprs (machine-cpu m)) (- idx 1) val)
 			; TODO: replace with something else more informative
-			#t]))
+			#t]
+		[else
+			(illegal-instr m)]))
 (provide gprs-set-x!)
 
 ; get program counter

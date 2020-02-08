@@ -51,52 +51,52 @@
 	(cond
 		[(and (bveq funct3 (bv #b000 3)) (bveq opcode (bv #b0010011 7)))
 			(list 'addi rd rs1 imm)]
-		[(and (bveq funct3 (bv #b010 3)) (bveq opcode (bv #b0010011 7)))
-			(list 'slti rd rs1 imm)]
-		[(and (bveq funct3 (bv #b011 3)) (bveq opcode (bv #b0010011 7)))
-			(list 'sltiu rd rs1 imm)]
-		[(and (bveq funct3 (bv #b100 3)) (bveq opcode (bv #b0010011 7)))
-			(list 'xori rd rs1 imm)]
-		[(and (bveq funct3 (bv #b110 3)) (bveq opcode (bv #b0010011 7)))
-			(list 'ori rd rs1 imm)]
-		[(and (bveq funct3 (bv #b111 3)) (bveq opcode (bv #b0010011 7)))
-			(list 'andi rd rs1 imm)]
-		[(and (bveq funct3 (bv #b001 3)) (bveq opcode (bv #b0010011 7)))
-			(set! imm (extract 24 20 b_instr))
-			(list 'slli rd rs1 imm)]
-		[(and (bveq funct3 (bv #b101 3)) (bveq opcode (bv #b0010011 7)) (bveq shift_type (bv #b0 1)))
-			(set! imm (extract 25 20 b_instr))
-			(list 'srli rd rs1 imm)]
-		[(and (bveq funct3 (bv #b101 3)) (bveq opcode (bv #b0010011 7)) (bveq shift_type (bv #b1 1)))
-			(set! imm (extract 25 20 b_instr))
-			(list 'srai rd rs1 imm)]
-		[(and (bveq funct3 (bv #b000 3)) (bveq opcode (bv #b0011011 7)))
-			(list 'addiw rd rs1 imm)]
-		[(and (bveq funct3 (bv #b001 3)) (bveq opcode (bv #b0011011 7)))
-			(set! imm (extract 25 20 b_instr))
-			(list 'slliw rd rs1 imm)]
-		[(and (bveq funct3 (bv #b101 3)) (bveq opcode (bv #b0011011 7)) (bveq shift_type (bv #b0 1)))
-			(set! imm (extract 25 20 b_instr))
-			(list 'srliw rd rs1 imm)]
-		[(and (bveq funct3 (bv #b101 3)) (bveq opcode (bv #b0011011 7)) (bveq shift_type (bv #b1 1)))
-			(set! imm (extract 25 20 b_instr))
-			(list 'sraiw rd rs1 imm)]
-		[(and (bveq funct3 (bv #b000 3)) (bveq opcode (bv #b0000011 7)))
-			(list 'lb rd rs1 imm)]
-		[(and (bveq funct3 (bv #b001 3)) (bveq opcode (bv #b0000011 7)))
-			(list 'lh rd rs1 imm)]
-		[(and (bveq funct3 (bv #b010 3)) (bveq opcode (bv #b0000011 7)))
-			(list 'lw rd rs1 imm)]
-		[(and (bveq funct3 (bv #b011 3)) (bveq opcode (bv #b0000011 7)))
-			(list 'ld rd rs1 imm)]
-		[(and (bveq funct3 (bv #b100 3)) (bveq opcode (bv #b0000011 7)))
-			(list 'lbu rd rs1 imm)]
-		[(and (bveq funct3 (bv #b101 3)) (bveq opcode (bv #b0000011 7)))
-			(list 'lhu rd rs1 imm)]
-		[(and (bveq funct3 (bv #b110 3)) (bveq opcode (bv #b0000011 7)))
-			(list 'lwu rd rs1 imm)]
-		[(and (bveq funct3 (bv #b000 3)) (bveq opcode (bv #b1100111 7)))
-			(list 'jalr rd rs1 imm)]
+		; [(and (bveq funct3 (bv #b010 3)) (bveq opcode (bv #b0010011 7)))
+		; 	(list 'slti rd rs1 imm)]
+		; [(and (bveq funct3 (bv #b011 3)) (bveq opcode (bv #b0010011 7)))
+		; 	(list 'sltiu rd rs1 imm)]
+		; [(and (bveq funct3 (bv #b100 3)) (bveq opcode (bv #b0010011 7)))
+		; 	(list 'xori rd rs1 imm)]
+		; [(and (bveq funct3 (bv #b110 3)) (bveq opcode (bv #b0010011 7)))
+		; 	(list 'ori rd rs1 imm)]
+		; [(and (bveq funct3 (bv #b111 3)) (bveq opcode (bv #b0010011 7)))
+		; 	(list 'andi rd rs1 imm)]
+		; [(and (bveq funct3 (bv #b001 3)) (bveq opcode (bv #b0010011 7)))
+		; 	(set! imm (extract 24 20 b_instr))
+		; 	(list 'slli rd rs1 imm)]
+		; [(and (bveq funct3 (bv #b101 3)) (bveq opcode (bv #b0010011 7)) (bveq shift_type (bv #b0 1)))
+		; 	(set! imm (extract 25 20 b_instr))
+		; 	(list 'srli rd rs1 imm)]
+		; [(and (bveq funct3 (bv #b101 3)) (bveq opcode (bv #b0010011 7)) (bveq shift_type (bv #b1 1)))
+		; 	(set! imm (extract 25 20 b_instr))
+		; 	(list 'srai rd rs1 imm)]
+		; [(and (bveq funct3 (bv #b000 3)) (bveq opcode (bv #b0011011 7)))
+		; 	(list 'addiw rd rs1 imm)]
+		; [(and (bveq funct3 (bv #b001 3)) (bveq opcode (bv #b0011011 7)))
+		; 	(set! imm (extract 25 20 b_instr))
+		; 	(list 'slliw rd rs1 imm)]
+		; [(and (bveq funct3 (bv #b101 3)) (bveq opcode (bv #b0011011 7)) (bveq shift_type (bv #b0 1)))
+		; 	(set! imm (extract 25 20 b_instr))
+		; 	(list 'srliw rd rs1 imm)]
+		; [(and (bveq funct3 (bv #b101 3)) (bveq opcode (bv #b0011011 7)) (bveq shift_type (bv #b1 1)))
+		; 	(set! imm (extract 25 20 b_instr))
+		; 	(list 'sraiw rd rs1 imm)]
+		; [(and (bveq funct3 (bv #b000 3)) (bveq opcode (bv #b0000011 7)))
+		; 	(list 'lb rd rs1 imm)]
+		; [(and (bveq funct3 (bv #b001 3)) (bveq opcode (bv #b0000011 7)))
+		; 	(list 'lh rd rs1 imm)]
+		; [(and (bveq funct3 (bv #b010 3)) (bveq opcode (bv #b0000011 7)))
+		; 	(list 'lw rd rs1 imm)]
+		; [(and (bveq funct3 (bv #b011 3)) (bveq opcode (bv #b0000011 7)))
+		; 	(list 'ld rd rs1 imm)]
+		; [(and (bveq funct3 (bv #b100 3)) (bveq opcode (bv #b0000011 7)))
+		; 	(list 'lbu rd rs1 imm)]
+		; [(and (bveq funct3 (bv #b101 3)) (bveq opcode (bv #b0000011 7)))
+		; 	(list 'lhu rd rs1 imm)]
+		; [(and (bveq funct3 (bv #b110 3)) (bveq opcode (bv #b0000011 7)))
+		; 	(list 'lwu rd rs1 imm)]
+		; [(and (bveq funct3 (bv #b000 3)) (bveq opcode (bv #b1100111 7)))
+		; 	(list 'jalr rd rs1 imm)]
 		[else
 			; (printf "No such I FMT ~n")
 			(illegal-instr m)]))
@@ -184,51 +184,49 @@
 	(list op rd imm))
 
 (define (decode-csr m b_csr)
-	(define csr null)
 	(cond
-		[(bveq b_csr (bv #x000 12)) (set! csr 'ustatus)]
-		[(bveq b_csr (bv #x004 12)) (set! csr 'uie)]
-		[(bveq b_csr (bv #x005 12)) (set! csr 'utevc)]
-		[(bveq b_csr (bv #x040 12)) (set! csr 'uscratch)]
-		[(bveq b_csr (bv #x041 12)) (set! csr 'uepc)]
-		[(bveq b_csr (bv #x042 12)) (set! csr 'ucause)]
-		[(bveq b_csr (bv #x043 12)) (set! csr 'ubadaddr)]
-		[(bveq b_csr (bv #x044 12)) (set! csr 'uip)]
-		[(bveq b_csr (bv #x300 12)) (set! csr 'mstatus)]
-		[(bveq b_csr (bv #x301 12)) (set! csr 'misa)]
-		[(bveq b_csr (bv #x302 12)) (set! csr 'medeleg)]
-		[(bveq b_csr (bv #x303 12)) (set! csr 'mideleg)]
-		[(bveq b_csr (bv #x304 12)) (set! csr 'mie)]
-		[(bveq b_csr (bv #x305 12)) (set! csr 'mtvec)]
-		[(bveq b_csr (bv #x340 12)) (set! csr 'mscratch)]
-		[(bveq b_csr (bv #x341 12)) (set! csr 'mepc)]
-		[(bveq b_csr (bv #x342 12)) (set! csr 'mcause)]
-		[(bveq b_csr (bv #x343 12)) (set! csr 'mbadaddr)]
-		[(bveq b_csr (bv #x344 12)) (set! csr 'mip)]
-		[(bveq b_csr (bv #x3A0 12)) (set! csr 'pmpcfg0)]
-		[(bveq b_csr (bv #x3A1 12)) (set! csr 'pmpcfg1)]
-		[(bveq b_csr (bv #x3A2 12)) (set! csr 'pmpcfg2)]
-		[(bveq b_csr (bv #x3A3 12)) (set! csr 'pmpcfg3)]
-		[(bveq b_csr (bv #x3B0 12)) (set! csr 'pmpaddr0)]
-		[(bveq b_csr (bv #x3B1 12)) (set! csr 'pmpaddr1)]
-		[(bveq b_csr (bv #x3B2 12)) (set! csr 'pmpaddr2)]
-		[(bveq b_csr (bv #x3B3 12)) (set! csr 'pmpaddr3)]
-		[(bveq b_csr (bv #x3B4 12)) (set! csr 'pmpaddr4)]
-		[(bveq b_csr (bv #x3B5 12)) (set! csr 'pmpaddr5)]
-		[(bveq b_csr (bv #x3B6 12)) (set! csr 'pmpaddr6)]
-		[(bveq b_csr (bv #x3B7 12)) (set! csr 'pmpaddr7)]
-		[(bveq b_csr (bv #x3B8 12)) (set! csr 'pmpaddr8)]
-		[(bveq b_csr (bv #x3B9 12)) (set! csr 'pmpaddr9)]
-		[(bveq b_csr (bv #x3BA 12)) (set! csr 'pmpaddr10)]
-		[(bveq b_csr (bv #x3BB 12)) (set! csr 'pmpaddr11)]
-		[(bveq b_csr (bv #x3BC 12)) (set! csr 'pmpaddr12)]
-		[(bveq b_csr (bv #x3BD 12)) (set! csr 'pmpaddr13)]
-		[(bveq b_csr (bv #x3BE 12)) (set! csr 'pmpaddr14)]
-		[(bveq b_csr (bv #x3BF 12)) (set! csr 'pmpaddr15)]
+		[(bveq b_csr (bv #x000 12)) 'ustatus]
+		[(bveq b_csr (bv #x004 12)) 'uie]
+		[(bveq b_csr (bv #x005 12)) 'utevc]
+		[(bveq b_csr (bv #x040 12)) 'uscratch]
+		[(bveq b_csr (bv #x041 12)) 'uepc]
+		[(bveq b_csr (bv #x042 12)) 'ucause]
+		[(bveq b_csr (bv #x043 12)) 'ubadaddr]
+		[(bveq b_csr (bv #x044 12)) 'uip]
+		[(bveq b_csr (bv #x300 12)) 'mstatus]
+		[(bveq b_csr (bv #x301 12)) 'misa]
+		[(bveq b_csr (bv #x302 12)) 'medeleg]
+		[(bveq b_csr (bv #x303 12)) 'mideleg]
+		[(bveq b_csr (bv #x304 12)) 'mie]
+		[(bveq b_csr (bv #x305 12)) 'mtvec]
+		[(bveq b_csr (bv #x340 12)) 'mscratch]
+		[(bveq b_csr (bv #x341 12)) 'mepc]
+		[(bveq b_csr (bv #x342 12)) 'mcause]
+		[(bveq b_csr (bv #x343 12)) 'mbadaddr]
+		[(bveq b_csr (bv #x344 12)) 'mip]
+		[(bveq b_csr (bv #x3A0 12)) 'pmpcfg0]
+		[(bveq b_csr (bv #x3A1 12)) 'pmpcfg1]
+		[(bveq b_csr (bv #x3A2 12)) 'pmpcfg2]
+		[(bveq b_csr (bv #x3A3 12)) 'pmpcfg3]
+		[(bveq b_csr (bv #x3B0 12)) 'pmpaddr0]
+		[(bveq b_csr (bv #x3B1 12)) 'pmpaddr1]
+		[(bveq b_csr (bv #x3B2 12)) 'pmpaddr2]
+		[(bveq b_csr (bv #x3B3 12)) 'pmpaddr3]
+		[(bveq b_csr (bv #x3B4 12)) 'pmpaddr4]
+		[(bveq b_csr (bv #x3B5 12)) 'pmpaddr5]
+		[(bveq b_csr (bv #x3B6 12)) 'pmpaddr6]
+		[(bveq b_csr (bv #x3B7 12)) 'pmpaddr7]
+		[(bveq b_csr (bv #x3B8 12)) 'pmpaddr8]
+		[(bveq b_csr (bv #x3B9 12)) 'pmpaddr9]
+		[(bveq b_csr (bv #x3BA 12)) 'pmpaddr10]
+		[(bveq b_csr (bv #x3BB 12)) 'pmpaddr11]
+		[(bveq b_csr (bv #x3BC 12)) 'pmpaddr12]
+		[(bveq b_csr (bv #x3BD 12)) 'pmpaddr13]
+		[(bveq b_csr (bv #x3BE 12)) 'pmpaddr14]
+		[(bveq b_csr (bv #x3BF 12)) 'pmpaddr15]
 		[else
 			; (printf "No such CSR FMT ~n")
-			(illegal-instr m)])
-	csr)
+			(illegal-instr m)]))
 
 (define (decode-SPECIAL m b_instr)
 	(define op null)
@@ -290,8 +288,8 @@
 	(cond
 		; [(eq? fmt 'R)
 		; 	(decode-R m b_instr)]
-		; [(eq? fmt 'I)
-		; 	(decode-I m b_instr)]
+		[(eq? fmt 'I)
+			(decode-I m b_instr)]
 		; [(eq? fmt 'B)
 		; 	(decode-B m b_instr)]
 		; [(eq? fmt 'U)
@@ -300,8 +298,8 @@
 		; 	(decode-S m b_instr)]
 		; [(eq? fmt 'J)
 		; 	(decode-J m b_instr)]
-		[(eq? fmt 'SPECIAL)
-			(decode-SPECIAL m b_instr)]
+		; [(eq? fmt 'SPECIAL)
+		; 	(decode-SPECIAL m b_instr)]
 		[else
 			; (printf "No such FMT~n")
 			(illegal-instr m)]))

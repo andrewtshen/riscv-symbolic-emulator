@@ -21,96 +21,96 @@
 	(define opcode (list-ref instr 0))
 	(define pc (get-pc m))
 	(cond
-		; SPECIAL Format
-		[(eq? opcode 'ecall)
-			; TODO: real ecall implementation
-			(illegal-instr m)]
-		[(eq? opcode 'ebreak)
-			; TODO: ebreak instruction not implemented yet
-			(illegal-instr m)]
-		[(eq? opcode 'uret)
-			; TODO: uret instruction not implemented yet
-			(illegal-instr m)]
-		[(eq? opcode 'mret)
-			(define mstatus (get-csr m 'mstatus))
-			(define MPP (extract 12 11 mstatus))
-			; this is always user mode
-			; TODO: fix this and set mstatus to concrete value
-			; (set-machine-mode! m (bitvector->natural MPP))
-			(set-machine-mode! m 0)
-			(set-pc! m (bvsub (get-csr m 'mepc) base_address))
-			instr]
-		[(eq? opcode 'dret)
-			; TODO: dret instruction not implemented yet
-			(illegal-instr m)]
-		[(eq? opcode 'sfence_vma)
-			; TODO: sfence_vma instruction not implemented yet
-			(illegal-instr m)]
-		[(eq? opcode 'wfi)
-			; TODO: wfi instruction not implemented yet
-			(illegal-instr m)]
-		[(eq? opcode 'csrrw)
-			(cond
-				[(equal? (machine-mode m) 1)
-					(define rd (list-ref-nat instr 1))
-					(define rs1 (list-ref-nat instr 2))
-					(define v_rs1 (gprs-get-x m rs1))
-					(define csr (list-ref instr 3))
-					(define v_csr (get-csr m csr))
-					(cond
-						[(and (not (eq? v_rs1 null)) (not (eq? v_csr null)))
-							(when (not (zero? rd))
-								(gprs-set-x! m rd v_csr))
-							(set-csr! m csr v_rs1)
-							(set-pc! m (bvadd pc (bv 4 64)))
-							instr]
-						[else
-							(illegal-instr)])]
-				[else
-					(illegal-instr)])]
-		[(eq? opcode 'csrrs)
-			(cond
-				[(equal? (machine-mode m) 1)
-					(define rd (list-ref-nat instr 1))
-					(define rs1 (list-ref-nat instr 2))
-					(define bitmask (gprs-get-x m rs1))
-					(define csr (list-ref instr 3))
-					(define v_csr (get-csr m csr))
-					(cond
-						[(and (not (eq? bitmask null)) (not (eq? v_csr null)))
-							(gprs-set-x! m rd v_csr)
-							(set-csr! m csr (bvor v_csr bitmask))
-							(set! v_csr (zero-extend (get-csr m csr) (bitvector 64)))
-							(set-pc! m (bvadd pc (bv 4 64)))
-							instr]
-						[else
-							(illegal-instr)])]
-				[else
-					(illegal-instr)])]
-		[(eq? opcode 'csrrc)
-			; TODO: csrrc instruction not implemented yet
-			(illegal-instr m)]
-		[(eq? opcode 'csrrwi)
-			; TODO: csrrwi instruction not implemented yet
-			(illegal-instr m)]
-		[(eq? opcode 'csrrsi)
-			; TODO: csrrsi instruction not implemented yet
-			(illegal-instr m)]
-		[(eq? opcode 'csrrci)
-			; TODO: csrrci instruction not implemented yet
-			(illegal-instr m)]
-
-		; ; I Format
-		; [(eq? opcode 'addi)
-		; 	(define rd (list-ref-nat instr 1))
-		; 	(define rs1 (list-ref-nat instr 2))
-		; 	(define imm (sign-extend (list-ref instr 3) (bitvector 64)))
-		; 	; nop op pseudo code
-		; 	(if (and (equal? rd 0) (equal? rs1 0) (bveq imm (bv 0 64)))
-		; 		null
-		; 		(gprs-set-x! m rd (bvadd (gprs-get-x m rs1) imm)))
-		; 	(set-pc! m (bvadd pc (bv 4 64)))
+		; ; SPECIAL Format
+		; [(eq? opcode 'ecall)
+		; 	; TODO: real ecall implementation
+		; 	(illegal-instr m)]
+		; [(eq? opcode 'ebreak)
+		; 	; TODO: ebreak instruction not implemented yet
+		; 	(illegal-instr m)]
+		; [(eq? opcode 'uret)
+		; 	; TODO: uret instruction not implemented yet
+		; 	(illegal-instr m)]
+		; [(eq? opcode 'mret)
+		; 	(define mstatus (get-csr m 'mstatus))
+		; 	(define MPP (extract 12 11 mstatus))
+		; 	; this is always user mode
+		; 	; TODO: fix this and set mstatus to concrete value
+		; 	; (set-machine-mode! m (bitvector->natural MPP))
+		; 	(set-machine-mode! m 0)
+		; 	(set-pc! m (bvsub (get-csr m 'mepc) base_address))
 		; 	instr]
+		; [(eq? opcode 'dret)
+		; 	; TODO: dret instruction not implemented yet
+		; 	(illegal-instr m)]
+		; [(eq? opcode 'sfence_vma)
+		; 	; TODO: sfence_vma instruction not implemented yet
+		; 	(illegal-instr m)]
+		; [(eq? opcode 'wfi)
+		; 	; TODO: wfi instruction not implemented yet
+		; 	(illegal-instr m)]
+		; [(eq? opcode 'csrrw)
+		; 	(cond
+		; 		[(equal? (machine-mode m) 1)
+		; 			(define rd (list-ref-nat instr 1))
+		; 			(define rs1 (list-ref-nat instr 2))
+		; 			(define v_rs1 (gprs-get-x m rs1))
+		; 			(define csr (list-ref instr 3))
+		; 			(define v_csr (get-csr m csr))
+		; 			(cond
+		; 				[(and (not (eq? v_rs1 null)) (not (eq? v_csr null)))
+		; 					(when (not (zero? rd))
+		; 						(gprs-set-x! m rd v_csr))
+		; 					(set-csr! m csr v_rs1)
+		; 					(set-pc! m (bvadd pc (bv 4 64)))
+		; 					instr]
+		; 				[else
+		; 					(illegal-instr)])]
+		; 		[else
+		; 			(illegal-instr)])]
+		; [(eq? opcode 'csrrs)
+		; 	(cond
+		; 		[(equal? (machine-mode m) 1)
+		; 			(define rd (list-ref-nat instr 1))
+		; 			(define rs1 (list-ref-nat instr 2))
+		; 			(define bitmask (gprs-get-x m rs1))
+		; 			(define csr (list-ref instr 3))
+		; 			(define v_csr (get-csr m csr))
+		; 			(cond
+		; 				[(and (not (eq? bitmask null)) (not (eq? v_csr null)))
+		; 					(gprs-set-x! m rd v_csr)
+		; 					(set-csr! m csr (bvor v_csr bitmask))
+		; 					(set! v_csr (zero-extend (get-csr m csr) (bitvector 64)))
+		; 					(set-pc! m (bvadd pc (bv 4 64)))
+		; 					instr]
+		; 				[else
+		; 					(illegal-instr)])]
+		; 		[else
+		; 			(illegal-instr)])]
+		; [(eq? opcode 'csrrc)
+		; 	; TODO: csrrc instruction not implemented yet
+		; 	(illegal-instr m)]
+		; [(eq? opcode 'csrrwi)
+		; 	; TODO: csrrwi instruction not implemented yet
+		; 	(illegal-instr m)]
+		; [(eq? opcode 'csrrsi)
+		; 	; TODO: csrrsi instruction not implemented yet
+		; 	(illegal-instr m)]
+		; [(eq? opcode 'csrrci)
+		; 	; TODO: csrrci instruction not implemented yet
+		; 	(illegal-instr m)]
+
+		; I Format
+		[(eq? opcode 'addi)
+			(define rd (list-ref-nat instr 1))
+			(define rs1 (list-ref-nat instr 2))
+			(define imm (sign-extend (list-ref instr 3) (bitvector 64)))
+			; nop op pseudo code
+			(if (and (equal? rd 0) (equal? rs1 0) (bveq imm (bv 0 64)))
+				null
+				(gprs-set-x! m rd (bvadd (gprs-get-x m rs1) imm)))
+			(set-pc! m (bvadd pc (bv 4 64)))
+			instr]
 		; [(eq? opcode 'slli)
 		; 	(define rd (list-ref-nat instr 1))
 		; 	(define v_rs1 (gprs-get-x m (list-ref-nat instr 2)))
