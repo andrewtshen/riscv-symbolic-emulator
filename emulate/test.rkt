@@ -311,7 +311,6 @@
 		(define m1 (deep-copy-machine m))
 
 		(define next_instr (step m)) ; step!
-
 		; show that they can execute independently, but
 		; still refer to the same symbolic variables.
 		; (execute-until-mret m)
