@@ -311,7 +311,6 @@
 		(define m1 (deep-copy-machine m))
 
 		(define next_instr (step m)) ; step!
-		; (printf "next_instr: ~a~n" next_instr)
 
 		; show that they can execute independently, but
 		; still refer to the same symbolic variables.
@@ -320,20 +319,25 @@
 		(print-csr m1)
 		(print-memory m #x0 #x10)
 		(print-memory m1 #x0 #x10)
-		(define m2000 (vector-ref (machine-ram m) #x2000))
-		(define m12000 (vector-ref (machine-ram m1) #x2000))
-		(printf "m: ~a~nm1: ~a~n" m2000 m12000)
-		(define sol
-			(verify (begin
-				(assert (bveq m2000 m12000)))))
-		(printf "sol: ~a~n" (sol))
-		(asserts)
-		; (define model_noninterference (verify (begin
-		; 	(assert
-		; 		(bveq m2000 m12000)
-		; 		; (bveq (get-csr m 'mtvec) (get-csr m1 'mtvec))
-		; 		))))
-		; (printf "res: ~a~n" model_noninterference)
+		; (define m2000 (vector-ref (machine-ram m) #x2000))
+		; (define m12000 (vector-ref (machine-ram m1) #x2000))
+		; (printf "m: ~a~nm1: ~a~n" m2000 m12000)
+		(define p (get-csr m 'pmpcfg0))
+		(define p1 (get-csr m 'pmpcfg0))
+		
+
+		; (define sol
+		; 	(verify (begin
+		; 		(assert (bveq m2000 m12000)))))
+		; (printf "sol: ~a~n" (sol))
+		; (asserts)
+
+		(define model_noninterference (verify (begin
+			(assert
+				; (bveq (get-csr m 'mtvec) (get-csr m1 'mtvec))
+				(bveq p p1)
+				))))
+		(printf "res: ~a~n" model_noninterference)
 		))
 
 ; (define res-instruction-check (run-tests instruction-check))

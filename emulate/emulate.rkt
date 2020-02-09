@@ -39,14 +39,18 @@
 
 (define (step m)
 	(define next_instr (get-next-instr m))
+	(printf "next_instr: ~a~n" next_instr)
 	(cond
-		[(eq? next_instr null) null]
-		[else
+		[(not (eq? next_instr null))
 			(define decoded_instr (decode m next_instr))
+			(printf "decoded_instr: ~a~n" decoded_instr)
 			(cond
-				[(eq? decoded_instr null) null]
-				[else
-					(execute decoded_instr m)])]))
+				[(eq? decoded_instr null)
+					(execute decoded_instr m)]
+				[else null])
+			]
+		[else null]
+		))
 (provide step)
 
 ; get instructions until reach mret

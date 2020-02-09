@@ -118,7 +118,10 @@
 ; get next instruction using current program counter
 (define (get-next-instr m)
 	(define pc (get-pc m))
-	(machine-ram-read m pc 4))
+	(printf "pc: ~a~n" pc)
+	(define val (machine-ram-read m pc 4))
+	(printf "val: ~a~n" val)
+	val)
 (provide get-next-instr)
 
 ; set up state for illegal instruction and return null to signal end of exec
