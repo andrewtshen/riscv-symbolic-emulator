@@ -161,7 +161,8 @@
 	; machine mode (1) or legal, we can read the memory
 	(when (or (equal? (machine-mode m) 1) legal)
   	(bytearray-write! (machine-ram m) (bitvector->natural addr) value nbits))
-	legal)
+
+	(if legal #t null))
 (provide machine-ram-write!)
 
 (define (bytearray-write! ba addr value nbits)

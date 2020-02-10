@@ -311,15 +311,16 @@
 		(define m1 (deep-copy-machine m))
 
 		(define next_instr (step m)) ; step!
+
 		; show that they can execute independently, but
 		; still refer to the same symbolic variables.
-		; (execute-until-mret m)
 		(print-csr m)
 		(print-csr m1)
-		(print-memory m #x0 #x10)
-		(print-memory m1 #x0 #x10)
-		; (define m2000 (vector-ref (machine-ram m) #x2000))
-		; (define m12000 (vector-ref (machine-ram m1) #x2000))
+		(print-memory m #x0 #x5)
+		(print-memory m1 #x0 #x5)
+		(print-memory m #x2000 #x2005)
+		(print-memory m1 #x2000 #x2005)
+
 		; (printf "m: ~a~nm1: ~a~n" m2000 m12000)
 		(define p (get-csr m 'pmpcfg0))
 		(define p1 (get-csr m 'pmpcfg0))
@@ -341,21 +342,17 @@
 
 		(define-symbolic* a b (bitvector 64))
 
-		; (set! a (bv 1 64))
-		; (clear-asserts!)
-		; (assert (bveq a (bv 1 64)))
-		; (assert (bveq a b))
-		; (assert (bveq a a))
-		; (asserts)
-		; (define sol
-		; 	(verify (begin
-		; 		asserts)))
-		; (displayln sol)
-
+		(define m0 (vector-ref (machine-ram m) #x0))
+		(define m10 (vector-ref (machine-ram m1) #x0))
+		(define m1999 (vector-ref (machine-ram m) #x1999))
+		(define m11999 (vector-ref (machine-ram m1) #x1999))
 		(define model_noninterference (verify (begin
 			(assert
-				; (bveq (get-csr m 'mtvec) (get-csr m1 'mtvec))
-				(bveq (list-ref gprsx 0) (list-ref gprsx1 0))
+				; (bveq m0 m10) ; sat
+				; (bveq m1999 m11999) ; sat
+				; (bveq m2000 m12000) ; unsat 
+				; (bveq (get-csr m 'mtvec) (get-csr m1 'mtvec)) ; unsat
+				(bveq (list-ref gprsx 0) (list-ref gprsx1 0)) ; sat
 				; (bveq p p1) ; unsat
 				))))
 		(printf "res: ~a~n" model_noninterference)

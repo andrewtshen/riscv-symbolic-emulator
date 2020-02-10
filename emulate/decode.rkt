@@ -286,20 +286,20 @@
 	(define fmt (get-fmt m opcode))
 	(printf "FMT: ~a~n" fmt)
 	(cond
-		; [(eq? fmt 'R)
-		; 	(decode-R m b_instr)]
+		[(eq? fmt 'R)
+			(decode-R m b_instr)]
 		[(eq? fmt 'I)
 			(decode-I m b_instr)]
-		; [(eq? fmt 'B)
-		; 	(decode-B m b_instr)]
-		; [(eq? fmt 'U)
-		; 	(decode-U m b_instr)]
-		; [(eq? fmt 'S)
-		; 	(decode-S m b_instr)]
-		; [(eq? fmt 'J)
-		; 	(decode-J m b_instr)]
-		; [(eq? fmt 'SPECIAL)
-		; 	(decode-SPECIAL m b_instr)]
+		[(eq? fmt 'B)
+			(decode-B m b_instr)]
+		[(eq? fmt 'U)
+			(decode-U m b_instr)]
+		[(eq? fmt 'S)
+			(decode-S m b_instr)]
+		[(eq? fmt 'J)
+			(decode-J m b_instr)]
+		[(eq? fmt 'SPECIAL)
+			(decode-SPECIAL m b_instr)]
 		[else
 			; (printf "No such FMT~n")
 			(illegal-instr m)]))
