@@ -323,7 +323,15 @@
 		; (printf "m: ~a~nm1: ~a~n" m2000 m12000)
 		(define p (get-csr m 'pmpcfg0))
 		(define p1 (get-csr m 'pmpcfg0))
-		
+
+		(define gprsx
+			(for/list ([i (in-range 10 18)])
+				(gprs-get-x m i)))
+		(define gprsx1
+			(for/list ([i (in-range 10 18)])
+				(gprs-get-x m1 i)))
+		(printf "gprsx: ~a~n" gprsx)
+		(printf "gprsx1: ~a~n" gprsx1)
 
 		; (define sol
 		; 	(verify (begin
@@ -331,10 +339,24 @@
 		; (printf "sol: ~a~n" (sol))
 		; (asserts)
 
+		(define-symbolic* a b (bitvector 64))
+
+		; (set! a (bv 1 64))
+		; (clear-asserts!)
+		; (assert (bveq a (bv 1 64)))
+		; (assert (bveq a b))
+		; (assert (bveq a a))
+		; (asserts)
+		; (define sol
+		; 	(verify (begin
+		; 		asserts)))
+		; (displayln sol)
+
 		(define model_noninterference (verify (begin
 			(assert
 				; (bveq (get-csr m 'mtvec) (get-csr m1 'mtvec))
-				(bveq p p1)
+				(bveq (list-ref gprsx 0) (list-ref gprsx1 0))
+				; (bveq p p1) ; unsat
 				))))
 		(printf "res: ~a~n" model_noninterference)
 		))

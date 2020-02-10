@@ -284,7 +284,7 @@
 	(define instr null)
 	(define opcode (extract 6 0 b_instr))
 	(define fmt (get-fmt m opcode))
-	; (printf "FMT: ~a~n" fmt)
+	(printf "FMT: ~a~n" fmt)
 	(cond
 		; [(eq? fmt 'R)
 		; 	(decode-R m b_instr)]

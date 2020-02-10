@@ -9,16 +9,16 @@
 	(cond
 		; [(equal? opcode (bv #b1100011 7)) ; BEQ BNE BLT BGE BLTU BGEU
 		; 	'B]
-		[(equal? opcode (bv #b1100111 7)) ; JALR
-			'I]
+		; [(equal? opcode (bv #b1100111 7)) ; JALR
+		; 	'I]
 		; [(equal? opcode (bv #b1101111 7)) ; JAL
 		; 	'J]
 		; [(equal? opcode (bv #b0110111 7)) ; LUI
 		; 	'U]
 		; [(equal? opcode (bv #b0010111 7)) ; AUIPC
 		; 	'U]
-		; [(equal? opcode (bv #b0010011 7)) ; ADDI SLLI SLTI SLTIU XORI SRLI SRAI ORI ANDI
-		; 	'I]
+		[(equal? opcode (bv #b0010011 7)) ; ADDI SLLI SLTI SLTIU XORI SRLI SRAI ORI ANDI
+			'I]
 		; [(equal? opcode (bv #b0110011 7)) ; ADD SUB SLL SLT SLTU XOR SRL SRA OR AND
 		; 	'R]
 		; [(equal? opcode (bv #b0011011 7)) ; ADDIW SLLIW SRLIW SRAIW

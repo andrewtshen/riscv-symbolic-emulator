@@ -38,17 +38,18 @@
 (provide print-csr)
 
 (define (step m)
-	(define next_instr (get-next-instr m))
+	; (define next_instr (get-next-instr m))
+	(define-symbolic* next_instr (bitvector 32))
+	; (define next_instr (bv #x00d7883b 32))
 	(printf "next_instr: ~a~n" next_instr)
 	(cond
 		[(not (eq? next_instr null))
 			(define decoded_instr (decode m next_instr))
 			(printf "decoded_instr: ~a~n" decoded_instr)
 			(cond
-				[(eq? decoded_instr null)
+				[(not (eq? decoded_instr null))
 					(execute decoded_instr m)]
-				[else null])
-			]
+				[else null])]
 		[else null]
 		))
 (provide step)

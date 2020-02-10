@@ -101,6 +101,8 @@
 			(vector-set! (cpu-gprs (machine-cpu m)) (- idx 1) val)
 			; TODO: replace with something else more informative
 			#t]
+		[(zero? idx)
+			#t]
 		[else
 			(illegal-instr m)]))
 (provide gprs-set-x!)
