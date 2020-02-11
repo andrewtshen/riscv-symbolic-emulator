@@ -99,10 +99,8 @@
 	(cond 
 		[(and (< 0 idx) (< idx 32))
 			(vector-set! (cpu-gprs (machine-cpu m)) (- idx 1) val)
-			; TODO: replace with something else more informative
 			#t]
-		[(zero? idx)
-			#t]
+		[(zero? idx) #t]
 		[else
 			(illegal-instr m)]))
 (provide gprs-set-x!)
@@ -120,9 +118,9 @@
 ; get next instruction using current program counter
 (define (get-next-instr m)
 	(define pc (get-pc m))
-	(printf "pc: ~a~n" pc)
+	; (printf "pc: ~a~n" pc)
 	(define val (machine-ram-read m pc 4))
-	(printf "val: ~a~n" val)
+	; (printf "val: ~a~n" val)
 	val)
 (provide get-next-instr)
 
@@ -155,8 +153,12 @@
 
 (define (machine-ram-write! m addr value nbits)
 	(define saddr (bvadd addr base_address))
+	(printf "saddr: ~a~n" saddr)
 	(define eaddr (bvadd addr (bv nbits 64) base_address))
+	(printf "eaddr: ~a~n" eaddr)
 	(define legal (pmp-check m saddr eaddr))
+	(printf "legal: ~a~n" legal)
+
 
 	; machine mode (1) or legal, we can read the memory
 	(when (or (equal? (machine-mode m) 1) legal)
@@ -178,8 +180,7 @@
 (define base_address (bv #x80000000 64))
 (provide base_address)
 
-; PMP Checking Stuff
-
+; PMP checking stuff
 (define (pmpcfg-check m pmpcfg saddr eaddr pmpaddrs)
 	(define legal #f)
 	(define done #f)
@@ -200,6 +201,9 @@
 			(define pmp_bounds (pmp-decode-napot pmp))
 			(define pmp_start (list-ref pmp_bounds 0))
 			(define pmp_end (bvadd pmp_start (list-ref pmp_bounds 1)))
+
+			(printf "pmp_start: ~a~n" pmp_start)
+			(printf "pmp_end: ~a~n" pmp_end)
 
 			(define slegal (bv-between saddr pmp_start pmp_end))
 			(define elegal (bv-between eaddr pmp_start pmp_end))
@@ -230,7 +234,7 @@
 					(illegal-instr m)])]))
 	legal)
 
-; test address ranging from saddr to eaddr 
+; PMP test address ranging from saddr to eaddr 
 (define (pmp-check m saddr eaddr)
 	; check pmpcfg0, iterate through each register
 	(define pmpcfg0 (get-csr m 'pmpcfg0))

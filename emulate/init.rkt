@@ -90,10 +90,10 @@
 		pmpaddr11 pmpaddr12 pmpaddr13 pmpaddr14 pmpaddr15 pc (bitvector 64))
 
 	(set! mtvec (bv #x0000000080000000 64))
-	(set! pmpcfg0 (bv #x0000000000001f1f 64))
+	(set! pmpcfg0 (bv #x000000000000001f 64))
 	(set! pmpcfg2 (bv #x0000000000000018 64))
-	(set! pmpaddr0 (bv #x00000000200203ff 64))
-	(set! pmpaddr1 (bv #x00000000040fffff 64))
+	(set! pmpaddr0 (bv #x0000000020000bff 64))
+	(set! pmpaddr1 (bv 0 64))
 	(set! pmpaddr1 (bv 0 64))
 	(set! pmpaddr2 (bv 0 64))
 	(set! pmpaddr3 (bv 0 64))

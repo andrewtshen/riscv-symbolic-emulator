@@ -51,52 +51,52 @@
 	(cond
 		[(and (bveq funct3 (bv #b000 3)) (bveq opcode (bv #b0010011 7)))
 			(list 'addi rd rs1 imm)]
-		; [(and (bveq funct3 (bv #b010 3)) (bveq opcode (bv #b0010011 7)))
-		; 	(list 'slti rd rs1 imm)]
-		; [(and (bveq funct3 (bv #b011 3)) (bveq opcode (bv #b0010011 7)))
-		; 	(list 'sltiu rd rs1 imm)]
-		; [(and (bveq funct3 (bv #b100 3)) (bveq opcode (bv #b0010011 7)))
-		; 	(list 'xori rd rs1 imm)]
-		; [(and (bveq funct3 (bv #b110 3)) (bveq opcode (bv #b0010011 7)))
-		; 	(list 'ori rd rs1 imm)]
-		; [(and (bveq funct3 (bv #b111 3)) (bveq opcode (bv #b0010011 7)))
-		; 	(list 'andi rd rs1 imm)]
-		; [(and (bveq funct3 (bv #b001 3)) (bveq opcode (bv #b0010011 7)))
-		; 	(set! imm (extract 24 20 b_instr))
-		; 	(list 'slli rd rs1 imm)]
-		; [(and (bveq funct3 (bv #b101 3)) (bveq opcode (bv #b0010011 7)) (bveq shift_type (bv #b0 1)))
-		; 	(set! imm (extract 25 20 b_instr))
-		; 	(list 'srli rd rs1 imm)]
-		; [(and (bveq funct3 (bv #b101 3)) (bveq opcode (bv #b0010011 7)) (bveq shift_type (bv #b1 1)))
-		; 	(set! imm (extract 25 20 b_instr))
-		; 	(list 'srai rd rs1 imm)]
-		; [(and (bveq funct3 (bv #b000 3)) (bveq opcode (bv #b0011011 7)))
-		; 	(list 'addiw rd rs1 imm)]
-		; [(and (bveq funct3 (bv #b001 3)) (bveq opcode (bv #b0011011 7)))
-		; 	(set! imm (extract 25 20 b_instr))
-		; 	(list 'slliw rd rs1 imm)]
-		; [(and (bveq funct3 (bv #b101 3)) (bveq opcode (bv #b0011011 7)) (bveq shift_type (bv #b0 1)))
-		; 	(set! imm (extract 25 20 b_instr))
-		; 	(list 'srliw rd rs1 imm)]
-		; [(and (bveq funct3 (bv #b101 3)) (bveq opcode (bv #b0011011 7)) (bveq shift_type (bv #b1 1)))
-		; 	(set! imm (extract 25 20 b_instr))
-		; 	(list 'sraiw rd rs1 imm)]
-		; [(and (bveq funct3 (bv #b000 3)) (bveq opcode (bv #b0000011 7)))
-		; 	(list 'lb rd rs1 imm)]
-		; [(and (bveq funct3 (bv #b001 3)) (bveq opcode (bv #b0000011 7)))
-		; 	(list 'lh rd rs1 imm)]
-		; [(and (bveq funct3 (bv #b010 3)) (bveq opcode (bv #b0000011 7)))
-		; 	(list 'lw rd rs1 imm)]
-		; [(and (bveq funct3 (bv #b011 3)) (bveq opcode (bv #b0000011 7)))
-		; 	(list 'ld rd rs1 imm)]
-		; [(and (bveq funct3 (bv #b100 3)) (bveq opcode (bv #b0000011 7)))
-		; 	(list 'lbu rd rs1 imm)]
-		; [(and (bveq funct3 (bv #b101 3)) (bveq opcode (bv #b0000011 7)))
-		; 	(list 'lhu rd rs1 imm)]
-		; [(and (bveq funct3 (bv #b110 3)) (bveq opcode (bv #b0000011 7)))
-		; 	(list 'lwu rd rs1 imm)]
-		; [(and (bveq funct3 (bv #b000 3)) (bveq opcode (bv #b1100111 7)))
-		; 	(list 'jalr rd rs1 imm)]
+		[(and (bveq funct3 (bv #b010 3)) (bveq opcode (bv #b0010011 7)))
+			(list 'slti rd rs1 imm)]
+		[(and (bveq funct3 (bv #b011 3)) (bveq opcode (bv #b0010011 7)))
+			(list 'sltiu rd rs1 imm)]
+		[(and (bveq funct3 (bv #b100 3)) (bveq opcode (bv #b0010011 7)))
+			(list 'xori rd rs1 imm)]
+		[(and (bveq funct3 (bv #b110 3)) (bveq opcode (bv #b0010011 7)))
+			(list 'ori rd rs1 imm)]
+		[(and (bveq funct3 (bv #b111 3)) (bveq opcode (bv #b0010011 7)))
+			(list 'andi rd rs1 imm)]
+		[(and (bveq funct3 (bv #b001 3)) (bveq opcode (bv #b0010011 7)))
+			(set! imm (extract 24 20 b_instr))
+			(list 'slli rd rs1 imm)]
+		[(and (bveq funct3 (bv #b101 3)) (bveq opcode (bv #b0010011 7)) (bveq shift_type (bv #b0 1)))
+			(set! imm (extract 25 20 b_instr))
+			(list 'srli rd rs1 imm)]
+		[(and (bveq funct3 (bv #b101 3)) (bveq opcode (bv #b0010011 7)) (bveq shift_type (bv #b1 1)))
+			(set! imm (extract 25 20 b_instr))
+			(list 'srai rd rs1 imm)]
+		[(and (bveq funct3 (bv #b000 3)) (bveq opcode (bv #b0011011 7)))
+			(list 'addiw rd rs1 imm)]
+		[(and (bveq funct3 (bv #b001 3)) (bveq opcode (bv #b0011011 7)))
+			(set! imm (extract 25 20 b_instr))
+			(list 'slliw rd rs1 imm)]
+		[(and (bveq funct3 (bv #b101 3)) (bveq opcode (bv #b0011011 7)) (bveq shift_type (bv #b0 1)))
+			(set! imm (extract 25 20 b_instr))
+			(list 'srliw rd rs1 imm)]
+		[(and (bveq funct3 (bv #b101 3)) (bveq opcode (bv #b0011011 7)) (bveq shift_type (bv #b1 1)))
+			(set! imm (extract 25 20 b_instr))
+			(list 'sraiw rd rs1 imm)]
+		[(and (bveq funct3 (bv #b000 3)) (bveq opcode (bv #b0000011 7)))
+			(list 'lb rd rs1 imm)]
+		[(and (bveq funct3 (bv #b001 3)) (bveq opcode (bv #b0000011 7)))
+			(list 'lh rd rs1 imm)]
+		[(and (bveq funct3 (bv #b010 3)) (bveq opcode (bv #b0000011 7)))
+			(list 'lw rd rs1 imm)]
+		[(and (bveq funct3 (bv #b011 3)) (bveq opcode (bv #b0000011 7)))
+			(list 'ld rd rs1 imm)]
+		[(and (bveq funct3 (bv #b100 3)) (bveq opcode (bv #b0000011 7)))
+			(list 'lbu rd rs1 imm)]
+		[(and (bveq funct3 (bv #b101 3)) (bveq opcode (bv #b0000011 7)))
+			(list 'lhu rd rs1 imm)]
+		[(and (bveq funct3 (bv #b110 3)) (bveq opcode (bv #b0000011 7)))
+			(list 'lwu rd rs1 imm)]
+		[(and (bveq funct3 (bv #b000 3)) (bveq opcode (bv #b1100111 7)))
+			(list 'jalr rd rs1 imm)]
 		[else
 			; (printf "No such I FMT ~n")
 			(illegal-instr m)]))
@@ -284,12 +284,12 @@
 	(define instr null)
 	(define opcode (extract 6 0 b_instr))
 	(define fmt (get-fmt m opcode))
-	(printf "FMT: ~a~n" fmt)
+	; (printf "FMT: ~a~n" fmt)
 	(cond
 		[(eq? fmt 'R)
 			(decode-R m b_instr)]
-		[(eq? fmt 'I)
-			(decode-I m b_instr)]
+		; [(eq? fmt 'I)
+		; 	(decode-I m b_instr)]
 		[(eq? fmt 'B)
 			(decode-B m b_instr)]
 		[(eq? fmt 'U)
@@ -302,7 +302,7 @@
 			(decode-SPECIAL m b_instr)]
 		[else
 			; (printf "No such FMT~n")
-			(illegal-instr m)]))
+				(illegal-instr m)]))
 (provide decode)
 
 ; example: add x5, x6, x7

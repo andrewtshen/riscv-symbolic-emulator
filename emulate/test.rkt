@@ -209,11 +209,11 @@
 		(print-pmp m)
 		(check-true (pmp-check m (bv #x80800000 64) (bv #x80800000 64)))
 		(check-true (pmp-check m (bv #x80FFFFFF 64) (bv #x80FFFFFF 64)))
-		(check-false (pmp-check m (bv #x80FFFFFF 64) (bv #x81000000 64)))
-		(check-false (pmp-check m (bv #x807FFFFF 64) (bv #x81000000 64)))
-		(check-true (not (pmp-check m (bv #x00700001 64) (bv #x007FFFFF 64))))
+		(check-equal? (pmp-check m (bv #x80FFFFFF 64) (bv #x81000000 64)) #f)
+		(check-equal? (pmp-check m (bv #x807FFFFF 64) (bv #x81000000 64)) #f)
+		(check-equal? (not (pmp-check m (bv #x00700001 64) (bv #x007FFFFF 64))) #t) ; disabled uart
 		(check-true (pmp-check m (bv #x10700001 64) (bv #x107FFFFF 64)))
-		(check-false (pmp-check m (bv #x00700001 64) (bv #x107FFFFF 64)))
+		(check-equal? (pmp-check m (bv #x00700001 64) (bv #x107FFFFF 64)) #f)
 		(check-true (equal? (machine-mode m) 0)))
 	(test-case "pmp-napot-settings"
 		; test pmp_decode_cfg
@@ -248,14 +248,6 @@
 		; check that it has returned successfully
 		(check-true #t)))
 
-; Assert that kernel memory is equal between two machines
-; (define (assert-kernel-mem-equal m1 m2)
-; 	(define m1-ram (machine-ram m1))
-; 	(define m(machine-ram m2))
-; 	(vector-ref (machine-ram m) i)
-; 	)
-; (provide machine)
-
 (define-test-suite kernel
 	(test-case "kernel test"
 		(define program (file->bytearray "kernel/kernel.bin"))
@@ -265,6 +257,14 @@
 		(execute-until-mret m)
 		(print-pmp m)
 		(check-true (equal? (machine-mode m) 0))))
+
+; Assert that kernel memory is equal between two machines
+; (define (assert-kernel-mem-equal m1 m2)
+; 	(define m1-ram (machine-ram m1))
+; 	(define m(machine-ram m2))
+; 	(vector-ref (machine-ram m) i)
+; 	)
+; (provide machine)
 
 (define (deep-copy-machine m)
 	(machine
@@ -334,25 +334,19 @@
 		(printf "gprsx: ~a~n" gprsx)
 		(printf "gprsx1: ~a~n" gprsx1)
 
-		; (define sol
-		; 	(verify (begin
-		; 		(assert (bveq m2000 m12000)))))
-		; (printf "sol: ~a~n" (sol))
-		; (asserts)
-
-		(define-symbolic* a b (bitvector 64))
-
 		(define m0 (vector-ref (machine-ram m) #x0))
 		(define m10 (vector-ref (machine-ram m1) #x0))
 		(define m1999 (vector-ref (machine-ram m) #x1999))
 		(define m11999 (vector-ref (machine-ram m1) #x1999))
+		(define m2000 (vector-ref (machine-ram m) #x2000))
+		(define m12000 (vector-ref (machine-ram m1) #x2000))
 		(define model_noninterference (verify (begin
 			(assert
-				; (bveq m0 m10) ; sat
-				; (bveq m1999 m11999) ; sat
-				; (bveq m2000 m12000) ; unsat 
+				(bveq m0 m10) ; unsat
+				(bveq m1999 m11999) ; unsat
+				; (bveq m2000 m12000) ; sat 
 				; (bveq (get-csr m 'mtvec) (get-csr m1 'mtvec)) ; unsat
-				(bveq (list-ref gprsx 0) (list-ref gprsx1 0)) ; sat
+				; (bveq (list-ref gprsx 0) (list-ref gprsx1 0)) ; sat
 				; (bveq p p1) ; unsat
 				))))
 		(printf "res: ~a~n" model_noninterference)
