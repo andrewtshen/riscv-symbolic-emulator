@@ -288,8 +288,8 @@
 	(cond
 		[(eq? fmt 'R)
 			(decode-R m b_instr)]
-		; [(eq? fmt 'I)
-		; 	(decode-I m b_instr)]
+		[(eq? fmt 'I)
+			(decode-I m b_instr)]
 		[(eq? fmt 'B)
 			(decode-B m b_instr)]
 		[(eq? fmt 'U)
