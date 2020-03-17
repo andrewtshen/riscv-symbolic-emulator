@@ -153,12 +153,8 @@
 
 (define (machine-ram-write! m addr value nbits)
 	(define saddr (bvadd addr base_address))
-	(printf "saddr: ~a~n" saddr)
 	(define eaddr (bvadd addr (bv nbits 64) base_address))
-	(printf "eaddr: ~a~n" eaddr)
 	(define legal (pmp-check m saddr eaddr))
-	(printf "legal: ~a~n" legal)
-
 
 	; machine mode (1) or legal, we can read the memory
 	(when (or (equal? (machine-mode m) 1) legal)
@@ -202,8 +198,12 @@
 			(define pmp_start (list-ref pmp_bounds 0))
 			(define pmp_end (bvadd pmp_start (list-ref pmp_bounds 1)))
 
-			(printf "pmp_start: ~a~n" pmp_start)
-			(printf "pmp_end: ~a~n" pmp_end)
+			; (printf "pmp_start: ~a~n" pmp_start)
+			; (printf "pmp_end: ~a~n" pmp_end)
+
+			; (printf "saddr: ~a~n" saddr)
+			; (printf "eaddr: ~a~n" eaddr)
+
 
 			(define slegal (bv-between saddr pmp_start pmp_end))
 			(define elegal (bv-between eaddr pmp_start pmp_end))

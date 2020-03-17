@@ -7,7 +7,7 @@
 	"machine.rkt"
 	"pmp.rkt"
 	"decode.rkt")
-(require (only-in racket/base for/list for/vector in-range))
+(require (only-in racket/base for for/list for/vector in-range))
 (require rackunit rackunit/text-ui)
 
 ; Test Cases for Symbolic Executions
@@ -37,9 +37,9 @@
 		(printf "~n* Running addi.bin test ~n")
 		(define m (init-machine-with-prog program ramsize))
 		(execute-until-mret m)
-		(define gprsx
-			(for/list ([i (in-range 10 18)])
-				(gprs-get-x m i)))
+			(define gprsx(for/list ([i (in-range 10 18)])
+					(gprs-get-x m i
+			)))
 		(define model_addi (verify (begin 
 			(assert (bveq (list-ref gprsx 6)
 										(bvadd (list-ref gprsx 5) (bv 32 64)))))))
@@ -266,6 +266,22 @@
 ; 	)
 ; (provide machine)
 
+(define (assert-csr-equal m1 m2)
+	; mode is not always equal, do not assert
+	(assert (bveq (get-csr m1 'mtvec) (get-csr m2 'mtvec)))
+	(assert (bveq (get-csr m1 'mepc) (get-csr m2 'mepc)))
+	(assert (bveq (get-csr m1 'pmpcfg0) (get-csr m2 'pmpcfg0)))
+	(assert (bveq (get-csr m1 'pmpcfg2) (get-csr m2 'pmpcfg2)))
+	(assert (bveq (get-csr m1 'pmpaddr0) (get-csr m2 'pmpaddr0)))
+	(assert (bveq (get-csr m1 'pmpaddr1) (get-csr m2 'pmpaddr1)))
+	(assert (bveq (get-csr m1 'pmpaddr2) (get-csr m2 'pmpaddr2)))
+	(assert (bveq (get-csr m1 'pmpaddr3) (get-csr m2 'pmpaddr3)))
+	(assert (bveq (get-csr m1 'pmpaddr4) (get-csr m2 'pmpaddr4)))
+	(assert (bveq (get-csr m1 'pmpaddr5) (get-csr m2 'pmpaddr5)))
+	(assert (bveq (get-csr m1 'pmpaddr6) (get-csr m2 'pmpaddr6)))
+	(assert (bveq (get-csr m1 'pmpaddr7) (get-csr m2 'pmpaddr7)))
+	(assert (bveq (get-csr m1 'pmpaddr8) (get-csr m2 'pmpaddr8))))
+
 (define (deep-copy-machine m)
 	(machine
 		(cpu
@@ -303,10 +319,13 @@
 	(test-case "noninterference"
 		(printf "~n* Running noninterference proof ~n")
 
+		; for testing with entire programs
 		; (define program (file->bytearray "kernel/kernel.bin"))
+		; (define m (init-machine-with-prog program ramsize))
+
 		; set up our machine state
 		(define ramsize 15000)
-		; (define m (init-machine-with-prog program ramsize))
+		
 		(define m (init-machine ramsize))
 		(define m1 (deep-copy-machine m))
 
@@ -316,41 +335,18 @@
 		; still refer to the same symbolic variables.
 		(print-csr m)
 		(print-csr m1)
-		(print-memory m #x0 #x5)
-		(print-memory m1 #x0 #x5)
-		(print-memory m #x2000 #x2005)
-		(print-memory m1 #x2000 #x2005)
 
-		; (printf "m: ~a~nm1: ~a~n" m2000 m12000)
-		(define p (get-csr m 'pmpcfg0))
-		(define p1 (get-csr m 'pmpcfg0))
-
-		(define gprsx
-			(for/list ([i (in-range 10 18)])
-				(gprs-get-x m i)))
-		(define gprsx1
-			(for/list ([i (in-range 10 18)])
-				(gprs-get-x m1 i)))
-		(printf "gprsx: ~a~n" gprsx)
-		(printf "gprsx1: ~a~n" gprsx1)
-
-		(define m0 (vector-ref (machine-ram m) #x0))
-		(define m10 (vector-ref (machine-ram m1) #x0))
-		(define m1999 (vector-ref (machine-ram m) #x1999))
-		(define m11999 (vector-ref (machine-ram m1) #x1999))
-		(define m2000 (vector-ref (machine-ram m) #x2000))
-		(define m12000 (vector-ref (machine-ram m1) #x2000))
 		(define model_noninterference (verify (begin
-			(assert
-				(bveq m0 m10) ; unsat
-				(bveq m1999 m11999) ; unsat
-				; (bveq m2000 m12000) ; sat 
-				; (bveq (get-csr m 'mtvec) (get-csr m1 'mtvec)) ; unsat
-				; (bveq (list-ref gprsx 0) (list-ref gprsx1 0)) ; sat
-				; (bveq p p1) ; unsat
-				))))
-		(printf "res: ~a~n" model_noninterference)
-		))
+			(assert-csr-equal m m1) ; check all the relevant csrs values
+
+			; show that all the memory in 0 - 0x2000 can't change
+			(for ([i (in-range 0 #x2000)])
+				(assert (vector-ref (machine-ram m) i) (vector-ref (machine-ram m) i)))
+
+			; (assert (bveq m_2000 m1_2000)) ; sat, memory in this region could either change or not change
+			(asserts)
+			)))
+		(printf "res: ~a~n" model_noninterference)))
 
 ; (define res-instruction-check (run-tests instruction-check))
 ; (define res-utils (run-tests utils))
