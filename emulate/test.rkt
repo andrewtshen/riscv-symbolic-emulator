@@ -282,6 +282,7 @@
 	(assert (bveq (get-csr m1 'pmpaddr6) (get-csr m2 'pmpaddr6)))
 	(assert (bveq (get-csr m1 'pmpaddr7) (get-csr m2 'pmpaddr7)))
 	(assert (bveq (get-csr m1 'pmpaddr8) (get-csr m2 'pmpaddr8))))
+(provide assert-csr-equal)
 
 (define (deep-copy-machine m)
 	(machine
@@ -315,6 +316,7 @@
 		(for/vector ([i (machine-ram m)])
 			i)
 		(machine-mode m)))
+(provide deep-copy-machine)
 
 (define-test-suite noninterference
 	(test-case "noninterference"
@@ -341,7 +343,7 @@
 			(assert-csr-equal m m1) ; check all the relevant csrs values
 
 			; show that all the memory in 0 - 0x2000 can't change
-			(for ([i (in-range #x0 #x0)])
+			(for ([i (in-range #x0 #x1)])
 				(assert (bveq (vector-ref (machine-ram m) i) (vector-ref (machine-ram m1) i))))
 
 			; (assert (bveq m_2000 m1_2000)) ; sat, memory in this region could either change or not change
@@ -353,7 +355,7 @@
 ; (define res-utils (run-tests utils))
 ; (define res-high-level-test (run-tests high-level-test))
 ; (define res-kernel (run-tests kernel))
-(define res-noninterference (run-tests noninterference))
+; (define res-noninterference (run-tests noninterference))
 
 ; (define program (file->bytearray "build/sw_lw.bin"))
 ; (printf "~n* Running sw_lw.bin test ~n")

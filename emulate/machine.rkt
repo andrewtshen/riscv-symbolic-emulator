@@ -142,6 +142,7 @@
 	(if (or (equal? (machine-mode m) 1) legal)
 		(bytearray-read (machine-ram m) (bitvector->natural addr) nbytes)
 		null))
+
 (provide machine-ram-read)
 
 (define (bytearray-read ba addr nbytes)

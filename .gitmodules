@@ -19,9 +19,6 @@
 [submodule "unitary"]
 	path = unitary
 	url = https://github.com/anishathalye/unitary
-[submodule "qemu"]
-	path = qemu
-	url = https://github.com/qemu/qemu/
 [submodule "xv6-riscv-fall19"]
 	path = xv6-riscv-fall19
 	url = https://github.com/mit-pdos/xv6-riscv-fall19
