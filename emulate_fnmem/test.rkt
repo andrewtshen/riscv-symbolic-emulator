@@ -355,7 +355,7 @@
 ; (define res-utils (run-tests utils))
 ; (define res-high-level-test (run-tests high-level-test))
 ; (define res-kernel (run-tests kernel))
-; (define res-noninterference (run-tests noninterference))
+(define res-noninterference (run-tests noninterference))
 
 ; (define program (file->bytearray "build/sw_lw.bin"))
 ; (printf "~n* Running sw_lw.bin test ~n")
