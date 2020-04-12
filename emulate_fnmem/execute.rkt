@@ -614,7 +614,10 @@
 			(define addr (bvadd v_rs1 imm))
 			(define adj_addr (bvsub addr base_address))
 			(define nbits 8)
-			(machine-ram-write! m adj_addr v_rs2 nbits)
+			(when not (machine-ram-write! m adj_addr v_rs2 nbits)
+				(printf "illegal!~n")
+				(illegal-instr m))
+
 			(set-pc! m (bvadd pc (bv 4 64)))
 			instr]
 		[(eq? opcode 'sh)
@@ -625,7 +628,10 @@
 			(define addr (bvadd v_rs1 imm))
 			(define adj_addr (bvsub addr base_address))
 			(define nbits 16)
-			(machine-ram-write! m adj_addr v_rs2 nbits)
+			(when not (machine-ram-write! m adj_addr v_rs2 nbits)
+				(printf "illegal!~n")
+				(illegal-instr m))
+
 			(set-pc! m (bvadd pc (bv 4 64)))
 			instr]
 		[(eq? opcode 'sw)
@@ -639,7 +645,10 @@
 			(define addr (bvadd v_rs1 imm))
 			(define adj_addr (bvsub addr base_address))
 			(define nbits 32)
-			(machine-ram-write! m adj_addr v_rs2 nbits)
+			(when not (machine-ram-write! m adj_addr v_rs2 nbits)
+				(printf "illegal!~n")
+				(illegal-instr m))
+
 			(set-pc! m (bvadd pc (bv 4 64)))
 			instr]
 		[(eq? opcode 'sd)
@@ -650,7 +659,10 @@
 			(define addr (bvadd v_rs1 imm))
 			(define adj_addr (bvsub addr base_address))
 			(define nbits 64)
-			(machine-ram-write! m adj_addr v_rs2 nbits)
+			(when not (machine-ram-write! m adj_addr v_rs2 nbits)
+				(printf "illegal!~n")
+				(illegal-instr m))
+
 			(set-pc! m (bvadd pc (bv 4 64)))
 			instr]
 

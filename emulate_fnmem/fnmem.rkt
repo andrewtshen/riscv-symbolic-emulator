@@ -14,7 +14,7 @@
 
 (define all-zeros-memory
   (lambda (addr*)
-    (if (bvslt addr* (bv #x2000 16))
+    (if (< addr* 500)
       (bv 0 32)
       (bv -1 32))))
 
@@ -34,8 +34,8 @@
 
 ;; examples
 
-(memory-read all-zeros-memory (bv #b01010000 16))
-(memory-read all-zeros-memory (bv #x2001 16))
+(memory-read all-zeros-memory 1)
+(memory-read all-zeros-memory 501)
 
 (memory-read
  (memory-write all-zeros-memory (bv #x0000 16) (bv #x1337 32))

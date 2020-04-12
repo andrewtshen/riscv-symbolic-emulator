@@ -162,7 +162,7 @@
 (define (bytearray-read ba addr nbytes)
 	(define bytes
 		(for/list ([i (in-range nbytes)])
-	  	(memory-read ba (bv (+ addr i) 32))))
+	  	(memory-read ba (+ addr i))))
   ; little endian
   (apply concat (reverse bytes)))
 
@@ -170,15 +170,16 @@
 	(define saddr (bvadd addr base_address))
 	(define eaddr (bvadd addr (bv nbits 64) base_address))
 	(define legal (pmp-check m saddr eaddr))
+	(printf "legal?: ~a~n" legal)
 
 	; machine mode (1) or legal, we can read the memory
 	(when (or (equal? (machine-mode m) 1) legal)
-  	(bytearray-write! m (machine-ram m) (bitvector->natural addr) value nbits))
+  	(bytearray-write! m (bitvector->natural addr) value nbits))
 
 	(if legal #t null))
 (provide machine-ram-write!)
 
-(define (bytearray-write! m ba addr value nbits)
+(define (bytearray-write! m addr value nbits)
   (define bytes (quotient nbits 8))
   (for ([i (in-range bytes)])
 		; little-endian
@@ -186,7 +187,9 @@
 			[low (* 8 i)]
 			[hi (+ 7 low)]
 			[v (extract hi low value)])
-		(set-machine-ram! m (memory-write ba pos v)))))
+		(printf "writing ~a to ~a~n" v pos)
+		(set-machine-ram! m (memory-write (machine-ram m) pos v))
+		(printf "reading ~a: ~a~n" pos (memory-read (machine-ram m) pos)))))
 
 (define base_address (bv #x80000000 64))
 (provide base_address)
@@ -281,3 +284,4 @@
 	(printf "pmpaddr1 base/range: ~a~n" (pmp-decode-napot (get-csr m 'pmpaddr1)))
 	(printf "pmpaddr8 base/range: ~a~n" (pmp-decode-napot (get-csr m 'pmpaddr8))))
 (provide print-pmp)
+

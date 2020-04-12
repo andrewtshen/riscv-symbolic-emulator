@@ -21,6 +21,9 @@
 	(build-vector n (lambda (i) (define-symbolic* m (bitvector size)) m)))
 	; (build-vector n (lambda (i) (bv 0 size)))) ; set mem to 0 for testing with qemu
 
+(define-simple-macro (fresh-symbolic name type)
+  (let () (define-symbolic* name type) name))
+
 ;; Helper Methods
 
 ; Convert a file to a bytearray
@@ -36,7 +39,7 @@
 
 (define (print-memory m ramsize)
 	(for [(i (in-range 0 ramsize))]
-		(printf "i: ~a value: ~a~n" i ((machine-ram m) (bv i 32)))))
+		(printf "i: ~a value: ~a~n" i ((machine-ram m) i))))
 
 ;; Different ways to set up machine
 
@@ -75,14 +78,15 @@
 
 	(define mem-with-prog
 	  (lambda (addr*)
-	    (if (bvslt addr* (bv ramsize 32))
-	      (bv 0 8)
+	    (if (< addr* ramsize)
+	    	; (bv 0 8)
+	      (fresh-symbolic x (bitvector 8))
 	      (illegal-instr m))))
 
 	; TODO: using set is probably inefficient
 	(for ([b program]
 				[i (in-naturals)])
-		(set! mem-with-prog (memory-write mem-with-prog (bv i 32) b)))
+		(set! mem-with-prog (memory-write mem-with-prog i b)))
 
 	(define m
 		(machine
@@ -134,8 +138,9 @@
 
 	(define all-zeros-memory
 	  (lambda (addr*)
-	    (if (bvslt addr* (bv ramsize 32))
-	      (bv 0 8)
+	    (if (< addr* ramsize)
+	    	; (bv 0 8)
+	      (fresh-symbolic x (bitvector 8))
 	      (illegal-instr m))))
 
 	(define m
