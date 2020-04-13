@@ -32,7 +32,7 @@
 
 ; show that they can execute independently, but
 ; still refer to the same symbolic variables.
-; (for ([i (in-range 0 1000 100)])
-; 	(time (checkmem m m1 i)))
+(for ([i (in-range 0 1000 100)])
+	(time (checkmem m m1 i)))
 
-(time (checkmem m m1 1))
+; (time (checkmem m m1 1))

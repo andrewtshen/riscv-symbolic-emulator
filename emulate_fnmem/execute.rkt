@@ -245,12 +245,7 @@
 			(define adj_addr (bvsub addr base_address))
 			(define nbytes 1)
 			; stronger case that covers all possible values that val can take
-			(define val
-				(if (term? addr)
-					(begin
-						(define-symbolic* val (sign-extend (bitvector (* nbytes 8)) (bitvector 64)))
-						val)
-					(sign-extend (machine-ram-read m adj_addr nbytes) (bitvector 64))))
+			(define val (sign-extend (machine-ram-read m adj_addr nbytes) (bitvector 64)))
 			(gprs-set-x! m rd val)
 			(set-pc! m (bvadd pc (bv 4 64)))
 			instr]
@@ -263,12 +258,7 @@
 			(define adj_addr (bvsub addr base_address))
 			(define nbytes 2)
 			; stronger case that covers all possible values that val can take
-			(define val
-				(if (term? addr)
-					(begin
-						(define-symbolic* val (sign-extend (bitvector (* nbytes 8)) (bitvector 64)))
-						val)
-					(sign-extend (machine-ram-read m adj_addr nbytes) (bitvector 64))))
+			(define val (sign-extend (machine-ram-read m adj_addr nbytes) (bitvector 64)))
 			(gprs-set-x! m rd val)
 			(set-pc! m (bvadd pc (bv 4 64)))
 			instr]
@@ -281,12 +271,7 @@
 			(define adj_addr (bvsub addr base_address))
 			(define nbytes 4)
 			; stronger case that covers all possible values that val can take
-			(define val
-				(if (term? addr)
-					(begin
-						(define-symbolic* val (sign-extend (bitvector (* nbytes 8)) (bitvector 64)))
-						val)
-					(sign-extend (machine-ram-read m adj_addr nbytes) (bitvector 64))))
+			(define val (sign-extend (machine-ram-read m adj_addr nbytes) (bitvector 64)))
 			(gprs-set-x! m rd val)
 			(set-pc! m (bvadd pc (bv 4 64)))
 			instr]
@@ -299,12 +284,7 @@
 			(define adj_addr (bvsub addr base_address))
 			(define nbytes 8)
 			; stronger case that covers all possible values that val can take
-			(define val
-				(if (term? addr)
-					(begin
-						(define-symbolic* val (sign-extend (bitvector (* nbytes 8)) (bitvector 64)))
-						val)
-					(sign-extend (machine-ram-read m adj_addr nbytes) (bitvector 64))))
+			(define val (sign-extend (machine-ram-read m adj_addr nbytes) (bitvector 64)))
 			(gprs-set-x! m rd val)
 			(set-pc! m (bvadd pc (bv 4 64)))
 			instr]
@@ -317,12 +297,7 @@
 			(define adj_addr (bvsub addr base_address))
 			(define nbytes 1)
 			; stronger case that covers all possible values that val can take
-			(define val
-				(if (term? addr)
-					(begin
-						(define-symbolic* val (sign-extend (bitvector (* nbytes 8)) (bitvector 64)))
-						val)
-					(sign-extend (machine-ram-read m adj_addr nbytes) (bitvector 64))))
+			(define val (sign-extend (machine-ram-read m adj_addr nbytes) (bitvector 64)))
 			(gprs-set-x! m rd val)
 			(set-pc! m (bvadd pc (bv 4 64)))
 			instr]
@@ -335,12 +310,7 @@
 			(define adj_addr (bvsub addr base_address))
 			(define nbytes 2)
 			; stronger case that covers all possible values that val can take
-			(define val
-				(if (term? addr)
-					(begin
-						(define-symbolic* val (sign-extend (bitvector (* nbytes 8)) (bitvector 64)))
-						val)
-					(sign-extend (machine-ram-read m adj_addr nbytes) (bitvector 64))))
+			(define val (sign-extend (machine-ram-read m adj_addr nbytes) (bitvector 64)))
 			(gprs-set-x! m rd val)
 			(set-pc! m (bvadd pc (bv 4 64)))
 			instr]
@@ -353,12 +323,7 @@
 			(define adj_addr (bvsub addr base_address))
 			(define nbytes 4)
 			; stronger case that covers all possible values that val can take
-			(define val
-				(if (term? addr)
-					(begin
-						(define-symbolic* val (sign-extend (bitvector (* nbytes 8)) (bitvector 64)))
-						val)
-					(sign-extend (machine-ram-read m adj_addr nbytes) (bitvector 64))))
+			(define val (sign-extend (machine-ram-read m adj_addr nbytes) (bitvector 64)))
 			(gprs-set-x! m rd val)
 				(set-pc! m (bvadd pc (bv 4 64)))
 				instr]
@@ -614,11 +579,13 @@
 			(define addr (bvadd v_rs1 imm))
 			(define adj_addr (bvsub addr base_address))
 			(define nbits 8)
-			(when (not (machine-ram-write! m adj_addr v_rs2 nbits))
-				(illegal-instr m))
-
-			(set-pc! m (bvadd pc (bv 4 64)))
-			instr]
+			(define success (machine-ram-write! m adj_addr v_rs2 nbits))
+			(cond
+				[(not success)
+					(illegal-instr m)]
+				[else
+					(set-pc! m (bvadd pc (bv 4 64)))
+					instr])]
 		[(eq? opcode 'sh)
 			; (printf " --> sh ~n")
 			(define v_rs1 (gprs-get-x m (list-ref-nat instr 1)))
@@ -627,11 +594,13 @@
 			(define addr (bvadd v_rs1 imm))
 			(define adj_addr (bvsub addr base_address))
 			(define nbits 16)
-			(when (not (machine-ram-write! m adj_addr v_rs2 nbits))
-				(illegal-instr m))
-
-			(set-pc! m (bvadd pc (bv 4 64)))
-			instr]
+			(define success (machine-ram-write! m adj_addr v_rs2 nbits))
+			(cond
+				[(not success)
+					(illegal-instr m)]
+				[else
+					(set-pc! m (bvadd pc (bv 4 64)))
+					instr])]
 		[(eq? opcode 'sw)
 			; (printf " --> sw ~n")
 			(define gprsx
@@ -643,11 +612,13 @@
 			(define addr (bvadd v_rs1 imm))
 			(define adj_addr (bvsub addr base_address))
 			(define nbits 32)
-			(when (not (machine-ram-write! m adj_addr v_rs2 nbits))
-				(illegal-instr m))
-
-			(set-pc! m (bvadd pc (bv 4 64)))
-			instr]
+			(define success (machine-ram-write! m adj_addr v_rs2 nbits))
+			(cond
+				[(not success)
+					(illegal-instr m)]
+				[else
+					(set-pc! m (bvadd pc (bv 4 64)))
+					instr])]
 		[(eq? opcode 'sd)
 			; (printf " --> sd ~n")
 			(define v_rs1 (gprs-get-x m (list-ref-nat instr 1)))
@@ -656,12 +627,13 @@
 			(define addr (bvadd v_rs1 imm))
 			(define adj_addr (bvsub addr base_address))
 			(define nbits 64)
-			(when (not (machine-ram-write! m adj_addr v_rs2 nbits))
-				(illegal-instr m))
-
-			(set-pc! m (bvadd pc (bv 4 64)))
-			instr]
-
+			(define success (machine-ram-write! m adj_addr v_rs2 nbits))
+			(cond
+				[(not success)
+					(illegal-instr m)]
+				[else
+					(set-pc! m (bvadd pc (bv 4 64)))
+					instr])]
 		; J Format
 		[(eq? opcode 'jal)
 			; (printf " --> jal ~n")

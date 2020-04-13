@@ -139,9 +139,14 @@
 	(define legal (pmp-check m saddr eaddr))
 
 	; machine mode (1) or legal, we can read the memory
-	(if (or (equal? (machine-mode m) 1) legal)
-		(bytearray-read (machine-ram m) (bitvector->natural addr) nbytes)
-		null))
+	(if (term? legal)
+		(begin
+			(define-symbolic* val (bitvector (* nbytes 8)))
+			val)
+		(if (or (equal? (machine-mode m) 1) legal)
+			(bytearray-read (machine-ram m) (bitvector->natural addr) nbytes)
+			null))
+	)
 
 (provide machine-ram-read)
 

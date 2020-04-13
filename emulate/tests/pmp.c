@@ -122,7 +122,7 @@ static void pmp_init(void) {
     w_pmp1cfg(PMPCFG(0, PMPCFG_A_NAPOT, 1, 1, 1));
 
     // PMP region 2: user has no access to entire memory range
-    // need to make this somehow #xcfffffff.... and do correct lsr
+    // need to make this somehow #x7fffffff.... and do correct lsr
     int64_t v = lsr((~0L), 1);
     w_pmpaddr8(v);
     w_pmp8cfg(PMPCFG(0, PMPCFG_A_NAPOT, 0, 0, 0));

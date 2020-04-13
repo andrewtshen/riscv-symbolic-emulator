@@ -206,15 +206,13 @@
 		(define ramsize 10000)
 		(define m (init-machine-with-prog program ramsize))
 		(execute-until-mret m)
-		(print-pmp m)
-		; (check-true (pmp-check m (bv #x80800000 64) (bv #x80800000 64)))
-		; (check-true (pmp-check m (bv #x80FFFFFF 64) (bv #x80FFFFFF 64)))
-		(printf "Here!")
+		(check-true (not (pmp-check m (bv #x80800000 64) (bv #x80800000 64))))
+		(check-true (pmp-check m (bv #x80FFFFFF 64) (bv #x80FFFFFF 64)))
 		(check-equal? (pmp-check m (bv #x80FFFFFF 64) (bv #x81000000 64)) #f)
-		; (check-equal? (pmp-check m (bv #x807FFFFF 64) (bv #x81000000 64)) #f)
-		; (check-equal? (not (pmp-check m (bv #x00700001 64) (bv #x007FFFFF 64))) #t) ; disabled uart
-		; (check-true (pmp-check m (bv #x10700001 64) (bv #x107FFFFF 64)))
-		; (check-equal? (pmp-check m (bv #x00700001 64) (bv #x107FFFFF 64)) #f)
+		(check-equal? (pmp-check m (bv #x807FFFFF 64) (bv #x81000000 64)) #f)
+		(check-equal? (not (pmp-check m (bv #x00700001 64) (bv #x007FFFFF 64))) #t) ; disabled uart
+		(check-true (pmp-check m (bv #x10700001 64) (bv #x107FFFFF 64)))
+		(check-equal? (pmp-check m (bv #x00700001 64) (bv #x107FFFFF 64)) #f)
 		(check-true (equal? (machine-mode m) 0)))
 	(test-case "pmp-napot-settings"
 		; test pmp_decode_cfg
@@ -258,14 +256,6 @@
 		(execute-until-mret m)
 		(print-pmp m)
 		(check-true (equal? (machine-mode m) 0))))
-
-; Assert that kernel memory is equal between two machines
-; (define (assert-kernel-mem-equal m1 m2)
-; 	(define m1-ram (machine-ram m1))
-; 	(define m(machine-ram m2))
-; 	(vector-ref (machine-ram m) i)
-; 	)
-; (provide machine)
 
 (define (assert-csr-equal m1 m2)
 	; mode is not always equal, do not assert
@@ -313,10 +303,8 @@
 			(for/vector ([i (cpu-gprs (machine-cpu m))])
 				i)
 			(get-pc m))
-		; (machine-ram m)
-		(for/vector ([i (machine-ram m)])
-			i)
-		(machine-mode m)))
+		(machine-ram m)
+			(machine-mode m)))
 (provide deep-copy-machine)
 
 (define-test-suite noninterference
@@ -329,32 +317,29 @@
 
 		; set up our machine state
 		(define ramsize 15000)
-		
 		(define m (init-machine ramsize))
 		(define m1 (deep-copy-machine m))
 
 		(define next_instr (step m)) ; step!
-
 		; show that they can execute independently, but
 		; still refer to the same symbolic variables.
-		(print-csr m)
-		(print-csr m1)
+		; (print-csr m)
+		; (print-csr m1)
+		; (printf "memory m: ~a~n" (memory-read (machine-ram m) #x0))
+		; (printf "memory m1: ~a~n" (memory-read (machine-ram m1) #x0))
 
 		(define model_noninterference (verify (begin
 			(assert-csr-equal m m1) ; check all the relevant csrs values
 
 			; show that all the memory in 0 - 0x2000 can't change
-			(for ([i (in-range #x0 #x1)])
-				(assert (bveq (vector-ref (machine-ram m) i) (vector-ref (machine-ram m1) i))))
-
-			; (assert (bveq m_2000 m1_2000)) ; sat, memory in this region could either change or not change
-			; (asserts)
+			(for ([i (in-range #x2000 #x2000)])
+				(assert (bveq (memory-read (machine-ram m) i) (memory-read (machine-ram m1) i))))
 			)))
 		(printf "res: ~a~n" model_noninterference)))
 
-; (define res-instruction-check (run-tests instruction-check))
+(define res-instruction-check (run-tests instruction-check))
 (define res-utils (run-tests utils))
-; (define res-high-level-test (run-tests high-level-test))
+(define res-high-level-test (run-tests high-level-test))
 ; (define res-kernel (run-tests kernel))
 ; (define res-noninterference (run-tests noninterference))
 

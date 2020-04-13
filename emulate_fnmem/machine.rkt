@@ -142,6 +142,14 @@
       (mem addr*))))
 (provide memory-write)
 
+; start address is included, end address is not
+(define (memory-write-range mem saddr eaddr value)
+	(lambda (addr*)
+		(if (and (<= saddr mem) (< mem eaddr))
+			value
+			(mem addr*))))
+(provide memory-write-range)
+
 (define (memory-read mem addr)
 	(mem addr))
 (provide memory-read)
@@ -153,9 +161,13 @@
 	(define legal (pmp-check m saddr eaddr))
 
 	; machine mode (1) or legal, we can read the memory
-	(if (or (equal? (machine-mode m) 1) legal)
-		(bytearray-read (machine-ram m) (bitvector->natural addr) nbytes)
-		null))
+	(if (term? legal)
+		(begin
+			(define-symbolic* val (bitvector (* nbytes 8)))
+			val)
+		(if (or (equal? (machine-mode m) 1) legal)
+			(bytearray-read (machine-ram m) (bitvector->natural addr) nbytes)
+			null)))
 
 (provide machine-ram-read)
 
@@ -170,7 +182,6 @@
 	(define saddr (bvadd addr base_address))
 	(define eaddr (bvadd addr (bv nbits 64) base_address))
 	(define legal (pmp-check m saddr eaddr))
-	(printf "legal?: ~a~n" legal)
 
 	; machine mode (1) or legal, we can read the memory
 	(when (or (equal? (machine-mode m) 1) legal)
@@ -187,9 +198,7 @@
 			[low (* 8 i)]
 			[hi (+ 7 low)]
 			[v (extract hi low value)])
-		(printf "writing ~a to ~a~n" v pos)
-		(set-machine-ram! m (memory-write (machine-ram m) pos v))
-		(printf "reading ~a: ~a~n" pos (memory-read (machine-ram m) pos)))))
+		(set-machine-ram! m (memory-write (machine-ram m) pos v)))))
 
 (define base_address (bv #x80000000 64))
 (provide base_address)
@@ -222,8 +231,7 @@
 
 			(define slegal (bv-between saddr pmp_start pmp_end))
 			(define elegal (bv-between eaddr pmp_start pmp_end))
-			; if slegal #t and elegal #f, create illegal instruction
-			; if elegal #f and slegal #t, create illegal instruction
+
 			(cond
 				[(and slegal elegal)
 					(set! done #t)

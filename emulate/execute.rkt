@@ -614,11 +614,12 @@
 			(define addr (bvadd v_rs1 imm))
 			(define adj_addr (bvsub addr base_address))
 			(define nbits 8)
-			(when (not (machine-ram-write! m adj_addr v_rs2 nbits))
-				(illegal-instr m))
-			
-			(set-pc! m (bvadd pc (bv 4 64)))
-			instr]
+			(cond 
+				[(not (machine-ram-write! m adj_addr v_rs2 nbits))
+					(illegal-instr m)]
+				[else
+					(set-pc! m (bvadd pc (bv 4 64)))
+					instr])]
 		[(eq? opcode 'sh)
 			; (printf " --> sh ~n")
 			(define v_rs1 (gprs-get-x m (list-ref-nat instr 1)))
@@ -627,11 +628,12 @@
 			(define addr (bvadd v_rs1 imm))
 			(define adj_addr (bvsub addr base_address))
 			(define nbits 16)
-			(when (not (machine-ram-write! m adj_addr v_rs2 nbits))
-				(illegal-instr m))
-			
-			(set-pc! m (bvadd pc (bv 4 64)))
-			instr]
+			(cond 
+				[(not (machine-ram-write! m adj_addr v_rs2 nbits))
+					(illegal-instr m)]
+				[else
+					(set-pc! m (bvadd pc (bv 4 64)))
+					instr])]
 		[(eq? opcode 'sw)
 			; (printf " --> sw ~n")
 			(define gprsx
@@ -643,11 +645,12 @@
 			(define addr (bvadd v_rs1 imm))
 			(define adj_addr (bvsub addr base_address))
 			(define nbits 32)
-			(when (not (machine-ram-write! m adj_addr v_rs2 nbits))
-				(illegal-instr m))
-			
-			(set-pc! m (bvadd pc (bv 4 64)))
-			instr]
+			(cond 
+				[(not (machine-ram-write! m adj_addr v_rs2 nbits))
+					(illegal-instr m)]
+				[else
+					(set-pc! m (bvadd pc (bv 4 64)))
+					instr])]
 		[(eq? opcode 'sd)
 			; (printf " --> sd ~n")
 			(define v_rs1 (gprs-get-x m (list-ref-nat instr 1)))
@@ -656,11 +659,12 @@
 			(define addr (bvadd v_rs1 imm))
 			(define adj_addr (bvsub addr base_address))
 			(define nbits 64)
-			(when (not (machine-ram-write! m adj_addr v_rs2 nbits))
-				(illegal-instr m))
-			
-			(set-pc! m (bvadd pc (bv 4 64)))
-			instr]
+			(cond 
+				[(not (machine-ram-write! m adj_addr v_rs2 nbits))
+					(illegal-instr m)]
+				[else
+					(set-pc! m (bvadd pc (bv 4 64)))
+					instr])]
 
 		; J Format
 		[(eq? opcode 'jal)
@@ -687,6 +691,5 @@
 			; TODO: FENCE_I instruction not implemented yet
 			(illegal-instr m)]
 		[else
-			(illegal-instr m)])
-)
+			(illegal-instr m)]))
 (provide execute)

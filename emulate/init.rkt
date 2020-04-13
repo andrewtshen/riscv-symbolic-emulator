@@ -101,7 +101,7 @@
 	(set! pmpaddr5 (bv 0 64))
 	(set! pmpaddr6 (bv 0 64))
 	(set! pmpaddr7 (bv 0 64))
-	(set! pmpaddr8 (bv #xffffffffffffffff 64))
+	(set! pmpaddr8 (bv #x7fffffffffffffff 64))
 	(set! pmpaddr9 (bv 0 64))
 	(set! pmpaddr10 (bv 0 64))
 	(set! pmpaddr11 (bv 0 64))

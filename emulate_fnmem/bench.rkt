@@ -19,7 +19,7 @@
 
 		; show that all the memory in 0 - 0x2000 can't change
 		(for ([i (in-range #x0 mmax)])
-			(assert (bveq (vector-ref (machine-ram m) i) (vector-ref (machine-ram m1) i))))
+			(assert (bveq (memory-read (machine-ram m) i) (memory-read (machine-ram m1) i))))
 
 		; (printf "assert: ~a~n" (asserts))
 		)))
@@ -32,7 +32,7 @@
 
 ; show that they can execute independently, but
 ; still refer to the same symbolic variables.
-; (for ([i (in-range 0 1000 100)])
-; 	(time (checkmem m m1 i)))
+(for ([i (in-range 0 1000 100)])
+	(time (checkmem m m1 i)))
 
-(time (checkmem m m1 1))
+; (time (checkmem m m1 1))

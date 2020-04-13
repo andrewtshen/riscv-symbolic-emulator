@@ -127,7 +127,7 @@
 	(set! pmpaddr5 (bv 0 64))
 	(set! pmpaddr6 (bv 0 64))
 	(set! pmpaddr7 (bv 0 64))
-	(set! pmpaddr8 (bv #xffffffffffffffff 64))
+	(set! pmpaddr8 (bv #x7fffffffffffffff 64))
 	(set! pmpaddr9 (bv 0 64))
 	(set! pmpaddr10 (bv 0 64))
 	(set! pmpaddr11 (bv 0 64))
@@ -136,6 +136,15 @@
 	(set! pmpaddr14 (bv 0 64))
 	(set! pmpaddr15 (bv 0 64))
 
+	; (define all-zeros-memory
+	;   (lambda (addr*)
+	;     (if (< addr* ramsize)
+	;     	; (bv 0 8)
+	;       (fresh-symbolic x (bitvector 8))
+	;       (illegal-instr m))))
+
+	; (for [(i (in-range 0 ramsize))]
+	; 	(set! all-zeros-memory (memory-write all-zeros-memory i (fresh-symbolic x (bitvector 8)))))
 	(define all-zeros-memory
 	  (lambda (addr*)
 	    (if (< addr* ramsize)
