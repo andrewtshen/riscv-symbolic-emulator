@@ -207,7 +207,7 @@
 		(define m (init-machine-with-prog program ramsize))
 		(execute-until-mret m)
 		(print-pmp m)
-		(check-true (not (pmp-check m (bv #x80800000 64) (bv #x80800000 64))))
+		(check-true (pmp-check m (bv #x80800000 64) (bv #x80800000 64)))
 		(check-true (pmp-check m (bv #x80FFFFFF 64) (bv #x80FFFFFF 64)))
 		(check-equal? (pmp-check m (bv #x80FFFFFF 64) (bv #x81000000 64)) #f)
 		(check-equal? (pmp-check m (bv #x807FFFFF 64) (bv #x81000000 64)) #f)

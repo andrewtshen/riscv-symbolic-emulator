@@ -224,10 +224,10 @@
 			(define pmp_start (list-ref pmp_bounds 0))
 			(define pmp_end (bvadd pmp_start (list-ref pmp_bounds 1)))
 
-			; (printf "pmp_start: ~a~n" pmp_start)
-			; (printf "pmp_end: ~a~n" pmp_end)
-			; (printf "saddr: ~a~n" saddr)
-			; (printf "eaddr: ~a~n" eaddr)
+			(printf "pmp_start: ~a~n" pmp_start)
+			(printf "pmp_end: ~a~n" pmp_end)
+			(printf "saddr: ~a~n" saddr)
+			(printf "eaddr: ~a~n" eaddr)
 
 			(define slegal (bv-between saddr pmp_start pmp_end))
 			(define elegal (bv-between eaddr pmp_start pmp_end))

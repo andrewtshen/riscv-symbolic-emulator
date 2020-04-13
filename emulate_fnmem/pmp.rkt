@@ -35,7 +35,7 @@
 	(list base range))
 (provide pmp-decode-napot)
 
-; check if bv1 satisfies bv2 <= bv1 < bv3
+; check if bv1 satisfies bv2 <= bv1 <= bv3
 (define (bv-between bv1 bv2 bv3)
-	(and (bvule bv2 bv1) (bvult bv1 bv3)))
+	(and (bvule bv2 bv1) (bvule bv1 bv3)))
 (provide bv-between)
