@@ -160,8 +160,7 @@
 	; machine mode (1) or legal, we can read the memory
 	(when (or (equal? (machine-mode m) 1) legal)
   	(bytearray-write! (machine-ram m) (bitvector->natural addr) value nbits))
-
-	(if legal #t null))
+	legal)
 (provide machine-ram-write!)
 
 (define (bytearray-write! ba addr value nbits)
@@ -179,9 +178,8 @@
 
 ; PMP checking stuff
 (define (pmpcfg-check m pmpcfg saddr eaddr pmpaddrs)
-	(define legal #f)
+	(define legal null)
 	(define done #f)
-
 	; somewhat hacky way of getting right regs, doesn't work if id odd
 	(for ([i (in-range 0 8)]
 				[pmp_name pmpaddrs]
@@ -192,7 +190,7 @@
 		(define W (list-ref settings 1))
 		(define X (list-ref settings 2))
 		(define A (list-ref settings 3))
-		; (printf "~a ~a ~a ~a~n" R W X A)
+		; (printf "R:~a W:~a X:~a A:~a~n" R W X A)
 		(cond [(equal? A 1)
 			(define pmp (get-csr m pmp_name))
 			(define pmp_bounds (pmp-decode-napot pmp))
@@ -201,38 +199,19 @@
 
 			; (printf "pmp_start: ~a~n" pmp_start)
 			; (printf "pmp_end: ~a~n" pmp_end)
-
 			; (printf "saddr: ~a~n" saddr)
 			; (printf "eaddr: ~a~n" eaddr)
-
 
 			(define slegal (bv-between saddr pmp_start pmp_end))
 			(define elegal (bv-between eaddr pmp_start pmp_end))
 			; if slegal #t and elegal #f, create illegal instruction
 			; if elegal #f and slegal #t, create illegal instruction
 			(cond
-				[(and slegal (not elegal))
-					(set! legal #f)]
-				[(and elegal (not slegal))
-					(set! legal #f)]
-				[(and elegal slegal)
-					(set! legal #t)
-					(set! done #t)]
-				[(and (not elegal) (not slegal))
-					; Subcases
-					; 1. both less than pmp_start -> continue testing other pmpcfgs
-					; 2. both greater than pmp_start -> continue testing other pmpcfgs
-					; 3. one below and one after -> illegal
-					(cond
-						[(and (bvult eaddr pmp_start) (bvult saddr pmp_end))
-							null]
-						[(and (bvult pmp_start eaddr) (bvult pmp_end saddr))
-							null]
-						[(and (bvult saddr pmp_start) (bvult pmp_end eaddr))
-							(set! legal #f)
-							(set! done #t)])]
-				[else
-					(illegal-instr m)])]))
+				[(and slegal elegal)
+					(set! done #t)
+					(if (and (equal? R 1) (equal? W 1) (equal? X 1))
+						(set! legal #t)
+						(set! legal #f))])]))
 	legal)
 
 ; PMP test address ranging from saddr to eaddr 
@@ -243,12 +222,14 @@
 														'pmpaddr4 'pmpaddr5 'pmpaddr6 'pmpaddr7))
 	(define legal (pmpcfg-check m pmpcfg0 saddr eaddr pmpcfg0_regs))
 	; check pmpcfg2, iterate through each register
-	(when (not legal)
+	(when (equal? legal null)
 		(define pmpcfg2_regs (list 'pmpaddr8 'pmpaddr9 'pmpaddr10 'pmpaddr11
 															'pmpaddr12 'pmpaddr13 'pmpaddr14 'pmpaddr15))
 		(define pmpcfg2 (get-csr m 'pmpcfg2))
 		(set! legal (pmpcfg-check m pmpcfg2 saddr eaddr pmpcfg2_regs)))
-	legal)
+	(if (equal? legal null)
+		#t
+		legal))
 (provide pmp-check)
 
 (define (print-pmp m)

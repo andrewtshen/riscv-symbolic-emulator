@@ -24,7 +24,7 @@
 	(define W (bitvector->natural (extract (+ base 1) (+ base 1) val)))
 	(define X (bitvector->natural (extract (+ base 2) (+ base 2) val)))
 	(define A (bitvector->natural (extract (+ base 3) (+ base 3) val)))
-	(list A X W R))
+	(list R W X A))
 (provide pmp-decode-cfg)
 
 ; decode start addr and end addr for cfg register

@@ -351,9 +351,9 @@
 			)))
 		(printf "res: ~a~n" model_noninterference)))
 
-; (define res-instruction-check (run-tests instruction-check))
-; (define res-utils (run-tests utils))
-; (define res-high-level-test (run-tests high-level-test))
+(define res-instruction-check (run-tests instruction-check))
+(define res-utils (run-tests utils))
+(define res-high-level-test (run-tests high-level-test))
 ; (define res-kernel (run-tests kernel))
 ; (define res-noninterference (run-tests noninterference))
 

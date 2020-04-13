@@ -207,13 +207,14 @@
 		(define m (init-machine-with-prog program ramsize))
 		(execute-until-mret m)
 		(print-pmp m)
-		(check-true (pmp-check m (bv #x80800000 64) (bv #x80800000 64)))
-		(check-true (pmp-check m (bv #x80FFFFFF 64) (bv #x80FFFFFF 64)))
+		; (check-true (pmp-check m (bv #x80800000 64) (bv #x80800000 64)))
+		; (check-true (pmp-check m (bv #x80FFFFFF 64) (bv #x80FFFFFF 64)))
+		(printf "Here!")
 		(check-equal? (pmp-check m (bv #x80FFFFFF 64) (bv #x81000000 64)) #f)
-		(check-equal? (pmp-check m (bv #x807FFFFF 64) (bv #x81000000 64)) #f)
-		(check-equal? (not (pmp-check m (bv #x00700001 64) (bv #x007FFFFF 64))) #t) ; disabled uart
-		(check-true (pmp-check m (bv #x10700001 64) (bv #x107FFFFF 64)))
-		(check-equal? (pmp-check m (bv #x00700001 64) (bv #x107FFFFF 64)) #f)
+		; (check-equal? (pmp-check m (bv #x807FFFFF 64) (bv #x81000000 64)) #f)
+		; (check-equal? (not (pmp-check m (bv #x00700001 64) (bv #x007FFFFF 64))) #t) ; disabled uart
+		; (check-true (pmp-check m (bv #x10700001 64) (bv #x107FFFFF 64)))
+		; (check-equal? (pmp-check m (bv #x00700001 64) (bv #x107FFFFF 64)) #f)
 		(check-true (equal? (machine-mode m) 0)))
 	(test-case "pmp-napot-settings"
 		; test pmp_decode_cfg
@@ -351,8 +352,8 @@
 			)))
 		(printf "res: ~a~n" model_noninterference)))
 
-(define res-instruction-check (run-tests instruction-check))
-; (define res-utils (run-tests utils))
+; (define res-instruction-check (run-tests instruction-check))
+(define res-utils (run-tests utils))
 ; (define res-high-level-test (run-tests high-level-test))
 ; (define res-kernel (run-tests kernel))
 ; (define res-noninterference (run-tests noninterference))
