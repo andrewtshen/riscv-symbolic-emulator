@@ -25,14 +25,30 @@
 		)))
 	(printf "res: ~a~n" model_noninterference))
 
+(define (checktrans m m1 mmax)
+	(printf "Amount of memory checked: ~a~n" mmax)
+
+	(for ([i (in-range #x0 mmax)])
+		(define model_transitivity
+			(verify
+			 #:assume (assert (bveq (memory-read (machine-ram m) i) (memory-read (machine-ram m) (+ i 1))))
+			 #:guarantee (assert (bveq (memory-read (machine-ram m1) i) (memory-read (machine-ram m1) (+ i 1))))))
+		; (printf "model_transitivity: ~a~n" model_transitivity)
+		(clear-asserts!)))
+
 (define ramsize 15000)
 (define m (init-machine ramsize))
 (define m1 (deep-copy-machine m))
 (define next_instr (step m)) ; step!
 
-; show that they can execute independently, but
-; still refer to the same symbolic variables.
-(for ([i (in-range 0 1000 100)])
-	(time (checkmem m m1 i)))
+;; Example
 
-; (time (checkmem m m1 1))
+; ; Benchmark a series of accesses
+; (for ([i (in-range 0 1000 100)])
+; 	(time (checkmem m m1 i)))
+
+; ; Benchmark a single access
+(time (checkmem m m1 10))
+
+; ; Benchmark transitivity property
+; (time (checkmem m m1 10))

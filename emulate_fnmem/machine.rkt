@@ -127,6 +127,8 @@
 	val)
 (provide get-next-instr)
 
+;; Illegal Instruction Handling
+
 ; Set up state for illegal instruction and return null to signal end of exec
 (define (illegal-instr m)
 	(set-pc! m (bvsub (get-csr m 'mtvec) base_address))
@@ -134,6 +136,8 @@
 	; stop execution of instruction
 	null)
 (provide illegal-instr)
+
+;; Memory Reads/Writes
 
 (define (memory-write mem addr value)
   (lambda (addr*)
@@ -145,7 +149,7 @@
 ; start address is included, end address is not
 (define (memory-write-range mem saddr eaddr value)
 	(lambda (addr*)
-		(if (and (<= saddr mem) (< mem eaddr))
+		(if (and (<= saddr addr*) (< addr* eaddr))
 			value
 			(mem addr*))))
 (provide memory-write-range)
@@ -203,7 +207,8 @@
 (define base_address (bv #x80000000 64))
 (provide base_address)
 
-; PMP checking stuff
+;; PMP checks
+
 (define (pmpcfg-check m pmpcfg saddr eaddr pmpaddrs)
 	(define legal null)
 	(define done #f)
@@ -224,10 +229,10 @@
 			(define pmp_start (list-ref pmp_bounds 0))
 			(define pmp_end (bvadd pmp_start (list-ref pmp_bounds 1)))
 
-			(printf "pmp_start: ~a~n" pmp_start)
-			(printf "pmp_end: ~a~n" pmp_end)
-			(printf "saddr: ~a~n" saddr)
-			(printf "eaddr: ~a~n" eaddr)
+			; (printf "pmp_start: ~a~n" pmp_start)
+			; (printf "pmp_end: ~a~n" pmp_end)
+			; (printf "saddr: ~a~n" saddr)
+			; (printf "eaddr: ~a~n" eaddr)
 
 			(define slegal (bv-between saddr pmp_start pmp_end))
 			(define elegal (bv-between eaddr pmp_start pmp_end))

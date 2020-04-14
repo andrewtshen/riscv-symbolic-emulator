@@ -76,9 +76,9 @@
 							(set-pc! m (bvadd pc (bv 4 64)))
 							instr]
 						[else
-							(illegal-instr)])]
+							(illegal-instr m)])]
 				[else
-					(illegal-instr)])]
+					(illegal-instr m)])]
 		[(eq? opcode 'csrrs)
 			; (printf " --> csrrs ~n")
 			(cond
@@ -96,9 +96,9 @@
 							(set-pc! m (bvadd pc (bv 4 64)))
 							instr]
 						[else
-							(illegal-instr)])]
+							(illegal-instr m)])]
 				[else
-					(illegal-instr)])]
+					(illegal-instr m)])]
 		[(eq? opcode 'csrrc)
 			; (printf " --> csrrc ~n")
 			; TODO: csrrc instruction not implemented yet

@@ -136,21 +136,24 @@
 	(set! pmpaddr14 (bv 0 64))
 	(set! pmpaddr15 (bv 0 64))
 
-	; (define all-zeros-memory
-	;   (lambda (addr*)
-	;     (if (< addr* ramsize)
-	;     	; (bv 0 8)
-	;       (fresh-symbolic x (bitvector 8))
-	;       (illegal-instr m))))
-
-	; (for [(i (in-range 0 ramsize))]
-	; 	(set! all-zeros-memory (memory-write all-zeros-memory i (fresh-symbolic x (bitvector 8)))))
 	(define all-zeros-memory
 	  (lambda (addr*)
 	    (if (< addr* ramsize)
 	    	; (bv 0 8)
 	      (fresh-symbolic x (bitvector 8))
 	      (illegal-instr m))))
+
+	(for [(i (in-range 0 ramsize))]
+		(set! all-zeros-memory (memory-write all-zeros-memory i (fresh-symbolic x (bitvector 8)))))
+	
+	; (define all-zeros-memory
+	;   (lambda (addr*)
+	;     (if (and (<= 0 addr*) (< addr* ramsize))
+	;     	; (bv 0 8)
+	;       (fresh-symbolic x (bitvector 8))
+	;       (illegal-instr m))))
+	; (set! all-zeros-memory (memory-write-range all-zeros-memory 0 2000 (fresh-symbolic x (bitvector 8))))
+	; (set! all-zeros-memory (memory-write-range all-zeros-memory 2000 4000 (fresh-symbolic x (bitvector 8))))
 
 	(define m
 		(machine
