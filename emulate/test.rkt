@@ -335,8 +335,8 @@
 
 		; show that they can execute independently, but
 		; still refer to the same symbolic variables.
-		(print-csr m)
-		(print-csr m1)
+		; (print-csr m)
+		; (print-csr m1)
 
 		(define model_noninterference (verify (begin
 			(assert-csr-equal m m1) ; check all the relevant csrs values
@@ -350,11 +350,11 @@
 			)))
 		(printf "res: ~a~n" model_noninterference)))
 
-(define res-instruction-check (run-tests instruction-check))
-(define res-utils (run-tests utils))
-(define res-high-level-test (run-tests high-level-test))
+; (define res-instruction-check (run-tests instruction-check))
+; (define res-utils (run-tests utils))
+; (define res-high-level-test (run-tests high-level-test))
 ; (define res-kernel (run-tests kernel))
-; (define res-noninterference (run-tests noninterference))
+(define res-noninterference (run-tests noninterference))
 
 ; (define program (file->bytearray "build/sw_lw.bin"))
 ; (printf "~n* Running sw_lw.bin test ~n")

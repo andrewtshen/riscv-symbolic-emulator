@@ -136,7 +136,7 @@
 	(set! pmpaddr14 (bv 0 64))
 	(set! pmpaddr15 (bv 0 64))
 
-	(define all-zeros-memory
+	(define mem
 	  (lambda (addr*)
 	    (if (< addr* ramsize)
 	    	; (bv 0 8)
@@ -144,16 +144,16 @@
 	      (illegal-instr m))))
 
 	(for [(i (in-range 0 ramsize))]
-		(set! all-zeros-memory (memory-write all-zeros-memory i (fresh-symbolic x (bitvector 8)))))
+		(set! mem (memory-write mem i (fresh-symbolic x (bitvector 8)))))
 	
-	; (define all-zeros-memory
+	; (define mem
 	;   (lambda (addr*)
 	;     (if (and (<= 0 addr*) (< addr* ramsize))
 	;     	; (bv 0 8)
 	;       (fresh-symbolic x (bitvector 8))
 	;       (illegal-instr m))))
-	; (set! all-zeros-memory (memory-write-range all-zeros-memory 0 2000 (fresh-symbolic x (bitvector 8))))
-	; (set! all-zeros-memory (memory-write-range all-zeros-memory 2000 4000 (fresh-symbolic x (bitvector 8))))
+	; (set! mem (memory-write-range mem 0 2000 (fresh-symbolic x (bitvector 8))))
+	; (set! mem (memory-write-range mem 2000 4000 (fresh-symbolic x (bitvector 8))))
 
 	(define m
 		(machine
@@ -164,7 +164,7 @@
 					pmpaddr10 pmpaddr11 pmpaddr12 pmpaddr13 pmpaddr14 pmpaddr15)
 				(make-sym-vector 31 64 gpr) ; be careful of -1 for offset
 				pc) ; make pc symbolic
-			all-zeros-memory
+			mem
 			0)) ; start in user mode
 	m)
 (provide init-machine)

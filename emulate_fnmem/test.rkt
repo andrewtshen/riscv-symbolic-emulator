@@ -320,24 +320,23 @@
 		(define m (init-machine ramsize))
 		(define m1 (deep-copy-machine m))
 
-		(printf "memory m: ~a~n" (memory-read (machine-ram m) #x2000))
-		(printf "memory m1: ~a~n" (memory-read (machine-ram m1) #x2000))
+		; (printf "memory m: ~a~n" (memory-read (machine-ram m) #x2000))
+		; (printf "memory m1: ~a~n" (memory-read (machine-ram m1) #x2000))
 
 		(define next_instr (step m)) ; step!
 		; show that they can execute independently, but
 		; still refer to the same symbolic variables.
 		; (print-csr m)
 		; (print-csr m1)
-		(printf "memory m: ~a~n" (memory-read (machine-ram m) #x2000))
-		(printf "memory m1: ~a~n" (memory-read (machine-ram m1) #x2000))
+		; (printf "memory m: ~a~n" (memory-read (machine-ram m) #x2000))
+		; (printf "memory m1: ~a~n" (memory-read (machine-ram m1) #x2000))
 
-		(define model_transitivity (verify
-		 #:assume (assert (bveq (memory-read (machine-ram m) #x0) (memory-read (machine-ram m) #x1)))
-		 #:guarantee (assert (bveq (memory-read (machine-ram m1) #x0) (memory-read (machine-ram m1) #x1)))))
-		(printf "model_transitivity: ~a~n" model_transitivity)
-
-		(clear-asserts!)
-		(printf "asserts: ~a~n" (asserts))
+		; (define model_transitivity (verify
+		;  #:assume (assert (bveq (memory-read (machine-ram m) #x0) (memory-read (machine-ram m) #x1)))
+		;  #:guarantee (assert (bveq (memory-read (machine-ram m1) #x0) (memory-read (machine-ram m1) #x1)))))
+		; (printf "model_transitivity: ~a~n" model_transitivity)
+		; (clear-asserts!)
+		
 		(define model_noninterference (verify (begin
 			(assert-csr-equal m m1) ; check all the relevant csrs values
 			(assert (bveq (memory-read (machine-ram m) #x0) (memory-read (machine-ram m1) #x0)))
@@ -352,7 +351,7 @@
 ; (define res-utils (run-tests utils))
 ; (define res-high-level-test (run-tests high-level-test))
 ; (define res-kernel (run-tests kernel))
-; (define res-noninterference (run-tests noninterference))
+(define res-noninterference (run-tests noninterference))
 
 ; (define program (file->bytearray "build/sw_lw.bin"))
 ; (printf "~n* Running sw_lw.bin test ~n")

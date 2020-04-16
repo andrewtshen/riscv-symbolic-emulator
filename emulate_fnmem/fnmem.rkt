@@ -2,6 +2,9 @@
 
 (require
   "machine.rkt")
+(require (only-in racket/file file->bytes)
+     (only-in racket/base bytes-length for for/list in-range subbytes bytes-ref in-naturals))
+(require syntax/parse/define)
 
 ; suppose addresses are 8-bit values
 ; and values are 32-bit values
@@ -65,3 +68,45 @@
     (memory-write init-mem (bv #x0000 16) (bv #x1337 32))
     addr)
    (memory-read init-mem addr))))
+
+;; memory bug
+
+; start address is included, end address is not
+(define (memory-write-range mem saddr eaddr value)
+  (lambda (addr*)
+    (if (and (<= saddr addr*) (< addr* eaddr))
+      value
+      (mem addr*))))
+(provide memory-write-range)
+
+(define-simple-macro (fresh-symbolic name type)
+  (let () (define-symbolic* name type) name))
+
+(define ramsize 2000)
+
+(define mem1
+  (lambda (addr*)
+    (if (< addr* ramsize)
+      ; (bv 0 8)
+      (fresh-symbolic x (bitvector 8))
+      null)))
+
+(for [(i (in-range 0 ramsize))]
+  (set! mem1 (memory-write mem1 i (fresh-symbolic x (bitvector 8)))))
+
+(printf "mem1: ~a~n" (memory-read mem1 #x0))
+(printf "mem1: ~a~n" (memory-read mem1 #x0))
+
+(define mem2
+  (lambda (addr*)
+    (if (and (<= 0 addr*) (< addr* ramsize))
+      ; (bv 0 8)
+      (fresh-symbolic x (bitvector 8))
+      null)))
+(set! mem2 (memory-write-range mem2 0 2000 (fresh-symbolic x (bitvector 8))))
+(set! mem2 (memory-write-range mem2 2000 4000 (fresh-symbolic x (bitvector 8))))
+
+(printf "mem2: ~a~n" (memory-read mem2 #x0))
+(printf "mem2: ~a~n" (memory-read mem2 #x0))
+
+
