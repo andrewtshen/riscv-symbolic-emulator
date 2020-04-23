@@ -140,19 +140,21 @@
 ;; Memory Reads/Writes
 
 (define (memory-write mem addr value)
+	(printf "here!")
   (lambda (addr*)
     (if (equal? addr addr*)
       value
       (mem addr*))))
 (provide memory-write)
 
-; start address is included, end address is not
-(define (memory-write-range mem saddr eaddr value)
-	(lambda (addr*)
-		(if (and (<= saddr addr*) (< addr* eaddr))
-			value
-			(mem addr*))))
-(provide memory-write-range)
+; not functional as of now, need to switch to symbolic
+; ; start address is included, end address is not
+; (define (memory-write-range mem saddr eaddr value)
+; 	(lambda (addr*)
+; 		(if (and (<= saddr addr*) (< addr* eaddr))
+; 			value
+; 			(mem addr*))))
+; (provide memory-write-range)
 
 (define (memory-read mem addr)
 	(mem addr))
@@ -178,7 +180,7 @@
 (define (bytearray-read ba addr nbytes)
 	(define bytes
 		(for/list ([i (in-range nbytes)])
-	  	(memory-read ba (+ addr i))))
+	  	(memory-read ba (bv (+ addr i) 32))))
   ; little endian
   (apply concat (reverse bytes)))
 
@@ -202,7 +204,14 @@
 			[low (* 8 i)]
 			[hi (+ 7 low)]
 			[v (extract hi low value)])
-		(set-machine-ram! m (memory-write (machine-ram m) pos v)))))
+		; (printf "pos: ~a~n v: ~a~n" pos v)
+		(printf "mem1: ~a~n" (machine-ram m))
+		; (memory-write (machine-ram m) pos 10)
+		; (printf "change?: ~a~n" (memory-read (machine-ram m) (memory-write (machine-ram m) (bv pos 32) 10) (bv pos 32)))
+		(set-machine-ram! m (memory-write (machine-ram m) (bv pos 32) v))
+		(printf "mem2: ~a~n" (machine-ram m))
+		))
+  (printf "herea~n"))
 
 (define base_address (bv #x80000000 64))
 (provide base_address)

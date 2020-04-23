@@ -320,16 +320,23 @@
 		(define m (init-machine ramsize))
 		(define m1 (deep-copy-machine m))
 
-		; (printf "memory m: ~a~n" (memory-read (machine-ram m) #x2000))
-		; (printf "memory m1: ~a~n" (memory-read (machine-ram m1) #x2000))
+		(printf "memory m: ~a~n" (memory-read (machine-ram m) (bv #x2000 32)))
+		(printf "memory m1: ~a~n" (memory-read (machine-ram m1) (bv #x2000 32)))
 
 		(define next_instr (step m)) ; step!
 		; show that they can execute independently, but
 		; still refer to the same symbolic variables.
 		; (print-csr m)
 		; (print-csr m1)
-		; (printf "memory m: ~a~n" (memory-read (machine-ram m) #x2000))
-		; (printf "memory m1: ~a~n" (memory-read (machine-ram m1) #x2000))
+
+		; (set-machine-ram! m (memory-write (machine-ram m) (bv #x2000 32) (bv #x88 32)))
+
+		(printf "memory m: ~a~n" (memory-read (machine-ram m) (bv #x2000 32)))
+		(printf "memory m1: ~a~n" (memory-read (machine-ram m1) (bv #x2000 32)))
+
+		; (printf "memory m: ~a~n" (memory-read (machine-ram m) (bv #x0 32)))
+		; (printf "memory m1: ~a~n" (memory-read (machine-ram m1) (bv #x0 32)))
+		(printf "memory: ~a~n" (machine-ram m))
 
 		; (define model_transitivity (verify
 		;  #:assume (assert (bveq (memory-read (machine-ram m) #x0) (memory-read (machine-ram m) #x1)))
@@ -337,15 +344,19 @@
 		; (printf "model_transitivity: ~a~n" model_transitivity)
 		; (clear-asserts!)
 		
-		(define model_noninterference (verify (begin
-			(assert-csr-equal m m1) ; check all the relevant csrs values
-			(assert (bveq (memory-read (machine-ram m) #x0) (memory-read (machine-ram m1) #x0)))
-			; (assert (bveq (memory-read (machine-ram m) #x2000) (memory-read (machine-ram m1) #x2000)))
-			; ; show that all the memory in 0 - 0x1FFF can't change
-			; (for ([i (in-range #x2001 #x2001)])
-			; 	(assert (bveq (memory-read (machine-ram m) i) (memory-read (machine-ram m1) i))))
-			)))
-		(printf "model_noninterference: ~a~n" model_noninterference)))
+		; (printf "asserts: ~a~n" (asserts))
+
+		; (define model_noninterference (verify (begin
+		; 	(assert-csr-equal m m1) ; check all the relevant csrs values
+		; 	(assert (bveq (memory-read (machine-ram m) (bv #x2000 32)) (memory-read (machine-ram m1) (bv #x2000 32))))
+		; 	; (assert (bveq (memory-read (machine-ram m) #x2000) (memory-read (machine-ram m1) #x2000)))
+		; 	; ; show that all the memory in 0 - 0x1FFF can't change
+		; 	; (for ([i (in-range #x2001 #x2001)])
+		; 	; 	(assert (bveq (memory-read (machine-ram m) i) (memory-read (machine-ram m1) i))))
+		; 	)))
+		; (printf "model_noninterference: ~a~n" model_noninterference)
+		(printf "done!")
+		))
 
 ; (define res-instruction-check (run-tests instruction-check))
 ; (define res-utils (run-tests utils))

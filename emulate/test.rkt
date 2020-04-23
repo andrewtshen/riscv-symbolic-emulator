@@ -337,7 +337,7 @@
 		; still refer to the same symbolic variables.
 		; (print-csr m)
 		; (print-csr m1)
-
+		(displayln (asserts))
 		(define model_noninterference (verify (begin
 			(assert-csr-equal m m1) ; check all the relevant csrs values
 
