@@ -320,8 +320,11 @@
 		(define m (init-machine ramsize))
 		(define m1 (deep-copy-machine m))
 
-		(printf "memory m: ~a~n" (memory-read (machine-ram m) (bv #x2000 32)))
-		(printf "memory m1: ~a~n" (memory-read (machine-ram m1) (bv #x2000 32)))
+		(printf "memory m  0x0: ~a~n" (memory-read (machine-ram m) (bv #x0 32)))
+		(printf "memory m1 0x0: ~a~n" (memory-read (machine-ram m1) (bv #x0 32)))
+		(printf "memory m  0x2000: ~a~n" (memory-read (machine-ram m) (bv #x2000 32)))
+		(printf "memory m1 0x2000: ~a~n" (memory-read (machine-ram m1) (bv #x2000 32)))
+		(printf "memory: ~a~n" (machine-ram m))
 
 		(define next_instr (step m)) ; step!
 		; show that they can execute independently, but
@@ -331,12 +334,12 @@
 
 		; (set-machine-ram! m (memory-write (machine-ram m) (bv #x2000 32) (bv #x88 32)))
 
-		(printf "memory m: ~a~n" (memory-read (machine-ram m) (bv #x2000 32)))
-		(printf "memory m1: ~a~n" (memory-read (machine-ram m1) (bv #x2000 32)))
-
-		; (printf "memory m: ~a~n" (memory-read (machine-ram m) (bv #x0 32)))
-		; (printf "memory m1: ~a~n" (memory-read (machine-ram m1) (bv #x0 32)))
+		(printf "memory m  0x0: ~a~n" (memory-read (machine-ram m) (bv #x0 32)))
+		(printf "memory m1 0x0: ~a~n" (memory-read (machine-ram m1) (bv #x0 32)))
+		(printf "memory m  0x2000: ~a~n" (memory-read (machine-ram m) (bv #x2000 32)))
+		(printf "memory m1 0x2000: ~a~n" (memory-read (machine-ram m1) (bv #x2000 32)))
 		(printf "memory: ~a~n" (machine-ram m))
+		
 
 		; (define model_transitivity (verify
 		;  #:assume (assert (bveq (memory-read (machine-ram m) #x0) (memory-read (machine-ram m) #x1)))
@@ -355,14 +358,14 @@
 		; 	; 	(assert (bveq (memory-read (machine-ram m) i) (memory-read (machine-ram m1) i))))
 		; 	)))
 		; (printf "model_noninterference: ~a~n" model_noninterference)
-		(printf "done!")
+		(printf "done!~n")
 		))
 
-; (define res-instruction-check (run-tests instruction-check))
-; (define res-utils (run-tests utils))
-; (define res-high-level-test (run-tests high-level-test))
+(define res-instruction-check (run-tests instruction-check))
+(define res-utils (run-tests utils))
+(define res-high-level-test (run-tests high-level-test))
 ; (define res-kernel (run-tests kernel))
-(define res-noninterference (run-tests noninterference))
+; (define res-noninterference (run-tests noninterference))
 
 ; (define program (file->bytearray "build/sw_lw.bin"))
 ; (printf "~n* Running sw_lw.bin test ~n")

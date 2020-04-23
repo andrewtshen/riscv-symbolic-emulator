@@ -139,23 +139,15 @@
 
 ;; Memory Reads/Writes
 
+; mem: uf, addr: bitvector 32, value: any
 (define (memory-write mem addr value)
-	(printf "here!")
   (lambda (addr*)
-    (if (equal? addr addr*)
+    (if (bveq addr addr*)
       value
       (mem addr*))))
 (provide memory-write)
 
-; not functional as of now, need to switch to symbolic
-; ; start address is included, end address is not
-; (define (memory-write-range mem saddr eaddr value)
-; 	(lambda (addr*)
-; 		(if (and (<= saddr addr*) (< addr* eaddr))
-; 			value
-; 			(mem addr*))))
-; (provide memory-write-range)
-
+; mem: uf, addr: bitvector 32
 (define (memory-read mem addr)
 	(mem addr))
 (provide memory-read)
@@ -204,14 +196,9 @@
 			[low (* 8 i)]
 			[hi (+ 7 low)]
 			[v (extract hi low value)])
-		; (printf "pos: ~a~n v: ~a~n" pos v)
 		(printf "mem1: ~a~n" (machine-ram m))
-		; (memory-write (machine-ram m) pos 10)
-		; (printf "change?: ~a~n" (memory-read (machine-ram m) (memory-write (machine-ram m) (bv pos 32) 10) (bv pos 32)))
 		(set-machine-ram! m (memory-write (machine-ram m) (bv pos 32) v))
-		(printf "mem2: ~a~n" (machine-ram m))
-		))
-  (printf "herea~n"))
+		)))
 
 (define base_address (bv #x80000000 64))
 (provide base_address)
@@ -288,4 +275,3 @@
 	(printf "pmpaddr1 base/range: ~a~n" (pmp-decode-napot (get-csr m 'pmpaddr1)))
 	(printf "pmpaddr8 base/range: ~a~n" (pmp-decode-napot (get-csr m 'pmpaddr8))))
 (provide print-pmp)
-

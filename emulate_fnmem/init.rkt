@@ -77,17 +77,10 @@
 	(set! pmpaddr15 (bv 0 64))
 
 	(define mem (fresh-symbolic mem (~> (bitvector 32) (bitvector 8))))
-	; (define mem-with-prog
-	;   (lambda (addr*)
-	;     (if (< addr* ramsize)
-	;     	; (bv 0 8)
-	;       (fresh-symbolic x (bitvector 8))
-	;       (illegal-instr m))))
 
-	; TODO: using set is probably inefficient
-	(for ([b program]
+	(for ([byte program]
 				[i (in-naturals)])
-		(set! mem (memory-write mem (bv i 32) b)))
+		(set! mem (memory-write mem (bv i 32) byte)))
 
 	(define m
 		(machine
@@ -138,24 +131,6 @@
 	(set! pmpaddr15 (bv 0 64))
 
 	(define mem (fresh-symbolic mem (~> (bitvector 32) (bitvector 8))))
-	; (define mem
-	;   (lambda (addr*)
-	;     (if (< addr* ramsize)
-	;     	; (bv 0 8)
-	;       (fresh-symbolic x (bitvector 8))
-	;       (illegal-instr m))))
-
-	; (for [(i (in-range 0 ramsize))]
-	; 	(set! mem (memory-write mem i (fresh-symbolic x (bitvector 8)))))
-	
-	; (define mem
-	;   (lambda (addr*)
-	;     (if (and (<= 0 addr*) (< addr* ramsize))
-	;     	; (bv 0 8)
-	;       (fresh-symbolic x (bitvector 8))
-	;       (illegal-instr m))))
-	; (set! mem (memory-write-range mem 0 2000 (fresh-symbolic x (bitvector 8))))
-	; (set! mem (memory-write-range mem 2000 4000 (fresh-symbolic x (bitvector 8))))
 
 	(define m
 		(machine
