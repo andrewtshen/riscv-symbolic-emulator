@@ -3,6 +3,10 @@
 (require
 	"pmp.rkt")
 (require (only-in racket/base for for/list in-range))
+(require syntax/parse/define)
+
+(define-simple-macro (fresh-symbolic name type)
+  (let () (define-symbolic* name type) name))
 
 ;; Structs
 
@@ -172,18 +176,19 @@
 (define (bytearray-read ba addr nbytes)
 	(define bytes
 		(for/list ([i (in-range nbytes)])
-	  	(memory-read ba (bv (+ addr i) 32))))
+	  	(memory-read ba (integer->bitvector (+ addr i) (bitvector 32)))))
   ; little endian
   (apply concat (reverse bytes)))
 
 (define (machine-ram-write! m addr value nbits)
 	(define saddr (bvadd addr base_address))
+	(printf "nbits: ~a~n" nbits)
 	(define eaddr (bvadd addr (bv nbits 64) base_address))
 	(define legal (pmp-check m saddr eaddr))
 
-	; machine mode (1) or legal, we can read the memory
+	; ; machine mode (1) or legal, we can read the memory
 	(when (or (equal? (machine-mode m) 1) legal)
-  	(bytearray-write! m (bitvector->natural addr) value nbits))
+ 	 	(bytearray-write! m (bitvector->natural addr) value nbits))
 
 	legal)
 (provide machine-ram-write!)
@@ -196,9 +201,8 @@
 			[low (* 8 i)]
 			[hi (+ 7 low)]
 			[v (extract hi low value)])
-		(printf "mem1: ~a~n" (machine-ram m))
-		(set-machine-ram! m (memory-write (machine-ram m) (bv pos 32) v))
-		)))
+
+		(set-machine-ram! m (memory-write (machine-ram m) (integer->bitvector pos (bitvector 32)) v)))))
 
 (define base_address (bv #x80000000 64))
 (provide base_address)

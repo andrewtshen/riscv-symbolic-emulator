@@ -337,12 +337,13 @@
 		; still refer to the same symbolic variables.
 		; (print-csr m)
 		; (print-csr m1)
-		(displayln (asserts))
+		; (displayln (asserts))
+
 		(define model_noninterference (verify (begin
 			(assert-csr-equal m m1) ; check all the relevant csrs values
 
 			; show that all the memory in 0 - 0x2000 can't change
-			(for ([i (in-range #x0 #x1)])
+			(for ([i (in-range #x2000 #x2001)])
 				(assert (bveq (vector-ref (machine-ram m) i) (vector-ref (machine-ram m1) i))))
 
 			; (assert (bveq m_2000 m1_2000)) ; sat, memory in this region could either change or not change

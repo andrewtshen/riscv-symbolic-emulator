@@ -307,24 +307,23 @@
 			(machine-mode m)))
 (provide deep-copy-machine)
 
+(define (assert-mem-equal m1 m2 pos)
+	(assert (bveq (memory-read (machine-ram m1) pos) (memory-read (machine-ram m2) pos))))
+
 (define-test-suite noninterference
 	(test-case "noninterference"
 		(printf "~n* Running noninterference proof ~n")
 
-		; for testing with entire programs
-		; (define program (file->bytearray "kernel/kernel.bin"))
-		; (define m (init-machine-with-prog program ramsize))
-
 		; set up our machine state
-		(define ramsize 15000)
+		(define ramsize 17)
 		(define m (init-machine ramsize))
 		(define m1 (deep-copy-machine m))
 
-		(printf "memory m  0x0: ~a~n" (memory-read (machine-ram m) (bv #x0 32)))
-		(printf "memory m1 0x0: ~a~n" (memory-read (machine-ram m1) (bv #x0 32)))
-		(printf "memory m  0x2000: ~a~n" (memory-read (machine-ram m) (bv #x2000 32)))
-		(printf "memory m1 0x2000: ~a~n" (memory-read (machine-ram m1) (bv #x2000 32)))
-		(printf "memory: ~a~n" (machine-ram m))
+		; (printf "memory m  0x0: ~a~n" (memory-read (machine-ram m) (bv #x0 32)))
+		; (printf "memory m1 0x0: ~a~n" (memory-read (machine-ram m1) (bv #x0 32)))
+		; (printf "memory m  0x2000: ~a~n" (memory-read (machine-ram m) (bv #x2000 32)))
+		; (printf "memory m1 0x2000: ~a~n" (memory-read (machine-ram m1) (bv #x2000 32)))
+		; (printf "memory: ~a~n" (machine-ram m))
 
 		(define next_instr (step m)) ; step!
 		; show that they can execute independently, but
@@ -332,32 +331,28 @@
 		; (print-csr m)
 		; (print-csr m1)
 
-		; (set-machine-ram! m (memory-write (machine-ram m) (bv #x2000 32) (bv #x88 32)))
+		; (printf "memory m  0x0: ~a~n" (memory-read (machine-ram m) (bv #x0 32)))
+		; (printf "memory m1 0x0: ~a~n" (memory-read (machine-ram m1) (bv #x0 32)))
+		; (printf "memory m  0x2000: ~a~n" (memory-read (machine-ram m) (bv #x2000 32)))
+		; (printf "memory m1 0x2000: ~a~n" (memory-read (machine-ram m1) (bv #x2000 32)))
+		; (printf "memory: ~a~n" (machine-ram m))
 
-		(printf "memory m  0x0: ~a~n" (memory-read (machine-ram m) (bv #x0 32)))
-		(printf "memory m1 0x0: ~a~n" (memory-read (machine-ram m1) (bv #x0 32)))
-		(printf "memory m  0x2000: ~a~n" (memory-read (machine-ram m) (bv #x2000 32)))
-		(printf "memory m1 0x2000: ~a~n" (memory-read (machine-ram m1) (bv #x2000 32)))
-		(printf "memory: ~a~n" (machine-ram m))
-		
+		(printf "m: ~a~n" (memory-read (machine-ram m) (bv #x11 32)))
+		(printf "m1: ~a~n" (memory-read (machine-ram m1) (bv #x11 32)))
 
-		; (define model_transitivity (verify
-		;  #:assume (assert (bveq (memory-read (machine-ram m) #x0) (memory-read (machine-ram m) #x1)))
-		;  #:guarantee (assert (bveq (memory-read (machine-ram m1) #x0) (memory-read (machine-ram m1) #x1)))))
-		; (printf "model_transitivity: ~a~n" model_transitivity)
-		; (clear-asserts!)
-		
-		; (printf "asserts: ~a~n" (asserts))
+		; currently protect successfully 0x0 - 0xF, but does it really slowly
+		; investigate why its performing so slowly
 
-		; (define model_noninterference (verify (begin
-		; 	(assert-csr-equal m m1) ; check all the relevant csrs values
-		; 	(assert (bveq (memory-read (machine-ram m) (bv #x2000 32)) (memory-read (machine-ram m1) (bv #x2000 32))))
-		; 	; (assert (bveq (memory-read (machine-ram m) #x2000) (memory-read (machine-ram m1) #x2000)))
-		; 	; ; show that all the memory in 0 - 0x1FFF can't change
-		; 	; (for ([i (in-range #x2001 #x2001)])
-		; 	; 	(assert (bveq (memory-read (machine-ram m) i) (memory-read (machine-ram m1) i))))
-		; 	)))
-		; (printf "model_noninterference: ~a~n" model_noninterference)
+		(define model_noninterference (verify (begin
+			(assert-csr-equal m m1) ; check all the relevant csrs values
+			; (assert-mem-equal m m1 (bv #x11 32))
+			(assert (bveq (memory-read (machine-ram m) (bv #x0 32)) (memory-read (machine-ram m1) (bv #x0 32))))
+			; (assert (bveq (memory-read (machine-ram m) #x2000) (memory-read (machine-ram m1) #x2000)))
+			; ; show that all the memory in 0 - 0x1FFF can't change
+			; (for ([i (in-range #x2001 #x2001)])
+			; 	(assert (bveq (memory-read (machine-ram m) i) (memory-read (machine-ram m1) i))))
+			)))
+		(printf "model_noninterference: ~a~n" model_noninterference)
 		(printf "done!~n")
 		))
 
