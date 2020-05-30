@@ -51,5 +51,5 @@
 	(and (bvule bv2 bv1) (bvule bv1 bv3)))
 (provide bv-between)
 
-; (printf "base: #x80000000, size: #x20 ~a~n" (pmp-encode-napot (bv #x80000000 64) (bv #x10 64)))
-; (printf "decoding #x20000bff: ~a~n" (pmp-decode-napot (bv #x0000000020000001 64)))
+; (printf "base: #x80000000, size: #x20 ~a~n" (pmp-encode-napot (bv #x80000000 64) (bv #x20 64)))
+; (printf "decoding #x20000001: ~a~n" (pmp-decode-napot (bv #x0000000020000001 64)))

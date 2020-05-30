@@ -315,7 +315,7 @@
 		(printf "~n* Running noninterference proof ~n")
 
 		; set up our machine state
-		(define ramsize 10000)
+		(define ramsize #xFFFF)
 		(define m (init-machine ramsize))
 		(define m1 (deep-copy-machine m))
 
@@ -324,30 +324,18 @@
 		; still refer to the same symbolic variables.
 		; (print-csr m)
 		; (print-csr m1)
-
-		(printf "m: ~a~n" (memory-read (machine-ram m) (bv #x11 32)))
-		(printf "m1: ~a~n" (memory-read (machine-ram m1) (bv #x11 32)))
-
-		; currently protect successfully 0x0 - 0xF, but does it really slowly
-		; investigate why its performing so slowly
-
-		; (define model_noninterference (verify (begin
-		; 	(assert-csr-equal m m1) ; check all the relevant csrs values 
-		; 	(assert (bveq (memory-read (machine-ram m) (bv #x11 32)) (memory-read (machine-ram m1) (bv #x11 32))))
-		; 	; ; show that all the memory in 0 - 0x1FFF can't change
-		; 	; (for ([i (in-range #x2001 #x2001)])
-		; 	; 	(assert (bveq (memory-read (machine-ram m) i) (memory-read (machine-ram m1) i))))
-		; 	)))
-
-		; for some reason only protects #x0 - #x8
+		(printf "m: ~a~n" (memory-read (machine-ram m) (bv #x8 32)))
+		(printf "m1: ~a~n" (memory-read (machine-ram m1) (bv #x8 32)))
 
 		(define-symbolic* sym-idx (bitvector 32))
+
 		(define model_noninterference_with_sym_idx (verify
 			#:assume
-			(assert (and (bvule (bv #x8 32) sym-idx) (bvule sym-idx (bv #xF 32))))
+			(assert (and (bvule (bv #xF 32) sym-idx) (bvule sym-idx (bv #x10 32))))
+			; (assert (bveq sym-idx (bv #x8 32)))
 			#:guarantee
-			(assert (equal? (memory-read (machine-ram m) sym-idx) (memory-read (machine-ram m1) sym-idx)))
-			))
+			(assert (equal? (memory-read (machine-ram m) sym-idx)
+											(memory-read (machine-ram m1) sym-idx)))))
 		(printf "model_noninterference: ~a~n" model_noninterference_with_sym_idx)
 		(printf "done!~n")))
 

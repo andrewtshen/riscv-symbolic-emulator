@@ -590,66 +590,66 @@
 					[else
 						(set-pc! m (bvadd pc (bv 4 64)))
 						instr])]
-			[(eq? opcode 'sh)
-				; (printf " --> sh ~n")
-				(define v_rs1 (gprs-get-x m (list-ref-nat instr 1)))
-				(define v_rs2 (gprs-get-x m (list-ref-nat instr 2)))
-				(define imm (sign-extend (list-ref instr 3) (bitvector 64)))
+			; [(eq? opcode 'sh)
+			; 	; (printf " --> sh ~n")
+			; 	(define v_rs1 (gprs-get-x m (list-ref-nat instr 1)))
+			; 	(define v_rs2 (gprs-get-x m (list-ref-nat instr 2)))
+			; 	(define imm (sign-extend (list-ref instr 3) (bitvector 64)))
 				
-				; (define addr (bvadd v_rs1 imm))
-				; (define adj_addr (bvsub addr base_address))
+			; 	; (define addr (bvadd v_rs1 imm))
+			; 	; (define adj_addr (bvsub addr base_address))
 
-				(define-symbolic* adj_addr (bitvector 64)) ; fetch arbitrary instruction
+			; 	(define-symbolic* adj_addr (bitvector 64)) ; fetch arbitrary instruction
 
-				(define nbits 16)
-				(define success (machine-ram-write! m adj_addr v_rs2 nbits))
-				(cond
-					[(not success)
-						(illegal-instr m)]
-					[else
-						(set-pc! m (bvadd pc (bv 4 64)))
-						instr])]
-			[(eq? opcode 'sw)
-				; (printf " --> sw ~n")
-				(define gprsx
-				(for/list ([i (in-range 10 18)])
-					(gprs-get-x m i)))
-				(define v_rs1 (gprs-get-x m (list-ref-nat instr 1)))
-				(define v_rs2 (gprs-get-x m (list-ref-nat instr 2)))
-				(define imm (sign-extend (list-ref instr 3) (bitvector 64)))
+			; 	(define nbits 16)
+			; 	(define success (machine-ram-write! m adj_addr v_rs2 nbits))
+			; 	(cond
+			; 		[(not success)
+			; 			(illegal-instr m)]
+			; 		[else
+			; 			(set-pc! m (bvadd pc (bv 4 64)))
+			; 			instr])]
+			; [(eq? opcode 'sw)
+			; 	; (printf " --> sw ~n")
+			; 	(define gprsx
+			; 	(for/list ([i (in-range 10 18)])
+			; 		(gprs-get-x m i)))
+			; 	(define v_rs1 (gprs-get-x m (list-ref-nat instr 1)))
+			; 	(define v_rs2 (gprs-get-x m (list-ref-nat instr 2)))
+			; 	(define imm (sign-extend (list-ref instr 3) (bitvector 64)))
 
-				; (define addr (bvadd v_rs1 imm))
-				; (define adj_addr (bvsub addr base_address))
+			; 	; (define addr (bvadd v_rs1 imm))
+			; 	; (define adj_addr (bvsub addr base_address))
 
-				(define-symbolic* adj_addr (bitvector 64)) ; fetch arbitrary instruction
+			; 	(define-symbolic* adj_addr (bitvector 64)) ; fetch arbitrary instruction
 
-				(define nbits 32)
-				(define success (machine-ram-write! m adj_addr v_rs2 nbits))
-				(cond
-					[(not success)
-						(illegal-instr m)]
-					[else
-						(set-pc! m (bvadd pc (bv 4 64)))
-						instr])]
-			[(eq? opcode 'sd)
-				; (printf " --> sd ~n")
-				(define v_rs1 (gprs-get-x m (list-ref-nat instr 1)))
-				(define v_rs2 (gprs-get-x m (list-ref-nat instr 2)))
-				(define imm (sign-extend (list-ref instr 3) (bitvector 64)))
+			; 	(define nbits 32)
+			; 	(define success (machine-ram-write! m adj_addr v_rs2 nbits))
+			; 	(cond
+			; 		[(not success)
+			; 			(illegal-instr m)]
+			; 		[else
+			; 			(set-pc! m (bvadd pc (bv 4 64)))
+			; 			instr])]
+			; [(eq? opcode 'sd)
+			; 	; (printf " --> sd ~n")
+			; 	(define v_rs1 (gprs-get-x m (list-ref-nat instr 1)))
+			; 	(define v_rs2 (gprs-get-x m (list-ref-nat instr 2)))
+			; 	(define imm (sign-extend (list-ref instr 3) (bitvector 64)))
 
-				; (define addr (bvadd v_rs1 imm))
-				; (define adj_addr (bvsub addr base_address))
+			; 	; (define addr (bvadd v_rs1 imm))
+			; 	; (define adj_addr (bvsub addr base_address))
 
-				(define-symbolic* adj_addr (bitvector 64)) ; fetch arbitrary instruction
+			; 	(define-symbolic* adj_addr (bitvector 64)) ; fetch arbitrary instruction
 
-				(define nbits 64)
-				(define success (machine-ram-write! m adj_addr v_rs2 nbits))
-				(cond
-					[(not success)
-						(illegal-instr m)]
-					[else
-						(set-pc! m (bvadd pc (bv 4 64)))
-						instr])]
+			; 	(define nbits 64)
+			; 	(define success (machine-ram-write! m adj_addr v_rs2 nbits))
+			; 	(cond
+			; 		[(not success)
+			; 			(illegal-instr m)]
+			; 		[else
+			; 			(set-pc! m (bvadd pc (bv 4 64)))
+			; 			instr])]
 
 			; J Format
 			[(eq? opcode 'jal)

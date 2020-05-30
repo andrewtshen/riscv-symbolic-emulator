@@ -151,7 +151,7 @@
       (mem addr*))))
 (provide memory-write)
 
-; mem: uf, addr: bitvector 32
+; mem: uf, addr: bitvector 32, val: bitvector 8
 (define (memory-read mem addr)
 	(mem addr))
 (provide memory-read)
@@ -182,12 +182,8 @@
 
 (define (machine-ram-write! m addr value nbits)
 	(define saddr (bvadd addr base_address))
-	(define eaddr (bvadd addr (bv nbits 64) base_address))
+	(define eaddr (bvadd addr (bv (/ nbits 8) 64) base_address))
 	(define legal (pmp-check m saddr eaddr))
-
-	; (define slegal (bv-between saddr (bv #x0000000080000000 64) (bv #x000000008000000F 64)))
-	; (define elegal (bv-between eaddr (bv #x0000000080000000 64) (bv #x000000008000000F 64)))
-	; (define legal (and slegal elegal))
 
 	; ; machine mode (1) or legal, we can read the memory
 	(when (or (equal? (machine-mode m) 1) legal)
@@ -204,7 +200,6 @@
 			[low (* 8 i)]
 			[hi (+ 7 low)]
 			[v (extract hi low value)])
-
 		(set-machine-ram! m (memory-write (machine-ram m) (integer->bitvector pos (bitvector 32)) v)))))
 
 (define base_address (bv #x80000000 64))
@@ -237,6 +232,7 @@
 			; (printf "saddr: ~a~n" saddr)
 			; (printf "eaddr: ~a~n" eaddr)
 
+			; test the proper bounds
 			(define slegal (bv-between saddr pmp_start pmp_end))
 			(define elegal (bv-between eaddr pmp_start pmp_end))
 
