@@ -41,14 +41,15 @@
 	(define next_instr (get-next-instr m)) ; fetch actual instruction
 	; (define-symbolic* next_instr (bitvector 32)) ; fetch arbitrary instruction
 	; (define next_instr (bv #x80f10023 32)) ; fetch single, known instruction
-	(printf "next_instr: ~a~n" next_instr)
+	
+	; (printf "next_instr: ~a~n" next_instr)
 	(cond
 		[(not (eq? next_instr null))
 			(define decoded_instr (decode m next_instr))
-			(printf "decoded_instr: ~a~n" decoded_instr)
+			; (printf "decoded_instr: ~a~n" decoded_instr)
 			(cond
 				[(not (eq? decoded_instr null))
-					(printf "execute instr: ~a~n" decoded_instr)
+					; (printf "execute instr: ~a~n" decoded_instr)
 					(execute decoded_instr m)]
 				[else
 				 null])]

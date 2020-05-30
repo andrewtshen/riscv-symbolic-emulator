@@ -315,15 +315,9 @@
 		(printf "~n* Running noninterference proof ~n")
 
 		; set up our machine state
-		(define ramsize 17)
+		(define ramsize 10000)
 		(define m (init-machine ramsize))
 		(define m1 (deep-copy-machine m))
-
-		; (printf "memory m  0x0: ~a~n" (memory-read (machine-ram m) (bv #x0 32)))
-		; (printf "memory m1 0x0: ~a~n" (memory-read (machine-ram m1) (bv #x0 32)))
-		; (printf "memory m  0x2000: ~a~n" (memory-read (machine-ram m) (bv #x2000 32)))
-		; (printf "memory m1 0x2000: ~a~n" (memory-read (machine-ram m1) (bv #x2000 32)))
-		; (printf "memory: ~a~n" (machine-ram m))
 
 		(define next_instr (step m)) ; step!
 		; show that they can execute independently, but
@@ -331,30 +325,31 @@
 		; (print-csr m)
 		; (print-csr m1)
 
-		; (printf "memory m  0x0: ~a~n" (memory-read (machine-ram m) (bv #x0 32)))
-		; (printf "memory m1 0x0: ~a~n" (memory-read (machine-ram m1) (bv #x0 32)))
-		; (printf "memory m  0x2000: ~a~n" (memory-read (machine-ram m) (bv #x2000 32)))
-		; (printf "memory m1 0x2000: ~a~n" (memory-read (machine-ram m1) (bv #x2000 32)))
-		; (printf "memory: ~a~n" (machine-ram m))
-
 		(printf "m: ~a~n" (memory-read (machine-ram m) (bv #x11 32)))
 		(printf "m1: ~a~n" (memory-read (machine-ram m1) (bv #x11 32)))
 
 		; currently protect successfully 0x0 - 0xF, but does it really slowly
 		; investigate why its performing so slowly
 
-		(define model_noninterference (verify (begin
-			(assert-csr-equal m m1) ; check all the relevant csrs values
-			; (assert-mem-equal m m1 (bv #x11 32))
-			(assert (bveq (memory-read (machine-ram m) (bv #x0 32)) (memory-read (machine-ram m1) (bv #x0 32))))
-			; (assert (bveq (memory-read (machine-ram m) #x2000) (memory-read (machine-ram m1) #x2000)))
-			; ; show that all the memory in 0 - 0x1FFF can't change
-			; (for ([i (in-range #x2001 #x2001)])
-			; 	(assert (bveq (memory-read (machine-ram m) i) (memory-read (machine-ram m1) i))))
-			)))
-		(printf "model_noninterference: ~a~n" model_noninterference)
-		(printf "done!~n")
-		))
+		; (define model_noninterference (verify (begin
+		; 	(assert-csr-equal m m1) ; check all the relevant csrs values 
+		; 	(assert (bveq (memory-read (machine-ram m) (bv #x11 32)) (memory-read (machine-ram m1) (bv #x11 32))))
+		; 	; ; show that all the memory in 0 - 0x1FFF can't change
+		; 	; (for ([i (in-range #x2001 #x2001)])
+		; 	; 	(assert (bveq (memory-read (machine-ram m) i) (memory-read (machine-ram m1) i))))
+		; 	)))
+
+		; for some reason only protects #x0 - #x8
+
+		(define-symbolic* sym-idx (bitvector 32))
+		(define model_noninterference_with_sym_idx (verify
+			#:assume
+			(assert (and (bvule (bv #x8 32) sym-idx) (bvule sym-idx (bv #xF 32))))
+			#:guarantee
+			(assert (equal? (memory-read (machine-ram m) sym-idx) (memory-read (machine-ram m1) sym-idx)))
+			))
+		(printf "model_noninterference: ~a~n" model_noninterference_with_sym_idx)
+		(printf "done!~n")))
 
 ; (define res-instruction-check (run-tests instruction-check))
 ; (define res-utils (run-tests utils))

@@ -182,9 +182,12 @@
 
 (define (machine-ram-write! m addr value nbits)
 	(define saddr (bvadd addr base_address))
-	(printf "nbits: ~a~n" nbits)
 	(define eaddr (bvadd addr (bv nbits 64) base_address))
 	(define legal (pmp-check m saddr eaddr))
+
+	; (define slegal (bv-between saddr (bv #x0000000080000000 64) (bv #x000000008000000F 64)))
+	; (define elegal (bv-between eaddr (bv #x0000000080000000 64) (bv #x000000008000000F 64)))
+	; (define legal (and slegal elegal))
 
 	; ; machine mode (1) or legal, we can read the memory
 	(when (or (equal? (machine-mode m) 1) legal)
