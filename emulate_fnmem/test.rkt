@@ -11,8 +11,6 @@
 (require rackunit rackunit/text-ui)
 
 ; Test Cases for Symbolic Executions
-; note: currently need to add more test cases and fix symbolic variable construction
-; 			to allow for the usage of more than one machine in order to run multiple programs.
 
 (define-test-suite instruction-check
   (test-case "add test"
@@ -315,7 +313,7 @@
 		(printf "~n* Running noninterference proof ~n")
 
 		; set up our machine state
-		(define ramsize #xFFFF)
+		(define ramsize #x3000000)
 		(define m (init-machine ramsize))
 		(define m1 (deep-copy-machine m))
 
@@ -324,20 +322,31 @@
 		; still refer to the same symbolic variables.
 		; (print-csr m)
 		; (print-csr m1)
+		(printf "m: ~a~n" (machine-ram m))
+		(printf "m1: ~a~n" (machine-ram m1))
 		(printf "m: ~a~n" (memory-read (machine-ram m) (bv #x8 32)))
 		(printf "m1: ~a~n" (memory-read (machine-ram m1) (bv #x8 32)))
 
 		(define-symbolic* sym-idx (bitvector 32))
 
+		; Currently PMP allows user to only write in the region 0x0 --> 0x1FF
 		(define model_noninterference_with_sym_idx (verify
 			#:assume
-			(assert (and (bvule (bv #xF 32) sym-idx) (bvule sym-idx (bv #x10 32))))
-			; (assert (bveq sym-idx (bv #x8 32)))
+			; sat cases like 0 <= sym-idx <= #x20000 work very quickly
+			; unsat cases #x200 <= sym-idx <= #x200 that test small amounts of memory also run quickly
+			; unsat cases #x200 <= sym-idx <= #x20000 that test large amounts of memory run very slowly (doesn't terminate)
+
+			; use to test a range of values
+			(assert (and (bvule (bv #x200 32) sym-idx) (bvule sym-idx (bv #x2000 32))))
+			; ; use to test a certain value
+			; (assert (bveq sym-idx (bv #x1FF 32)))
 			#:guarantee
 			(assert (equal? (memory-read (machine-ram m) sym-idx)
 											(memory-read (machine-ram m1) sym-idx)))))
 		(printf "model_noninterference: ~a~n" model_noninterference_with_sym_idx)
 		(printf "done!~n")))
+
+; other test cases work with pmpaddr0 set to #x00000000200003ff
 
 ; (define res-instruction-check (run-tests instruction-check))
 ; (define res-utils (run-tests utils))

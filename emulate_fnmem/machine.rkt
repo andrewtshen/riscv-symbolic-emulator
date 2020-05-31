@@ -182,7 +182,8 @@
 
 (define (machine-ram-write! m addr value nbits)
 	(define saddr (bvadd addr base_address))
-	(define eaddr (bvadd addr (bv (/ nbits 8) 64) base_address))
+	; adjust to include the endpoint
+	(define eaddr (bvadd addr (bv (- (/ nbits 8) 1) 64) base_address))
 	(define legal (pmp-check m saddr eaddr))
 
 	; ; machine mode (1) or legal, we can read the memory
@@ -195,12 +196,15 @@
 (define (bytearray-write! m addr value nbits)
   (define bytes (quotient nbits 8))
   (for ([i (in-range bytes)])
-		; little-endian
-		(let* ([pos (+ addr i)]
-			[low (* 8 i)]
-			[hi (+ 7 low)]
-			[v (extract hi low value)])
-		(set-machine-ram! m (memory-write (machine-ram m) (integer->bitvector pos (bitvector 32)) v)))))
+		; ; little-endian
+		; (let* ([pos (+ addr i)]
+		; 	[low (* 8 i)]
+		; 	[hi (+ 7 low)]
+		; 	[v (extract hi low value)])
+		(define pos (+ addr i))
+		(define-symbolic* v (bitvector 8))
+		(printf "pos ~a~n and v ~a~n" pos v)
+		(set-machine-ram! m (memory-write (machine-ram m) (integer->bitvector pos (bitvector 32)) v))))
 
 (define base_address (bv #x80000000 64))
 (provide base_address)
