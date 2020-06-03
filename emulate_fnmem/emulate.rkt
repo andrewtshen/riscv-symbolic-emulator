@@ -38,7 +38,6 @@
 (provide print-csr)
 
 (define (step m)
-	; TODO: try switching to next_instr cause that might speed up with larger memory sizes/protections
 	; (define next_instr (get-next-instr m)) ; fetch actual instruction
 	(define-symbolic* next_instr (bitvector 32)) ; fetch arbitrary instruction
 	; (define next_instr (bv #x80f10023 32)) ; fetch single, known instruction

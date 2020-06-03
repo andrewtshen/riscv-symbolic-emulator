@@ -579,8 +579,8 @@
 				; (define adj_addr (bvsub addr base_address))
 				
 				(define-symbolic* v_rs2 (bitvector 64)) ; fetch arbitrary instruction
-				; (define-symbolic* adj_addr (bitvector 64)) ; fetch arbitrary instruction
-				(define adj_addr (bv #x1FF 64))
+				(define-symbolic* adj_addr (bitvector 64)) ; fetch arbitrary instruction
+				; (define adj_addr (bv #x1FF 64))
 
 				(define nbits 8)
 				(define success (machine-ram-write! m adj_addr v_rs2 nbits))
