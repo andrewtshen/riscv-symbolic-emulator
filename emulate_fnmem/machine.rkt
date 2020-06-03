@@ -180,16 +180,29 @@
   ; little endian
   (apply concat (reverse bytes)))
 
+; TODO: revert machine-ram-write!
+; (define (machine-ram-write! m addr value nbits)
+; 	(define saddr (bvadd addr base_address))
+; 	; adjust to include the endpoint
+; 	(define eaddr (bvadd addr (bv (- (/ nbits 8) 1) 64) base_address))
+; 	(define legal (pmp-check m saddr eaddr))
+
+; 	; ; machine mode (1) or legal, we can read the memory
+; 	(when (or (equal? (machine-mode m) 1) legal)
+;  	 	(bytearray-write! m (bitvector->natural addr) value nbits))
+
+; 	legal)
+; (provide machine-ram-write!)
+
 (define (machine-ram-write! m addr value nbits)
-	(define saddr (bvadd addr base_address))
-	; adjust to include the endpoint
-	(define eaddr (bvadd addr (bv (- (/ nbits 8) 1) 64) base_address))
-	(define legal (pmp-check m saddr eaddr))
-
-	; ; machine mode (1) or legal, we can read the memory
-	(when (or (equal? (machine-mode m) 1) legal)
- 	 	(bytearray-write! m (bitvector->natural addr) value nbits))
-
+	(printf "herea!~n")
+	(printf "addr: ~a~n" addr)
+	(printf "value: ~a~n" value)
+	(define legal (and (bvsle (bv #x0 32) addr) (bvsle addr (bv #x2000 32))))
+	(printf "legal: ~a~n" legal)
+	(if legal
+      	(set-machine-ram! m (memory-write (machine-ram m) addr value))
+      	null)
 	legal)
 (provide machine-ram-write!)
 

@@ -579,7 +579,7 @@
 				; (define adj_addr (bvsub addr base_address))
 				
 				(define-symbolic* v_rs2 (bitvector 64)) ; fetch arbitrary instruction
-				(define-symbolic* adj_addr (bitvector 64)) ; fetch arbitrary instruction
+				(define-symbolic* adj_addr (bitvector 32)) ; fetch arbitrary instruction
 				; (define adj_addr (bv #x1FF 64))
 
 				(define nbits 8)

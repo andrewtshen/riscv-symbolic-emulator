@@ -337,8 +337,8 @@
 			; unsat cases #x200 <= sym-idx <= #x20000 that test large amounts of memory run very slowly (doesn't terminate)
 
 			; use to test a range of values
-			(assert (and (bvule (bv #x200 32) sym-idx)
-						 (bvule sym-idx (bv #x2000 32))))
+			(assert (and (bvule (bv #x2001 32) sym-idx)
+						 (bvule sym-idx (bv #x4000 32))))
 			; ; use to test a certain value
 			; (assert (bveq sym-idx (bv #x1FF 32)))
 			#:guarantee
