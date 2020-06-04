@@ -143,7 +143,7 @@
 
 ;; Memory Reads/Writes
 
-; mem: uf, addr: bitvector 32, value: any
+; mem: uf, addr: bitvector 64, value: any
 (define (memory-write mem addr value)
   (lambda (addr*)
     (if (bveq addr addr*)
@@ -151,7 +151,7 @@
       (mem addr*))))
 (provide memory-write)
 
-; mem: uf, addr: bitvector 32, val: bitvector 8
+; mem: uf, addr: bitvector 64, val: bitvector 8
 (define (memory-read mem addr)
 	(mem addr))
 (provide memory-read)
@@ -159,7 +159,8 @@
 ; Read an nbytes from a machine-ram ba starting at address addr
 (define (machine-ram-read m addr nbytes)
 	(define saddr (bvadd addr base_address))
-	(define eaddr (bvadd addr (bv (* nbytes 8) 32) base_address))
+	; nbytes is always concrete so it is okay to use (bv x 64) here
+	(define eaddr (bvadd addr (bv (* nbytes 8) 64) base_address))
 	(define legal (pmp-check m saddr eaddr))
 
 	; machine mode (1) or legal, we can read the memory
@@ -176,14 +177,14 @@
 (define (bytearray-read ba addr nbytes)
 	(define bytes
 		(for/list ([i (in-range nbytes)])
-	  	(memory-read ba (integer->bitvector (+ addr i) (bitvector 32)))))
+	  	(memory-read ba (integer->bitvector (+ addr i) (bitvector 64)))))
   ; little endian
   (apply concat (reverse bytes)))
 
 (define (machine-ram-write! m addr value nbits)
 	(define saddr (bvadd addr base_address))
 	; adjust to include the endpoint
-	(define eaddr (bvadd addr (bv (- (/ nbits 8) 1) 32) base_address))
+	(define eaddr (bvadd addr (bv (- (/ nbits 8) 1) 64) base_address))
 	(define legal (pmp-check m saddr eaddr))
 
 	; machine mode (1) or legal, we can read the memory
@@ -197,18 +198,18 @@
   (define bytes (quotient nbits 8))
   (for ([i (in-range 0 bytes)])
 		; little-endian formatting
-		(let* ([pos (bvadd addr (integer->bitvector i (bitvector 32)))]
+		(let* ([pos (bvadd addr (integer->bitvector i (bitvector 64)))]
 			[low (* 8 i)]
 			[hi (+ 7 low)]
 			[v (extract hi low value)])
 		(define-symbolic* v (bitvector 8))
-		; (printf "pos: ~a and v: ~a~n" pos v)
+		(printf "pos: ~a and v: ~a~n" pos v)
 		(set-machine-ram! m (memory-write (machine-ram m) pos v)))))
 
-(define base_address (bv #x80000000 32))
+(define base_address (bv #x80000000 64))
 (provide base_address)
 
-;; PMP checks
+; PMP checks
 
 (define (pmpcfg-check m pmpcfg saddr eaddr pmpaddrs)
 	(define legal null)
@@ -231,8 +232,8 @@
 			(define pmp (get-csr m pmp_name))
 			(define pmp_bounds (pmp-decode-napot pmp))
 
-			(define pmp_start (extract 31 0 (list-ref pmp_bounds 0)))
-			(define pmp_end (extract 31 0 (bvadd (list-ref pmp_bounds 0) (list-ref pmp_bounds 1))))
+			(define pmp_start (list-ref pmp_bounds 0))
+			(define pmp_end (bvadd (list-ref pmp_bounds 0) (list-ref pmp_bounds 1)))
 			; (printf "pmp_start: ~a~n" pmp_start)
 			; (printf "pmp_end: ~a~n" pmp_end)
 			; (printf "saddr: ~a~n" saddr)

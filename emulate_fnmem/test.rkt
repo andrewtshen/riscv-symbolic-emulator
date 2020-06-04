@@ -316,44 +316,36 @@
 		(define ramsize #x1000000)
 		(define m (init-machine ramsize))
 		(define m1 (deep-copy-machine m))
-
 		(define next_instr (step m)) ; step!
+
 		; show that they can execute independently, but
 		; still refer to the same symbolic variables.
-		; (print-csr m)
-		; (print-csr m1)
 		; (printf "m: ~a~n" (machine-ram m))
 		; (printf "m1: ~a~n" (machine-ram m1))
-		; (printf "m: ~a~n" (memory-read (machine-ram m) (bv #x8 32)))
-		; (printf "m1: ~a~n" (memory-read (machine-ram m1) (bv #x8 32)))
 
-		(define-symbolic* sym-idx (bitvector 32))
+		(define-symbolic* sym-idx (bitvector 64))
 
 		; Currently PMP allows user to only write in the region 0x0 --> 0x1FFF
 		(define model_noninterference_with_sym_idx (verify
 			#:assume
-			; sat cases like 0 <= sym-idx <= #x20000 work very quickly
-			; unsat cases #x2000 <= sym-idx <= #x2000 that test small amounts of memory also run quickly
-			; unsat cases #x2000 <= sym-idx <= #x20000 that test large amounts of memory run very slowly (doesn't terminate)
-
 			; use to test a range of values
-			(assert (and (bvule (bv #x2000 32) sym-idx)
-						 			 (bvule sym-idx (bv #x4000 32))))
+			(assert (and (bvule (bv #x2000 64) sym-idx)
+						 			 (bvule sym-idx (bv #x4000 64))))
 			; ; use to test a certain value
-			; (assert (bveq sym-idx (bv #x1FF 32)))
+			; (assert (bveq sym-idx (bv #x2000 64)))
 			#:guarantee
 			(assert (equal? (memory-read (machine-ram m) sym-idx)
-										 (memory-read (machine-ram m1) sym-idx)))))
+										  (memory-read (machine-ram m1) sym-idx)))))
 		(printf "model_noninterference: ~a~n" model_noninterference_with_sym_idx)
 		(printf "done!~n")))
 
 ; other test cases work with pmpaddr0 set to #x00000000200003ff
 
-; (define res-instruction-check (run-tests instruction-check))
-; (define res-utils (run-tests utils))
-; (define res-high-level-test (run-tests high-level-test))
+(define res-instruction-check (run-tests instruction-check))
+(define res-utils (run-tests utils))
+(define res-high-level-test (run-tests high-level-test))
 ; (define res-kernel (run-tests kernel))
-(define res-noninterference (run-tests noninterference))
+; (define res-noninterference (run-tests noninterference))
 
 ; (define program (file->bytearray "build/sw_lw.bin"))
 ; (printf "~n* Running sw_lw.bin test ~n")

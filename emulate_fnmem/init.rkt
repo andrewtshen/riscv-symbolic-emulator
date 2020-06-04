@@ -130,7 +130,7 @@
 	(set! pmpaddr14 (bv 0 64))
 	(set! pmpaddr15 (bv 0 64))
 
-	(define mem (fresh-symbolic mem (~> (bitvector 32) (bitvector 8))))
+	(define mem (fresh-symbolic mem (~> (bitvector 64) (bitvector 8))))
 
 	(define m
 		(machine
