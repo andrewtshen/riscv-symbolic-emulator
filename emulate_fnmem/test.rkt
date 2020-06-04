@@ -313,7 +313,7 @@
 		(printf "~n* Running noninterference proof ~n")
 
 		; set up our machine state
-		(define ramsize #x3000000)
+		(define ramsize #x1000000)
 		(define m (init-machine ramsize))
 		(define m1 (deep-copy-machine m))
 
@@ -322,23 +322,23 @@
 		; still refer to the same symbolic variables.
 		; (print-csr m)
 		; (print-csr m1)
-		(printf "m: ~a~n" (machine-ram m))
-		(printf "m1: ~a~n" (machine-ram m1))
-		(printf "m: ~a~n" (memory-read (machine-ram m) (bv #x8 32)))
-		(printf "m1: ~a~n" (memory-read (machine-ram m1) (bv #x8 32)))
+		; (printf "m: ~a~n" (machine-ram m))
+		; (printf "m1: ~a~n" (machine-ram m1))
+		; (printf "m: ~a~n" (memory-read (machine-ram m) (bv #x8 32)))
+		; (printf "m1: ~a~n" (memory-read (machine-ram m1) (bv #x8 32)))
 
 		(define-symbolic* sym-idx (bitvector 32))
 
-		; Currently PMP allows user to only write in the region 0x0 --> 0x1FF
+		; Currently PMP allows user to only write in the region 0x0 --> 0x1FFF
 		(define model_noninterference_with_sym_idx (verify
 			#:assume
 			; sat cases like 0 <= sym-idx <= #x20000 work very quickly
-			; unsat cases #x200 <= sym-idx <= #x200 that test small amounts of memory also run quickly
-			; unsat cases #x200 <= sym-idx <= #x20000 that test large amounts of memory run very slowly (doesn't terminate)
+			; unsat cases #x2000 <= sym-idx <= #x2000 that test small amounts of memory also run quickly
+			; unsat cases #x2000 <= sym-idx <= #x20000 that test large amounts of memory run very slowly (doesn't terminate)
 
 			; use to test a range of values
-			(assert (and (bvule (bv #x2001 32) sym-idx)
-						 (bvule sym-idx (bv #x4000 32))))
+			(assert (and (bvule (bv #x2000 32) sym-idx)
+						 			 (bvule sym-idx (bv #x4000 32))))
 			; ; use to test a certain value
 			; (assert (bveq sym-idx (bv #x1FF 32)))
 			#:guarantee

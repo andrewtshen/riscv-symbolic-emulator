@@ -112,7 +112,7 @@
 	(set! mtvec (bv #x0000000080000000 64))
 	(set! pmpcfg0 (bv #x000000000000001f 64))
 	(set! pmpcfg2 (bv #x0000000000000018 64))
-	(set! pmpaddr0 (bv #x000000002000003f 64))
+	(set! pmpaddr0 (bv #x00000000200003ff 64))
 	(set! pmpaddr1 (bv 0 64))
 	(set! pmpaddr1 (bv 0 64))
 	(set! pmpaddr2 (bv 0 64))

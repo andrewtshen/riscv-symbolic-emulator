@@ -159,7 +159,7 @@
 ; Read an nbytes from a machine-ram ba starting at address addr
 (define (machine-ram-read m addr nbytes)
 	(define saddr (bvadd addr base_address))
-	(define eaddr (bvadd addr (bv (* nbytes 8) 64) base_address))
+	(define eaddr (bvadd addr (bv (* nbytes 8) 32) base_address))
 	(define legal (pmp-check m saddr eaddr))
 
 	; machine mode (1) or legal, we can read the memory
@@ -180,46 +180,32 @@
   ; little endian
   (apply concat (reverse bytes)))
 
-; TODO: revert machine-ram-write!
-; (define (machine-ram-write! m addr value nbits)
-; 	(define saddr (bvadd addr base_address))
-; 	; adjust to include the endpoint
-; 	(define eaddr (bvadd addr (bv (- (/ nbits 8) 1) 64) base_address))
-; 	(define legal (pmp-check m saddr eaddr))
-
-; 	; ; machine mode (1) or legal, we can read the memory
-; 	(when (or (equal? (machine-mode m) 1) legal)
-;  	 	(bytearray-write! m (bitvector->natural addr) value nbits))
-
-; 	legal)
-; (provide machine-ram-write!)
-
 (define (machine-ram-write! m addr value nbits)
-	(printf "herea!~n")
-	(printf "addr: ~a~n" addr)
-	(printf "value: ~a~n" value)
-	(define legal (and (bvsle (bv #x0 32) addr) (bvsle addr (bv #x2000 32))))
-	(printf "legal: ~a~n" legal)
-	(if legal
-      	(set-machine-ram! m (memory-write (machine-ram m) addr value))
-      	null)
+	(define saddr (bvadd addr base_address))
+	; adjust to include the endpoint
+	(define eaddr (bvadd addr (bv (- (/ nbits 8) 1) 32) base_address))
+	(define legal (pmp-check m saddr eaddr))
+
+	; machine mode (1) or legal, we can read the memory
+	(when (or (equal? (machine-mode m) 1) legal)
+ 	 	(bytearray-write! m addr value nbits))
+
 	legal)
 (provide machine-ram-write!)
 
 (define (bytearray-write! m addr value nbits)
   (define bytes (quotient nbits 8))
-  (for ([i (in-range bytes)])
-		; ; little-endian
-		; (let* ([pos (+ addr i)]
-		; 	[low (* 8 i)]
-		; 	[hi (+ 7 low)]
-		; 	[v (extract hi low value)])
-		(define pos (+ addr i))
+  (for ([i (in-range 0 bytes)])
+		; little-endian formatting
+		(let* ([pos (bvadd addr (integer->bitvector i (bitvector 32)))]
+			[low (* 8 i)]
+			[hi (+ 7 low)]
+			[v (extract hi low value)])
 		(define-symbolic* v (bitvector 8))
-		(printf "pos ~a~n and v ~a~n" pos v)
-		(set-machine-ram! m (memory-write (machine-ram m) (integer->bitvector pos (bitvector 32)) v))))
+		; (printf "pos: ~a and v: ~a~n" pos v)
+		(set-machine-ram! m (memory-write (machine-ram m) pos v)))))
 
-(define base_address (bv #x80000000 64))
+(define base_address (bv #x80000000 32))
 (provide base_address)
 
 ;; PMP checks
@@ -228,10 +214,13 @@
 	(define legal null)
 	(define done #f)
 	; somewhat hacky way of getting right regs, doesn't work if id odd
+	; but this is okay because for risc-V 64, always id even
 	(for ([i (in-range 0 8)]
 				[pmp_name pmpaddrs]
 				#:break (equal? done #t))
+
 		(define settings (pmp-decode-cfg pmpcfg i))
+
 		; TODO check type of access
 		(define R (list-ref settings 0))
 		(define W (list-ref settings 1))
@@ -241,9 +230,9 @@
 		(cond [(equal? A 1)
 			(define pmp (get-csr m pmp_name))
 			(define pmp_bounds (pmp-decode-napot pmp))
-			(define pmp_start (list-ref pmp_bounds 0))
-			(define pmp_end (bvadd pmp_start (list-ref pmp_bounds 1)))
 
+			(define pmp_start (extract 31 0 (list-ref pmp_bounds 0)))
+			(define pmp_end (extract 31 0 (bvadd (list-ref pmp_bounds 0) (list-ref pmp_bounds 1))))
 			; (printf "pmp_start: ~a~n" pmp_start)
 			; (printf "pmp_end: ~a~n" pmp_end)
 			; (printf "saddr: ~a~n" saddr)
@@ -266,12 +255,13 @@
 	; check pmpcfg0, iterate through each register
 	(define pmpcfg0 (get-csr m 'pmpcfg0))
 	(define pmpcfg0_regs (list 'pmpaddr0 'pmpaddr1 'pmpaddr2 'pmpaddr3
-														'pmpaddr4 'pmpaddr5 'pmpaddr6 'pmpaddr7))
+														 'pmpaddr4 'pmpaddr5 'pmpaddr6 'pmpaddr7))
 	(define legal (pmpcfg-check m pmpcfg0 saddr eaddr pmpcfg0_regs))
+
 	; check pmpcfg2, iterate through each register
 	(when (equal? legal null)
 		(define pmpcfg2_regs (list 'pmpaddr8 'pmpaddr9 'pmpaddr10 'pmpaddr11
-															'pmpaddr12 'pmpaddr13 'pmpaddr14 'pmpaddr15))
+															 'pmpaddr12 'pmpaddr13 'pmpaddr14 'pmpaddr15))
 		(define pmpcfg2 (get-csr m 'pmpcfg2))
 		(set! legal (pmpcfg-check m pmpcfg2 saddr eaddr pmpcfg2_regs)))
 	(if (equal? legal null)
