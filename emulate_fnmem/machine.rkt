@@ -202,8 +202,9 @@
 			[low (* 8 i)]
 			[hi (+ 7 low)]
 			[v (extract hi low value)])
-		(define-symbolic* v (bitvector 8))
-		(printf "pos: ~a and v: ~a~n" pos v)
+		; TODO: symbolic usage
+		; (define-symbolic* v (bitvector 8))
+		; (printf "pos: ~a and v: ~a~n" pos v)
 		(set-machine-ram! m (memory-write (machine-ram m) pos v)))))
 
 (define base_address (bv #x80000000 64))

@@ -573,13 +573,13 @@
 				(printf " --> sb ~n")
 				(define v_rs1 (gprs-get-x m (list-ref-nat instr 1)))
 				(define v_rs2 (gprs-get-x m (list-ref-nat instr 2)))
-				(define imm (sign-extend (list-ref instr 3) (bitvector 32)))
+				(define imm (sign-extend (list-ref instr 3) (bitvector 64)))
 
-				; (define addr (bvadd v_rs1 imm))
-				; (define adj_addr (bvsub addr base_address))
+				(define addr (bvadd v_rs1 imm))
+				(define adj_addr (bvsub addr base_address))
 				
 				; (define-symbolic* v_rs2 (bitvector 64)) ; fetch arbitrary instruction
-				(define-symbolic* adj_addr (bitvector 64)) ; fetch arbitrary instruction
+				; (define-symbolic* adj_addr (bitvector 64)) ; fetch arbitrary instruction
 
 				(define nbits 8)
 				(define success (machine-ram-write! m adj_addr v_rs2 nbits))
@@ -595,10 +595,10 @@
 				(define v_rs2 (gprs-get-x m (list-ref-nat instr 2)))
 				(define imm (sign-extend (list-ref instr 3) (bitvector 64)))
 				
-				; (define addr (bvadd v_rs1 imm))
-				; (define adj_addr (bvsub addr base_address))
+				(define addr (bvadd v_rs1 imm))
+				(define adj_addr (bvsub addr base_address))
 
-				(define-symbolic* adj_addr (bitvector 64)) ; fetch arbitrary instruction
+				; (define-symbolic* adj_addr (bitvector 64)) ; fetch arbitrary instruction
 
 				(define nbits 16)
 				(define success (machine-ram-write! m adj_addr v_rs2 nbits))
@@ -617,10 +617,10 @@
 				(define v_rs2 (gprs-get-x m (list-ref-nat instr 2)))
 				(define imm (sign-extend (list-ref instr 3) (bitvector 64)))
 
-				; (define addr (bvadd v_rs1 imm))
-				; (define adj_addr (bvsub addr base_address))
+				(define addr (bvadd v_rs1 imm))
+				(define adj_addr (bvsub addr base_address))
 
-				(define-symbolic* adj_addr (bitvector 64)) ; fetch arbitrary instruction
+				; (define-symbolic* adj_addr (bitvector 64)) ; fetch arbitrary instruction
 
 				(define nbits 32)
 				(define success (machine-ram-write! m adj_addr v_rs2 nbits))
@@ -631,15 +631,15 @@
 						(set-pc! m (bvadd pc (bv 4 64)))
 						instr])]
 			[(eq? opcode 'sd)
-				; (printf " --> sd ~n")
+				(printf " --> sd ~n")
 				(define v_rs1 (gprs-get-x m (list-ref-nat instr 1)))
 				(define v_rs2 (gprs-get-x m (list-ref-nat instr 2)))
 				(define imm (sign-extend (list-ref instr 3) (bitvector 64)))
 
-				; (define addr (bvadd v_rs1 imm))
-				; (define adj_addr (bvsub addr base_address))
+				(define addr (bvadd v_rs1 imm))
+				(define adj_addr (bvsub addr base_address))
 
-				(define-symbolic* adj_addr (bitvector 64)) ; fetch arbitrary instruction
+				; (define-symbolic* adj_addr (bitvector 64)) ; fetch arbitrary instruction
 
 				(define nbits 64)
 				(define success (machine-ram-write! m adj_addr v_rs2 nbits))

@@ -76,11 +76,14 @@
 	(set! pmpaddr14 (bv 0 64))
 	(set! pmpaddr15 (bv 0 64))
 
-	(define mem (fresh-symbolic mem (~> (bitvector 32) (bitvector 8))))
+	; default memory to 0
+	; (define mem (fresh-symbolic mem (~> (bitvector 64) (bitvector 8))))
+	(define mem (lambda (addr*) (bv 0 8)))
 
+	; All concrete values here, so we can use (bv i 64) without issues
 	(for ([byte program]
 				[i (in-naturals)])
-		(set! mem (memory-write mem (bv i 32) byte)))
+		(set! mem (memory-write mem (bv i 64) byte)))
 
 	(define m
 		(machine

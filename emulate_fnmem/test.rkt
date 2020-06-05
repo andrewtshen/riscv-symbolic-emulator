@@ -80,6 +80,7 @@
 		(define gprsx
 			(for/list ([i (in-range 10 18)])
 				(gprs-get-x m i)))
+		
 		; doubleword, use all bits
 		(define model_sd_ld (verify (begin 
 			(assert (bveq (list-ref gprsx 2) (list-ref gprsx 3))))))
@@ -341,11 +342,11 @@
 
 ; other test cases work with pmpaddr0 set to #x00000000200003ff
 
-(define res-instruction-check (run-tests instruction-check))
-(define res-utils (run-tests utils))
-(define res-high-level-test (run-tests high-level-test))
+; (define res-instruction-check (run-tests instruction-check))
+; (define res-utils (run-tests utils))
+; (define res-high-level-test (run-tests high-level-test))
 ; (define res-kernel (run-tests kernel))
-; (define res-noninterference (run-tests noninterference))
+(define res-noninterference (run-tests noninterference))
 
 ; (define program (file->bytearray "build/sw_lw.bin"))
 ; (printf "~n* Running sw_lw.bin test ~n")
