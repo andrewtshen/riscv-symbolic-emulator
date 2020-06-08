@@ -1,5 +1,5 @@
 [submodule "legOS"]
-	path = prerequisite_works/legOS
+	path = legOS
 	url = https://github.com/AndrewTShen/legOS
 [submodule "software-foundations"]
 	path = prerequisite_works/software-foundations
