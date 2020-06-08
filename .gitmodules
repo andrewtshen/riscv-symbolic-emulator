@@ -1,24 +1,24 @@
 [submodule "legOS"]
-	path = legOS
+	path = prerequisite_works/legOS
 	url = https://github.com/AndrewTShen/legOS
 [submodule "software-foundations"]
-	path = software-foundations
+	path = related_works/software-foundations
 	url = https://github.com/AndrewTShen/software-foundations
 [submodule "z3-proofs"]
-	path = z3-proofs
+	path = prerequisite_works/z3-proofs
 	url = https://github.com/AndrewTShen/z3-proofs
 [submodule "xv6-public"]
-	path = xv6-public
+	path = related_works/xv6-public
 	url = https://github.com/mit-pdos/xv6-public
 [submodule "serval-sosp19"]
-	path = serval-sosp19
+	path = related_works/serval-sosp19
 	url = https://github.com/uw-unsat/serval-sosp19
 [submodule "serval-tutorial-sosp19"]
-	path = serval-tutorial-sosp19
+	path = related_works/eerval-tutorial-sosp19
 	url = https://github.com/uw-unsat/serval-tutorial-sosp19
 [submodule "unitary"]
-	path = unitary
+	path = related_works/unitary
 	url = https://github.com/anishathalye/unitary
 [submodule "xv6-riscv-fall19"]
-	path = xv6-riscv-fall19
+	path = related_works/xv6-riscv-fall19
 	url = https://github.com/mit-pdos/xv6-riscv-fall19
