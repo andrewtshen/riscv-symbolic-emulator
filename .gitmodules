@@ -2,7 +2,7 @@
 	path = prerequisite_works/legOS
 	url = https://github.com/AndrewTShen/legOS
 [submodule "software-foundations"]
-	path = related_works/software-foundations
+	path = prerequisite_works/software-foundations
 	url = https://github.com/AndrewTShen/software-foundations
 [submodule "z3-proofs"]
 	path = prerequisite_works/z3-proofs
