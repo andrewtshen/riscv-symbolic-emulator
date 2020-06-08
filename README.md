@@ -1,4 +1,5 @@
-# primes2019
+# RISC-V Symbolic Emulator
+This project was built during the PRIMES 2019-2020 program by Andrew Shen under the mentorship of Anish Athalye.
 
 ## Roadmap to the Directories
 For more information on each of the directories use the README.md in each of the directories.
