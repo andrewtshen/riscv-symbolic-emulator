@@ -1,7 +1,8 @@
 #lang rosette/safe
 
 (require
-	"pmp.rkt")
+	"pmp.rkt"
+	"parameters.rkt")
 (require (only-in racket/base for for/list in-range))
 (require syntax/parse/define)
 
@@ -163,6 +164,7 @@
 	(define eaddr (bvadd addr (bv (* nbytes 8) 64) base_address))
 	(define legal (pmp-check m saddr eaddr))
 
+	; TODO: check the machine mode case, I think this is an excessive case and potentially wrong? What if it's out of bound or something idk
 	; machine mode (1) or legal, we can read the memory
 	(if (term? legal)
 		(begin
@@ -197,15 +199,20 @@
 (define (bytearray-write! m addr value nbits)
   (define bytes (quotient nbits 8))
   (for ([i (in-range 0 bytes)])
-		; little-endian formatting
-		(let* ([pos (bvadd addr (integer->bitvector i (bitvector 64)))]
-			[low (* 8 i)]
-			[hi (+ 7 low)]
-			[v (extract hi low value)])
-		; TODO: symbolic usage
-		; (define-symbolic* v (bitvector 8))
-		; (printf "pos: ~a and v: ~a~n" pos v)
-		(set-machine-ram! m (memory-write (machine-ram m) pos v)))))
+		(define pos (bvadd addr (integer->bitvector i (bitvector 64))))
+		(define v 
+			(if use-sym-optimizations
+				(begin
+					(define-symbolic* v (bitvector 8))
+					v)
+				; little-endian formatting
+				(begin
+					(define low (* 8 i))
+					(define hi (+ 7 low))
+					(define v (extract hi low value))
+					v)))
+		(printf "pos: ~a and v: ~a~n" pos v)
+		(set-machine-ram! m (memory-write (machine-ram m) pos v))))
 
 (define base_address (bv #x80000000 64))
 (provide base_address)
