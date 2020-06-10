@@ -20,12 +20,12 @@
 		; make machine
 		(define ramsize 1000)
 		(define m (init-machine-with-prog program ramsize))
-		(execute-until-mret m)
-
+		(parameterize
+			([use-debug-mode #f])
+			(execute-until-mret m))
 		(define gprsx
 			(for/list ([i (in-range 10 18)])
 				(gprs-get-x m i)))
-
 		(define model_add (verify (begin 
 			(assert (bveq (bvadd (list-ref gprsx 5) (list-ref gprsx 7))
 										(list-ref gprsx 6))))))
@@ -35,10 +35,11 @@
 		(define ramsize 1000)
 		(printf "~n* Running addi.bin test ~n")
 		(define m (init-machine-with-prog program ramsize))
-		(execute-until-mret m)
-			(define gprsx(for/list ([i (in-range 10 18)])
-					(gprs-get-x m i
-			)))
+		(parameterize
+			([use-debug-mode #f])
+			(execute-until-mret m))
+		(define gprsx(for/list ([i (in-range 10 18)])
+				(gprs-get-x m i)))
 		(define model_addi (verify (begin 
 			(assert (bveq (list-ref gprsx 6)
 										(bvadd (list-ref gprsx 5) (bv 32 64)))))))
@@ -49,7 +50,9 @@
 		(define ramsize 1000)
 		(printf "~n* Running addw.bin test ~n")
 		(define m (init-machine-with-prog program ramsize))
-		(execute-until-mret m)
+		(parameterize
+			([use-debug-mode #f])
+			(execute-until-mret m))
 		(define gprsx
 			(for/list ([i (in-range 10 18)])
 				(gprs-get-x m i)))
@@ -64,24 +67,28 @@
 		(define ramsize 10000)
 		(printf "~n* Running sub.bin test ~n")
 		(define m (init-machine-with-prog program ramsize))
-		(execute-until-mret m))
+		(parameterize
+			([use-debug-mode #f])
+			(execute-until-mret m)))
 	(test-case "jal test"
 		(define program (file->bytearray "build/jal.bin"))
 		(define ramsize 10000)
 		(printf "~n* Running jal.bin test ~n")
 		(define m (init-machine-with-prog program ramsize))
-		(execute-until-mret m))
+		(parameterize
+			([use-debug-mode #f])
+			(execute-until-mret m)))
 	(test-case "sd/ld test"
 		(define program (file->bytearray "build/sd_ld.bin"))
 		(printf "~n* Running sd_ld.bin test ~n")
 		(define ramsize 1000)
 		(define m (init-machine-with-prog program ramsize))
-		(execute-until-mret m)
-
+		(parameterize
+			([use-debug-mode #f])
+			(execute-until-mret m))
 		(define gprsx
 			(for/list ([i (in-range 10 18)])
 				(gprs-get-x m i)))
-		
 		; doubleword, use all bits
 		(define model_sd_ld (verify (begin 
 			(assert (bveq (list-ref gprsx 2) (list-ref gprsx 3))))))
@@ -92,7 +99,9 @@
 		(printf "~n* Running sw_lw.bin test ~n")
 		(define ramsize 1000)
 		(define m (init-machine-with-prog program ramsize))
-		(execute-until-mret m)
+		(parameterize
+			([use-debug-mode #f])
+			(execute-until-mret m))
 
 		(define gprsx
 			(for/list ([i (in-range 10 18)])
@@ -111,7 +120,9 @@
 		(printf "~n* Running sh_lh.bin test ~n")
 		(define ramsize 1000)
 		(define m (init-machine-with-prog program ramsize))
-		(execute-until-mret m)
+		(parameterize
+			([use-debug-mode #f])
+			(execute-until-mret m))
 
 		(define gprsx
 			(for/list ([i (in-range 10 18)])
@@ -127,7 +138,9 @@
 		(printf "~n* Running sb_lb.bin test ~n")
 		(define ramsize 1000)
 		(define m (init-machine-with-prog program ramsize))
-		(execute-until-mret m)
+		(parameterize
+			([use-debug-mode #f])
+			(execute-until-mret m))
 
 		(define gprsx
 			(for/list ([i (in-range 10 18)])
@@ -144,7 +157,9 @@
 		; make machine
 		(define ramsize 1000)
 		(define m (init-machine-with-prog program ramsize))
-		(execute-until-mret m)
+		(parameterize
+			([use-debug-mode #f])
+			(execute-until-mret m))
 
 		(define gprsx
 			(for/list ([i (in-range 10 18)])
@@ -162,7 +177,9 @@
 		; make machine
 		(define ramsize 1000)
 		(define m (init-machine-with-prog program ramsize))
-		(execute-until-mret m)
+		(parameterize
+			([use-debug-mode #f])
+			(execute-until-mret m))
 
 		(define gprsx
 			(for/list ([i (in-range 10 18)])
@@ -188,8 +205,10 @@
 		(printf "~n* Running pmp.bin test ~n")
 		(define ramsize 10000)
 		(define m (init-machine-with-prog program ramsize))
-		(execute-until-mret m)
-		(print-pmp m)
+		(parameterize
+			([use-debug-mode #f])
+			(execute-until-mret m))
+		; (print-pmp m)
 		(pmp-check m (bv #x00700001 64) (bv #x007FFFFF 64))))
 
 (define-test-suite utils
@@ -316,26 +335,27 @@
 
 		; set up our machine state
 		(define m (parameterize
-			([ramsize-log2 64])
+			([ramsize-log2 32])
 			(init-machine ramsize)))
 		(define m1 (deep-copy-machine m))
 		(define next_instr (parameterize
-			([use-sym-optimizations #t]
-			[use-debug-mode #f])
+			([use-sym-optimizations #f]
+			[use-debug-mode #f]
+			[ramsize-log2 32])
 			(step m)))
 
 		; show that they can execute independently, but still refer to the same symbolic variables.
 		(printf "m: ~a~n" 	(machine-ram m))
 		(printf "m1: ~a~n" 	(machine-ram m1))
 
-		(define-symbolic* sym-idx (bitvector 64))
+		(define-symbolic* sym-idx (bitvector 32))
 
 		; Currently PMP allows user to only write in the region 0x0 --> 0x1FFF
 		(define model_noninterference_with_sym_idx (verify
 			#:assume
 			; use to test a range of values
-			(assert (and (bvule (bv #x2000 64) sym-idx)
-						 			 (bvule sym-idx (bv #x4000 64))))
+			(assert (and (bvule (bv #x2000 32) sym-idx)
+						 			 (bvule sym-idx (bv #x4000 32))))
 			; ; use to test a certain value
 			; (assert (bveq sym-idx (bv #x2000 64)))
 			#:guarantee

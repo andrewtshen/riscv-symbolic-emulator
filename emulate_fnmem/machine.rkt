@@ -165,22 +165,20 @@
   (define eaddr (bvadd addr (bv (* nbytes 8) 64) (base-address)))
   (define legal (pmp-check m saddr eaddr))
 
-  ; TODO: check the machine mode case, I think this is an excessive case and potentially wrong? What if it's out of bound or something idk
-  ; machine mode (1) or legal, we can read the memory
-  (if (term? legal)
-    (begin
-      (define-symbolic* val (bitvector (* nbytes 8)))
-      val)
-    (if (or (equal? (machine-mode m) 1) legal)
-      (bytearray-read (machine-ram m) addr nbytes)
-      null)))
+  (if (or (equal? (machine-mode m) 1) legal)
+    (if (use-sym-optimizations)
+      (fresh-symbolic val (bitvector (* nbytes 8)))
+      (bytearray-read (machine-ram m) addr nbytes))
+    null))
 
 (provide machine-ram-read)
 
 (define (bytearray-read ba addr nbytes)
   (define bytes
     (for/list ([i (in-range nbytes)])
-      (memory-read ba (bvadd addr (bv i 64)))))
+      ; adjust address for bitvector size (ramsize-log2) and index
+      (define adj_addr (extract (- (ramsize-log2) 1) 0 (bvadd addr (bv i 64))))
+      (memory-read ba adj_addr)))
   ; little endian
   (apply concat (reverse bytes)))
 
@@ -203,9 +201,7 @@
     (define pos (bvadd addr (integer->bitvector i (bitvector 64))))
     (define v 
       (if (use-sym-optimizations)
-        (begin
-          (define-symbolic* v (bitvector 8))
-          v)
+        (fresh-symbolic v (bitvector 8))
         ; little-endian formatting
         (begin
           (define low (* 8 i))
@@ -214,7 +210,9 @@
           v)))
     (when (use-debug-mode)
       (printf "pos: ~a and v: ~a~n" pos v))
-    (set-machine-ram! m (memory-write (machine-ram m) pos v))))
+    ; adjust pos for bitvector size (ramsize-log2)
+    (define adj_pos (extract (- (ramsize-log2) 1) 0 pos))
+    (set-machine-ram! m (memory-write (machine-ram m) adj_pos v))))
 
 ;; PMP checks
 
