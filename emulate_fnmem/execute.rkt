@@ -44,7 +44,7 @@
 				; TODO: fix this and set mstatus to concrete value
 				; (set-machine-mode! m (bitvector->natural MPP))
 				(set-machine-mode! m 0)
-				(set-pc! m (bvsub (get-csr m 'mepc) base_address))
+				(set-pc! m (bvsub (get-csr m 'mepc) (base-address)))
 				instr]
 			[(eq? opcode 'dret)
 				(when (use-debug-mode) (printf " --> dret ~n"))
@@ -241,7 +241,7 @@
 				(define v_rs1 (gprs-get-x m (list-ref-nat instr 2)))
 				(define imm (sign-extend (list-ref instr 3) (bitvector 64)))
 				(define addr (bvadd v_rs1 imm))
-				(define adj_addr (bvsub addr base_address))
+				(define adj_addr (bvsub addr (base-address)))
 				(define nbytes 1)
 				; stronger case that covers all possible values that val can take
 				(define val (sign-extend (machine-ram-read m adj_addr nbytes) (bitvector 64)))
@@ -254,7 +254,7 @@
 				(define v_rs1 (gprs-get-x m (list-ref-nat instr 2)))
 				(define imm (sign-extend (list-ref instr 3) (bitvector 64)))
 				(define addr (bvadd v_rs1 imm))
-				(define adj_addr (bvsub addr base_address))
+				(define adj_addr (bvsub addr (base-address)))
 				(define nbytes 2)
 				; stronger case that covers all possible values that val can take
 				(define val (sign-extend (machine-ram-read m adj_addr nbytes) (bitvector 64)))
@@ -267,7 +267,7 @@
 				(define v_rs1 (gprs-get-x m (list-ref-nat instr 2)))
 				(define imm (sign-extend (list-ref instr 3) (bitvector 64)))
 				(define addr (bvadd v_rs1 imm))
-				(define adj_addr (bvsub addr base_address))
+				(define adj_addr (bvsub addr (base-address)))
 				(define nbytes 4)
 				; stronger case that covers all possible values that val can take
 				(define val (sign-extend (machine-ram-read m adj_addr nbytes) (bitvector 64)))
@@ -280,7 +280,7 @@
 				(define v_rs1 (gprs-get-x m (list-ref-nat instr 2)))
 				(define imm (sign-extend (list-ref instr 3) (bitvector 64)))
 				(define addr (bvadd v_rs1 imm))
-				(define adj_addr (bvsub addr base_address))
+				(define adj_addr (bvsub addr (base-address)))
 				(define nbytes 8)
 				; stronger case that covers all possible values that val can take
 				(define val (sign-extend (machine-ram-read m adj_addr nbytes) (bitvector 64)))
@@ -293,7 +293,7 @@
 				(define v_rs1 (gprs-get-x m (list-ref-nat instr 2)))
 				(define imm (sign-extend (list-ref instr 3) (bitvector 64)))
 				(define addr (bvadd v_rs1 imm))
-				(define adj_addr (bvsub addr base_address))
+				(define adj_addr (bvsub addr (base-address)))
 				(define nbytes 1)
 				; stronger case that covers all possible values that val can take
 				(define val (sign-extend (machine-ram-read m adj_addr nbytes) (bitvector 64)))
@@ -306,7 +306,7 @@
 				(define v_rs1 (gprs-get-x m (list-ref-nat instr 2)))
 				(define imm (sign-extend (list-ref instr 3) (bitvector 64)))
 				(define addr (bvadd v_rs1 imm))
-				(define adj_addr (bvsub addr base_address))
+				(define adj_addr (bvsub addr (base-address)))
 				(define nbytes 2)
 				; stronger case that covers all possible values that val can take
 				(define val (sign-extend (machine-ram-read m adj_addr nbytes) (bitvector 64)))
@@ -319,7 +319,7 @@
 				(define v_rs1 (gprs-get-x m (list-ref-nat instr 2)))
 				(define imm (sign-extend (list-ref instr 3) (bitvector 64)))
 				(define addr (bvadd v_rs1 imm))
-				(define adj_addr (bvsub addr base_address))
+				(define adj_addr (bvsub addr (base-address)))
 				(define nbytes 4)
 				; stronger case that covers all possible values that val can take
 				(define val (sign-extend (machine-ram-read m adj_addr nbytes) (bitvector 64)))
@@ -334,7 +334,7 @@
 				; addr is bitvector 64 correct address
 				(define addr (bvand (bvadd v_rs1 imm) (bvnot (bv 1 64))))
 				; adj_addr is adjusted for offset
-				(define adj_addr (bvsub addr base_address))
+				(define adj_addr (bvsub addr (base-address)))
 
 				(define save (bvadd pc (bv 4 64)))
 				(cond
@@ -565,7 +565,7 @@
 				(define rd (list-ref-nat instr 1))
 				; extend immediate by 12 bits, then zero-extend to 64 bits
 				(define imm (zero-extend (concat (list-ref instr 2) (bv 0 12)) (bitvector 64)))
-				(gprs-set-x! m rd (bvadd pc base_address imm))
+				(gprs-set-x! m rd (bvadd pc (base-address) imm))
 				(set-pc! m (bvadd pc (bv 4 64)))
 				instr]
 
@@ -584,7 +584,7 @@
 							(define v_rs2 (gprs-get-x m (list-ref-nat instr 2)))
 							(define imm (sign-extend (list-ref instr 3) (bitvector 64)))
 							(define addr (bvadd v_rs1 imm))
-							(define adj_addr (bvsub addr base_address))
+							(define adj_addr (bvsub addr (base-address)))
 							(machine-ram-write! m adj_addr v_rs2 nbits))))
 				(cond
 					[(not success)
@@ -606,7 +606,7 @@
 							(define v_rs2 (gprs-get-x m (list-ref-nat instr 2)))
 							(define imm (sign-extend (list-ref instr 3) (bitvector 64)))
 							(define addr (bvadd v_rs1 imm))
-							(define adj_addr (bvsub addr base_address))
+							(define adj_addr (bvsub addr (base-address)))
 							(machine-ram-write! m adj_addr v_rs2 nbits))))
 				(cond
 					[(not success)
@@ -628,7 +628,7 @@
 							(define v_rs2 (gprs-get-x m (list-ref-nat instr 2)))
 							(define imm (sign-extend (list-ref instr 3) (bitvector 64)))
 							(define addr (bvadd v_rs1 imm))
-							(define adj_addr (bvsub addr base_address))
+							(define adj_addr (bvsub addr (base-address)))
 							(machine-ram-write! m adj_addr v_rs2 nbits))))
 				(cond
 					[(not success)
@@ -650,7 +650,7 @@
 							(define v_rs2 (gprs-get-x m (list-ref-nat instr 2)))
 							(define imm (sign-extend (list-ref instr 3) (bitvector 64)))
 							(define addr (bvadd v_rs1 imm))
-							(define adj_addr (bvsub addr base_address))
+							(define adj_addr (bvsub addr (base-address)))
 							(machine-ram-write! m adj_addr v_rs2 nbits))))
 				(cond
 					[(not success)
@@ -664,9 +664,9 @@
 				(when (use-debug-mode) (printf " --> jal ~n"))
 				(define rd (list-ref-nat instr 1))
 				(define imm (sign-extend (concat (list-ref instr 2) (bv 0 1)) (bitvector 64)))
-				; adjust for base_address
-				(define save_addr (bvadd (bvadd pc (bv 4 64)) base_address))
-				; imm is the offset from pc, so we don't need to do anything with base_address
+				; adjust for (base-address)
+				(define save_addr (bvadd (bvadd pc (bv 4 64)) (base-address)))
+				; imm is the offset from pc, so we don't need to do anything with (base-address)
 				(define jump_addr (bvadd imm pc))
 				(cond
 					[(not (equal? rd 0))

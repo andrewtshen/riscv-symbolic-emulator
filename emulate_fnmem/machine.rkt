@@ -136,7 +136,7 @@
 
 ; Set up state for illegal instruction and return null to signal end of exec
 (define (illegal-instr m)
-	(set-pc! m (bvsub (get-csr m 'mtvec) base_address))
+	(set-pc! m (bvsub (get-csr m 'mtvec) (base-address)))
 	(set-machine-mode! m 1)
 	; stop execution of instruction
 	null)
@@ -159,9 +159,9 @@
 
 ; Read an nbytes from a machine-ram ba starting at address addr
 (define (machine-ram-read m addr nbytes)
-	(define saddr (bvadd addr base_address))
+	(define saddr (bvadd addr (base-address)))
 	; nbytes is always concrete so it is okay to use (bv x 64) here
-	(define eaddr (bvadd addr (bv (* nbytes 8) 64) base_address))
+	(define eaddr (bvadd addr (bv (* nbytes 8) 64) (base-address)))
 	(define legal (pmp-check m saddr eaddr))
 
 	; TODO: check the machine mode case, I think this is an excessive case and potentially wrong? What if it's out of bound or something idk
@@ -184,9 +184,9 @@
   (apply concat (reverse bytes)))
 
 (define (machine-ram-write! m addr value nbits)
-	(define saddr (bvadd addr base_address))
+	(define saddr (bvadd addr (base-address)))
 	; adjust to include the endpoint
-	(define eaddr (bvadd addr (bv (- (/ nbits 8) 1) 64) base_address))
+	(define eaddr (bvadd addr (bv (- (/ nbits 8) 1) 64) (base-address)))
 	(define legal (pmp-check m saddr eaddr))
 
 	; machine mode (1) or legal, we can read the memory
@@ -214,9 +214,6 @@
 		(when (use-debug-mode)
 			(printf "pos: ~a and v: ~a~n" pos v))
 		(set-machine-ram! m (memory-write (machine-ram m) pos v))))
-
-(define base_address (bv #x80000000 64))
-(provide base_address)
 
 ; PMP checks
 
