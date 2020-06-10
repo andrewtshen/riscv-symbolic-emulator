@@ -315,10 +315,11 @@
 		(printf "~n* Running noninterference proof ~n")
 
 		; set up our machine state
-		(define ramsize #x1000000)
-		(define m (init-machine ramsize))
+		(define m (parameterize
+			([ramsize-log2 64])
+			(init-machine ramsize)))
 		(define m1 (deep-copy-machine m))
-		(define next_instr (parameterize*
+		(define next_instr (parameterize
 			([use-sym-optimizations #t]
 			[use-debug-mode #f])
 			(step m)))

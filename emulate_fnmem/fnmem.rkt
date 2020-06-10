@@ -1,7 +1,7 @@
 #lang rosette
 
 (require (only-in racket/file file->bytes)
-		 (only-in racket/base bytes-length for for/list in-range subbytes bytes-ref in-naturals))
+     (only-in racket/base bytes-length for for/list in-range subbytes bytes-ref in-naturals))
 (require syntax/parse/define)
 (require (only-in racket/base build-vector))
 
@@ -19,7 +19,7 @@
       (mem addr*))))
 
 (define (memory-read mem value)
-	(mem value))
+  (mem value))
 
 (define mem-uf (new-uf-memory 32))
 
@@ -36,7 +36,7 @@
 (define addr (fresh-symbolic addr (bitvector 32)))
 
 (when (and (bvslt (bv #x0 32) addr) (bvslt addr (bv #x2000 32)))
-		(set! mem-uf (memory-write mem-uf addr (bv #x0 32))))
+    (set! mem-uf (memory-write mem-uf addr (bv #x0 32))))
 
 (printf "mem-uf: ~a~n" mem-uf)
 (printf "mem-uf @x0: ~a~n" (memory-read mem-uf (bv #x0 32)))
@@ -45,4 +45,4 @@
 (printf "mem-uf @x3000: ~a~n" (memory-read mem-uf (bv #x3000 32)))
 
 (verify (assert
-	(equal? (memory-read mem-uf (bv #x1000 32)) (bv #x0 32))))
+  (equal? (memory-read mem-uf (bv #x1000 32)) (bv #x0 32))))
