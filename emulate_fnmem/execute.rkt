@@ -25,19 +25,19 @@
 		(cond
 			; SPECIAL Format
 			[(eq? opcode 'ecall)
-				; (printf " --> ecall ~n")
+				(when (use-debug-mode) (printf " --> ecall ~n"))
 				; TODO: real ecall implementation
 				(illegal-instr m)]
 			[(eq? opcode 'ebreak)
-				; (printf " --> ebreak ~n")
+				(when (use-debug-mode) (printf " --> ebreak ~n"))
 				; TODO: ebreak instruction not implemented yet
 				(illegal-instr m)]
 			[(eq? opcode 'uret)
-				; (printf " --> uret ~n")
+				(when (use-debug-mode) (printf " --> uret ~n"))
 				; TODO: uret instruction not implemented yet
 				(illegal-instr m)]
 			[(eq? opcode 'mret)
-				; (printf " --> mret ~n")
+				(when (use-debug-mode) (printf " --> mret ~n"))
 				(define mstatus (get-csr m 'mstatus))
 				(define MPP (extract 12 11 mstatus))
 				; this is always user mode
@@ -47,19 +47,19 @@
 				(set-pc! m (bvsub (get-csr m 'mepc) base_address))
 				instr]
 			[(eq? opcode 'dret)
-				; (printf " --> dret ~n")
+				(when (use-debug-mode) (printf " --> dret ~n"))
 				; TODO: dret instruction not implemented yet
 				(illegal-instr m)]
 			[(eq? opcode 'sfence_vma)
-				; (printf " --> sfence_vma ~n")
+				(when (use-debug-mode) (printf " --> sfence_vma ~n"))
 				; TODO: sfence_vma instruction not implemented yet
 				(illegal-instr m)]
 			[(eq? opcode 'wfi)
-				; (printf " --> wfi ~n")
+				(when (use-debug-mode) (printf " --> wfi ~n"))
 				; TODO: wfi instruction not implemented yet
 				(illegal-instr m)]
 			[(eq? opcode 'csrrw)
-				; (printf " --> csrrw ~n")
+				(when (use-debug-mode) (printf " --> csrrw ~n"))
 				(cond
 					[(equal? (machine-mode m) 1)
 						(define rd (list-ref-nat instr 1))
@@ -79,7 +79,7 @@
 					[else
 						(illegal-instr m)])]
 			[(eq? opcode 'csrrs)
-				; (printf " --> csrrs ~n")
+				(when (use-debug-mode) (printf " --> csrrs ~n"))
 				(cond
 					[(equal? (machine-mode m) 1)
 						(define rd (list-ref-nat instr 1))
@@ -99,25 +99,25 @@
 					[else
 						(illegal-instr m)])]
 			[(eq? opcode 'csrrc)
-				; (printf " --> csrrc ~n")
+				(when (use-debug-mode) (printf " --> csrrc ~n"))
 				; TODO: csrrc instruction not implemented yet
 				(illegal-instr m)]
 			[(eq? opcode 'csrrwi)
-				; (printf " --> csrrwi ~n")
+				(when (use-debug-mode) (printf " --> csrrwi ~n"))
 				; TODO: csrrwi instruction not implemented yet
 				(illegal-instr m)]
 			[(eq? opcode 'csrrsi)
-				; (printf " --> csrrsi ~n")
+				(when (use-debug-mode) (printf " --> csrrsi ~n"))
 				; TODO: csrrsi instruction not implemented yet
 				(illegal-instr m)]
 			[(eq? opcode 'csrrci)
-				; (printf " --> csrrci ~n")
+				(when (use-debug-mode) (printf " --> csrrci ~n"))
 				; TODO: csrrci instruction not implemented yet
 				(illegal-instr m)]
 
 			; I Format
 			[(eq? opcode 'addi)
-				; (printf " --> addi ~n")
+				(when (use-debug-mode) (printf " --> addi ~n"))
 				(define rd (list-ref-nat instr 1))
 				(define rs1 (list-ref-nat instr 2))
 				(define imm (sign-extend (list-ref instr 3) (bitvector 64)))
@@ -135,7 +135,7 @@
 						(set-pc! m (bvadd pc (bv 4 64)))
 						instr])]
 			[(eq? opcode 'slli)
-				; (printf " --> slli ~n")
+				(when (use-debug-mode) (printf " --> slli ~n"))
 				(define rd (list-ref-nat instr 1))
 				(define v_rs1 (gprs-get-x m (list-ref-nat instr 2)))
 				(define imm (zero-extend (list-ref instr 3) (bitvector 64)))
@@ -144,7 +144,7 @@
 				(set-pc! m (bvadd pc (bv 4 64)))
 				instr]
 			[(eq? opcode 'srli)
-				; (printf " --> srli ~n")
+				(when (use-debug-mode) (printf " --> srli ~n"))
 				(define rd (list-ref-nat instr 1))
 				(define v_rs1 (gprs-get-x m (list-ref-nat instr 2)))
 				(define imm (zero-extend (list-ref instr 3) (bitvector 64)))
@@ -153,7 +153,7 @@
 				(set-pc! m (bvadd pc (bv 4 64)))
 				instr]
 			[(eq? opcode 'srai)
-				; (printf " --> srai ~n")
+				(when (use-debug-mode) (printf " --> srai ~n"))
 				(define rd (list-ref-nat instr 1))
 				(define v_rs1 (gprs-get-x m (list-ref-nat instr 2)))
 				(define imm (zero-extend (list-ref instr 3) (bitvector 64)))
@@ -162,15 +162,15 @@
 				(set-pc! m (bvadd pc (bv 4 64)))
 				instr]
 			[(eq? opcode 'slti)
-				; (printf " --> slti ~n")
+				(when (use-debug-mode) (printf " --> slti ~n"))
 				; TODO: slti instruction not implemented yet
 				(illegal-instr m)]
 			[(eq? opcode 'sltiu)
-				; (printf " --> sltiu ~n")
+				(when (use-debug-mode) (printf " --> sltiu ~n"))
 				; TODO: sltiu instruction not implemented yet
 				(illegal-instr m)]
 			[(eq? opcode 'xori)
-				; (printf " --> xori ~n")
+				(when (use-debug-mode) (printf " --> xori ~n"))
 				(define rd (list-ref-nat instr 1))
 				(define v_rs1 (gprs-get-x m (list-ref-nat instr 2)))
 				(define imm (sign-extend (list-ref instr 3) (bitvector 64)))
@@ -178,7 +178,7 @@
 				(set-pc! m (bvadd pc (bv 4 64)))
 				instr]
 			[(eq? opcode 'ori)
-				; (printf " --> ori ~n")
+				(when (use-debug-mode) (printf " --> ori ~n"))
 				(define rd (list-ref-nat instr 1))
 				(define v_rs1 (gprs-get-x m (list-ref-nat instr 2)))
 				(define imm (sign-extend (list-ref instr 3) (bitvector 64)))
@@ -186,7 +186,7 @@
 				(set-pc! m (bvadd pc (bv 4 64)))
 				instr]
 			[(eq? opcode 'andi)
-				; (printf " --> andi ~n")
+				(when (use-debug-mode) (printf " --> andi ~n"))
 				(define rd (list-ref-nat instr 1))
 				(define v_rs1 (gprs-get-x m (list-ref-nat instr 2)))
 				(define imm (sign-extend (list-ref instr 3) (bitvector 64)))
@@ -194,7 +194,7 @@
 				(set-pc! m (bvadd pc (bv 4 64)))
 				instr]
 			[(eq? opcode 'addiw)
-				; (printf " --> addiw ~n")
+				(when (use-debug-mode) (printf " --> addiw ~n"))
 				(define rd (list-ref-nat instr 1))
 				(define v_rs1 (gprs-get-x m (list-ref-nat instr 2)))
 				(define imm (sign-extend (list-ref instr 3) (bitvector 64)))
@@ -203,7 +203,7 @@
 				(set-pc! m (bvadd pc (bv 4 64)))
 				instr]
 			[(eq? opcode 'slliw)
-				; (printf " --> slliw ~n")
+				(when (use-debug-mode) (printf " --> slliw ~n"))
 				(define rd (list-ref-nat instr 1))
 				(define v_rs1 (extract 31 0 (gprs-get-x m (list-ref-nat instr 2))))
 				(define imm (zero-extend (list-ref instr 3) (bitvector 32)))
@@ -214,7 +214,7 @@
 				(set-pc! m (bvadd pc (bv 4 64)))
 				instr]
 			[(eq? opcode 'srliw)
-				; (printf " --> srliw ~n")
+				(when (use-debug-mode) (printf " --> srliw ~n"))
 				(define rd (list-ref-nat instr 1))
 				(define v_rs1 (extract 31 0 (gprs-get-x m (list-ref-nat instr 2))))
 				(define imm (zero-extend (list-ref instr 3) (bitvector 32)))
@@ -225,7 +225,7 @@
 				(set-pc! m (bvadd pc (bv 4 64)))
 				instr]
 			[(eq? opcode 'sraiw)
-				; (printf " --> sraiw ~n")
+				(when (use-debug-mode) (printf " --> sraiw ~n"))
 				(define rd (list-ref-nat instr 1))
 				(define v_rs1 (extract 31 0 (gprs-get-x m (list-ref-nat instr 2))))
 				(define imm (zero-extend (list-ref instr 3) (bitvector 32)))
@@ -236,7 +236,7 @@
 				(set-pc! m (bvadd pc (bv 4 64)))
 				instr]
 			[(eq? opcode 'lb)
-				; (printf " --> lb ~n")
+				(when (use-debug-mode) (printf " --> lb ~n"))
 				(define rd (list-ref-nat instr 1))
 				(define v_rs1 (gprs-get-x m (list-ref-nat instr 2)))
 				(define imm (sign-extend (list-ref instr 3) (bitvector 64)))
@@ -249,7 +249,7 @@
 				(set-pc! m (bvadd pc (bv 4 64)))
 				instr]
 			[(eq? opcode 'lh)
-				; (printf " --> lh ~n")
+				(when (use-debug-mode) (printf " --> lh ~n"))
 				(define rd (list-ref-nat instr 1))
 				(define v_rs1 (gprs-get-x m (list-ref-nat instr 2)))
 				(define imm (sign-extend (list-ref instr 3) (bitvector 64)))
@@ -262,7 +262,7 @@
 				(set-pc! m (bvadd pc (bv 4 64)))
 				instr]
 			[(eq? opcode 'lw)
-				; (printf " --> lw ~n")
+				(when (use-debug-mode) (printf " --> lw ~n"))
 				(define rd (list-ref-nat instr 1))
 				(define v_rs1 (gprs-get-x m (list-ref-nat instr 2)))
 				(define imm (sign-extend (list-ref instr 3) (bitvector 64)))
@@ -275,7 +275,7 @@
 				(set-pc! m (bvadd pc (bv 4 64)))
 				instr]
 			[(eq? opcode 'ld)
-				; (printf " --> ld ~n")
+				(when (use-debug-mode) (printf " --> ld ~n"))
 				(define rd (list-ref-nat instr 1))
 				(define v_rs1 (gprs-get-x m (list-ref-nat instr 2)))
 				(define imm (sign-extend (list-ref instr 3) (bitvector 64)))
@@ -288,7 +288,7 @@
 				(set-pc! m (bvadd pc (bv 4 64)))
 				instr]
 			[(eq? opcode 'lbu)
-				; (printf " --> lbu ~n")
+				(when (use-debug-mode) (printf " --> lbu ~n"))
 				(define rd (list-ref-nat instr 1))
 				(define v_rs1 (gprs-get-x m (list-ref-nat instr 2)))
 				(define imm (sign-extend (list-ref instr 3) (bitvector 64)))
@@ -301,7 +301,7 @@
 				(set-pc! m (bvadd pc (bv 4 64)))
 				instr]
 			[(eq? opcode 'lhu)
-				; (printf " --> lhu ~n")
+				(when (use-debug-mode) (printf " --> lhu ~n"))
 				(define rd (list-ref-nat instr 1))
 				(define v_rs1 (gprs-get-x m (list-ref-nat instr 2)))
 				(define imm (sign-extend (list-ref instr 3) (bitvector 64)))
@@ -314,7 +314,7 @@
 				(set-pc! m (bvadd pc (bv 4 64)))
 				instr]
 			[(eq? opcode 'lwu)
-				; (printf " --> lwu ~n")
+				(when (use-debug-mode) (printf " --> lwu ~n"))
 				(define rd (list-ref-nat instr 1))
 				(define v_rs1 (gprs-get-x m (list-ref-nat instr 2)))
 				(define imm (sign-extend (list-ref instr 3) (bitvector 64)))
@@ -327,7 +327,7 @@
 					(set-pc! m (bvadd pc (bv 4 64)))
 					instr]
 			[(eq? opcode 'jalr)
-				; (printf " --> jalr ~n")
+				(when (use-debug-mode) (printf " --> jalr ~n"))
 				(define rd (list-ref-nat instr 1))
 				(define v_rs1 (gprs-get-x m (list-ref-nat instr 2)))
 				(define imm (sign-extend (list-ref instr 3) (bitvector 64)))
@@ -345,7 +345,7 @@
 
 			; R Format
 			[(eq? opcode 'add)
-				; (printf " --> add ~n")
+				(when (use-debug-mode) (printf " --> add ~n"))
 				(define rd (list-ref-nat instr 1))
 				(define v_rs1 (gprs-get-x m (list-ref-nat instr 2)))
 				(define v_rs2 (gprs-get-x m (list-ref-nat instr 3)))
@@ -353,7 +353,7 @@
 				(set-pc! m (bvadd pc (bv 4 64)))
 				instr]
 			[(eq? opcode 'sub)
-				; (printf " --> sub ~n")
+				(when (use-debug-mode) (printf " --> sub ~n"))
 				(define rd (list-ref-nat instr 1))
 				(define v_rs1 (gprs-get-x m (list-ref-nat instr 2)))
 				(define v_rs2 (gprs-get-x m (list-ref-nat instr 3)))
@@ -361,7 +361,7 @@
 				(set-pc! m (bvadd pc (bv 4 64)))
 				instr]
 			[(eq? opcode 'sll)
-				; (printf " --> sll ~n")
+				(when (use-debug-mode) (printf " --> sll ~n"))
 				(define rd (list-ref-nat instr 1))
 				(define v_rs1 (gprs-get-x m (list-ref-nat instr 2)))
 				(define v_rs2 (gprs-get-x m (list-ref-nat instr 3)))
@@ -370,15 +370,15 @@
 				(set-pc! m (bvadd pc (bv 4 64)))
 				instr]
 			[(eq? opcode 'slt)
-				; (printf " --> slt ~n")
+				(when (use-debug-mode) (printf " --> slt ~n"))
 					; TODO: slt instruction not implemented yet
 					(illegal-instr m)]
 			[(eq? opcode 'sltu)
-				; (printf " --> sltu ~n")
+				(when (use-debug-mode) (printf " --> sltu ~n"))
 				; TODO: sltu instruction not implemented yet
 					(illegal-instr m)]
 			[(eq? opcode 'xor)
-				; (printf " --> xor ~n")
+				(when (use-debug-mode) (printf " --> xor ~n"))
 				(define rd (list-ref-nat instr 1))
 				(define v_rs1 (gprs-get-x m (list-ref-nat instr 2)))
 				(define v_rs2 (gprs-get-x m (list-ref-nat instr 3)))
@@ -386,7 +386,7 @@
 				(set-pc! m (bvadd pc (bv 4 64)))
 				instr]
 			[(eq? opcode 'srl)
-				; (printf " --> srl ~n")
+				(when (use-debug-mode) (printf " --> srl ~n"))
 				(define rd (list-ref-nat instr 1))
 				(define v_rs1 (gprs-get-x m (list-ref-nat instr 2)))
 				(define v_rs2 (gprs-get-x m (list-ref-nat instr 3)))
@@ -395,7 +395,7 @@
 				(set-pc! m (bvadd pc (bv 4 64)))
 				instr]
 			[(eq? opcode 'sra)
-				; (printf " --> sra ~n")
+				(when (use-debug-mode) (printf " --> sra ~n"))
 				(define rd (list-ref-nat instr 1))
 				(define v_rs1 (gprs-get-x m (list-ref-nat instr 2)))
 				(define v_rs2 (gprs-get-x m (list-ref-nat instr 3)))
@@ -404,7 +404,7 @@
 				(set-pc! m (bvadd pc (bv 4 64)))
 				instr]
 			[(eq? opcode 'or)
-				; (printf " --> or ~n")
+				(when (use-debug-mode) (printf " --> or ~n"))
 				(define rd (list-ref-nat instr 1))
 				(define v_rs1 (gprs-get-x m (list-ref-nat instr 2)))
 				(define v_rs2 (gprs-get-x m (list-ref-nat instr 3)))
@@ -412,7 +412,7 @@
 				(set-pc! m (bvadd pc (bv 4 64)))
 				instr]
 			[(eq? opcode 'and)
-				; (printf " --> and ~n")
+				(when (use-debug-mode) (printf " --> and ~n"))
 				(define rd (list-ref-nat instr 1))
 				(define v_rs1 (gprs-get-x m (list-ref-nat instr 2)))
 				(define v_rs2 (gprs-get-x m (list-ref-nat instr 3)))
@@ -420,81 +420,81 @@
 				(set-pc! m (bvadd pc (bv 4 64)))
 				instr]
 			[(eq? opcode 'andw)
-				; (printf " --> andw ~n")
+				(when (use-debug-mode) (printf " --> andw ~n"))
 				; TODO: andw instruction not implemented yet
 				(illegal-instr m)]
 			[(eq? opcode 'subw)
-				; (printf " --> subw ~n")
+				(when (use-debug-mode) (printf " --> subw ~n"))
 				; TODO: subw instruction not implemented yet
 				(illegal-instr m)]
 			[(eq? opcode 'sllw)
-				; (printf " --> sllw ~n")
+				(when (use-debug-mode) (printf " --> sllw ~n"))
 				; TODO: sllw instruction not implemented yet
 				(illegal-instr m)]
 			[(eq? opcode 'srlw)
-				; (printf " --> srlw ~n")
+				(when (use-debug-mode) (printf " --> srlw ~n"))
 				; TODO: srlw instruction not implemented yet
 				(illegal-instr m)]
 			[(eq? opcode 'sraw)
-				; (printf " --> sraw ~n")
+				(when (use-debug-mode) (printf " --> sraw ~n"))
 				; TODO: sraw instruction not implemented yet
 				(illegal-instr m)]
 			[(eq? opcode 'mul)
-				; (printf " --> mul ~n")
+				(when (use-debug-mode) (printf " --> mul ~n"))
 				; TODO: mul instruction not implemented yet
 				(illegal-instr m)]
 			[(eq? opcode 'mulh)
-				; (printf " --> mulh ~n")
+				(when (use-debug-mode) (printf " --> mulh ~n"))
 				; TODO: mulh instruction not implemented yet
 				(illegal-instr m)]
 			[(eq? opcode 'mulhsu)
-				; (printf " --> mulhsu ~n")
+				(when (use-debug-mode) (printf " --> mulhsu ~n"))
 				; TODO: mulhsu instruction not implemented yet
 				(illegal-instr m)]
 			[(eq? opcode 'mulhu)
-				; (printf " --> mulhu ~n")
+				(when (use-debug-mode) (printf " --> mulhu ~n"))
 				; TODO: mulhu instruction not implemented yet
 				(illegal-instr m)]
 			[(eq? opcode 'div)
-				; (printf " --> div ~n")
+				(when (use-debug-mode) (printf " --> div ~n"))
 				; TODO: div instruction not implemented yet
 				(illegal-instr m)]
 			[(eq? opcode 'divu)
-				; (printf " --> divu ~n")
+				(when (use-debug-mode) (printf " --> divu ~n"))
 				; TODO: divu instruction not implemented yet
 				(illegal-instr m)]
 			[(eq? opcode 'rem)
-				; (printf " --> rem ~n")
+				(when (use-debug-mode) (printf " --> rem ~n"))
 				; TODO: rem instruction not implemented yet
 				(illegal-instr m)]
 			[(eq? opcode 'remu)
-				; (printf " --> remu ~n")
+				(when (use-debug-mode) (printf " --> remu ~n"))
 				; TODO: remu instruction not implemented yet
 				(illegal-instr m)]
 			[(eq? opcode 'mulw)
-				; (printf " --> mulw ~n")
+				(when (use-debug-mode) (printf " --> mulw ~n"))
 				; TODO: mulw instruction not implemented yet
 				(illegal-instr m)]
 			[(eq? opcode 'divw)
-				; (printf " --> divw ~n")
+				(when (use-debug-mode) (printf " --> divw ~n"))
 				; TODO: divw instruction not implemented yet
 				(illegal-instr m)]
 			[(eq? opcode 'divuw)
-				; (printf " --> divuw ~n")
+				(when (use-debug-mode) (printf " --> divuw ~n"))
 				; TODO: divuw instruction not implemented yet
 				(illegal-instr m)]
 			[(eq? opcode 'remw)
-				; (printf " --> remw ~n")
+				(when (use-debug-mode) (printf " --> remw ~n"))
 				; TODO: remw instruction not implemented yet
 				(illegal-instr m)]
 			[(eq? opcode 'remuw)
-				; (printf " --> remuw ~n")
+				(when (use-debug-mode) (printf " --> remuw ~n"))
 				; TODO: remuw instruction not implemented yet
 				(illegal-instr m)]
 
 			; B Format
 			[(eq? opcode 'beq)
-				; (printf " --> beq ~n")
+				(when (use-debug-mode) (printf " --> beq ~n"))
 				(define v_rs1 (gprs-get-x m (list-ref-nat instr 1)))
 				(define v_rs2 (gprs-get-x m (list-ref-nat instr 2)))
 				(define imm (list-ref instr 3))
@@ -503,7 +503,7 @@
 					(set-pc! m (bvadd pc (bv 4 64))))
 				instr]
 			[(eq? opcode 'bne)
-				; (printf " --> bne ~n")
+				(when (use-debug-mode) (printf " --> bne ~n"))
 				(define v_rs1 (gprs-get-x m (list-ref-nat instr 1)))
 				(define v_rs2 (gprs-get-x m (list-ref-nat instr 2)))
 				(define imm (list-ref instr 3))
@@ -512,7 +512,7 @@
 					(set-pc! m (bvadd pc (bv 4 64))))
 				instr]
 			[(eq? opcode 'blt)
-				; (printf " --> blt ~n")
+				(when (use-debug-mode) (printf " --> blt ~n"))
 				(define v_rs1 (gprs-get-x m (list-ref-nat instr 1)))
 				(define v_rs2 (gprs-get-x m (list-ref-nat instr 2)))
 				(define imm (list-ref instr 3))
@@ -521,7 +521,7 @@
 					(set-pc! m (bvadd pc (bv 4 64))))
 				instr]
 			[(eq? opcode 'bge)
-				; (printf " --> bge ~n")
+				(when (use-debug-mode) (printf " --> bge ~n"))
 				(define v_rs1 (gprs-get-x m (list-ref-nat instr 1)))
 				(define v_rs2 (gprs-get-x m (list-ref-nat instr 2)))
 				(define imm (list-ref instr 3))
@@ -530,7 +530,7 @@
 					(set-pc! m (bvadd pc (bv 4 64))))
 				instr]
 			[(eq? opcode 'bltu)
-				; (printf " --> bltu ~n")
+				(when (use-debug-mode) (printf " --> bltu ~n"))
 				(define v_rs1 (gprs-get-x m (list-ref-nat instr 1)))
 				(define v_rs2 (gprs-get-x m (list-ref-nat instr 2)))
 				(define imm (list-ref instr 3))
@@ -539,7 +539,7 @@
 					(set-pc! m (bvadd pc (bv 4 64))))
 				instr]
 			[(eq? opcode 'bgeu)
-				; (printf " --> bgeu ~n")
+				(when (use-debug-mode) (printf " --> bgeu ~n"))
 				(define v_rs1 (gprs-get-x m (list-ref-nat instr 1)))
 				(define v_rs2 (gprs-get-x m (list-ref-nat instr 2)))
 				(define imm (list-ref instr 3))
@@ -553,7 +553,7 @@
 
 			; U Format
 			[(eq? opcode 'lui)
-				; (printf " --> lui ~n")
+				(when (use-debug-mode) (printf " --> lui ~n"))
 				(define rd (list-ref-nat instr 1))
 				; extend immediate by 12 bits
 				(define imm (zero-extend (concat (list-ref instr 2) (bv 0 12)) (bitvector 64)))
@@ -561,7 +561,7 @@
 				(set-pc! m (bvadd pc (bv 4 64)))
 				instr]
 			[(eq? opcode 'auipc)
-				; (printf " --> auipc ~n")
+				(when (use-debug-mode) (printf " --> auipc ~n"))
 				(define rd (list-ref-nat instr 1))
 				; extend immediate by 12 bits, then zero-extend to 64 bits
 				(define imm (zero-extend (concat (list-ref instr 2) (bv 0 12)) (bitvector 64)))
@@ -571,10 +571,10 @@
 
 			; S Format
 			[(eq? opcode 'sb)
-				(printf " --> sb ~n")
+				(when (use-debug-mode) (printf " --> sb ~n"))
 				(define nbits 8)
 				(define success
-					(if use-sym-optimizations
+					(if (use-sym-optimizations)
 						(begin
 							(define-symbolic* v_rs2 (bitvector 64)) ; fetch arbitrary instruction
 							(define-symbolic* adj_addr (bitvector 64)) ; fetch arbitrary instruction
@@ -593,10 +593,10 @@
 						(set-pc! m (bvadd pc (bv 4 64)))
 						instr])]
 			[(eq? opcode 'sh)
-				(printf " --> sh ~n")
+				(when (use-debug-mode) (printf " --> sh ~n"))
 				(define nbits 16)
 				(define success
-					(if use-sym-optimizations
+					(if (use-sym-optimizations)
 						(begin
 							(define-symbolic* v_rs2 (bitvector 64)) ; fetch arbitrary instruction
 							(define-symbolic* adj_addr (bitvector 64)) ; fetch arbitrary instruction
@@ -615,10 +615,10 @@
 						(set-pc! m (bvadd pc (bv 4 64)))
 						instr])]
 			[(eq? opcode 'sw)
-				(printf " --> sw ~n")
+				(when (use-debug-mode) (printf " --> sw ~n"))
 				(define nbits 32)
 				(define success
-					(if use-sym-optimizations
+					(if (use-sym-optimizations)
 						(begin
 							(define-symbolic* v_rs2 (bitvector 64)) ; fetch arbitrary instruction
 							(define-symbolic* adj_addr (bitvector 64)) ; fetch arbitrary instruction
@@ -637,10 +637,10 @@
 						(set-pc! m (bvadd pc (bv 4 64)))
 						instr])]
 			[(eq? opcode 'sd)
-				(printf " --> sd ~n")
+				(when (use-debug-mode) (printf " --> sd ~n"))
 				(define nbits 64)
 				(define success
-					(if use-sym-optimizations
+					(if (use-sym-optimizations)
 						(begin
 							(define-symbolic* v_rs2 (bitvector 64)) ; fetch arbitrary instruction
 							(define-symbolic* adj_addr (bitvector 64)) ; fetch arbitrary instruction
@@ -661,7 +661,7 @@
 
 			; J Format
 			[(eq? opcode 'jal)
-				; (printf " --> jal ~n")
+				(when (use-debug-mode) (printf " --> jal ~n"))
 				(define rd (list-ref-nat instr 1))
 				(define imm (sign-extend (concat (list-ref instr 2) (bv 0 1)) (bitvector 64)))
 				; adjust for base_address
@@ -676,11 +676,11 @@
 
 			; FENCE Format
 			[(eq? opcode 'FENCE)
-				; (printf " --> FENCE ~n")
+				(when (use-debug-mode) (printf " --> FENCE ~n"))
 				; TODO: FENCE instruction not implemented yet
 				(illegal-instr m)]
 			[(eq? opcode 'FENCE_I)
-				; (printf " --> FENCE_I ~n")
+				(when (use-debug-mode) (printf " --> FENCE_I ~n"))
 				; TODO: FENCE_I instruction not implemented yet
 				(illegal-instr m)]
 			[else

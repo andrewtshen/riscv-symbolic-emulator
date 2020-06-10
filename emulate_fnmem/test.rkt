@@ -8,7 +8,7 @@
 	"pmp.rkt"
 	"decode.rkt"
 	"parameters.rkt")
-(require (only-in racket/base parameterize for for/list for/vector in-range))
+(require (only-in racket/base parameterize call-with-parameterization parameterize* for for/list for/vector in-range))
 (require rackunit rackunit/text-ui)
 
 ; Test Cases for Symbolic Executions
@@ -318,7 +318,9 @@
 		(define ramsize #x1000000)
 		(define m (init-machine ramsize))
 		(define m1 (deep-copy-machine m))
-		(define next_instr (parameterize [(use-sym-optimizations #t)]
+		(define next_instr (parameterize*
+			([use-sym-optimizations #t]
+			[use-debug-mode #f])
 			(step m)))
 
 		; show that they can execute independently, but still refer to the same symbolic variables.

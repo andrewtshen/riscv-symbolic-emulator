@@ -6,19 +6,23 @@
 
 ; Use the symbolic optimizations for verifying the kernel
 (define use-sym-optimizations (make-parameter #f))
+(provide use-sym-optimizations)
 
 ; Use debugging statements
 (define use-debug-mode (make-parameter #f))
+(provide use-debug-mode)
 
 ; RAM size log2
 (define ramsize-log2 (make-parameter 32))
+(provide ramsize-log2)
 
 ; RAM size
 (define ramsize (make-parameter (bv #x100000000 64)))
+(provide ramsize)
 
 ; Base address
 ; (base address is in 64 because though the pointer to memory is 32
 ; we are using RISC-V 64)
 (define base-address (make-parameter (bv #x80000000 64)))
+(provide base-address)
 
-(provide use-sym-optimizations)

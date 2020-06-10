@@ -201,7 +201,7 @@
   (for ([i (in-range 0 bytes)])
 		(define pos (bvadd addr (integer->bitvector i (bitvector 64))))
 		(define v 
-			(if use-sym-optimizations
+			(if (use-sym-optimizations)
 				(begin
 					(define-symbolic* v (bitvector 8))
 					v)
@@ -211,7 +211,8 @@
 					(define hi (+ 7 low))
 					(define v (extract hi low value))
 					v)))
-		(printf "pos: ~a and v: ~a~n" pos v)
+		(when (use-debug-mode)
+			(printf "pos: ~a and v: ~a~n" pos v))
 		(set-machine-ram! m (memory-write (machine-ram m) pos v))))
 
 (define base_address (bv #x80000000 64))
@@ -235,17 +236,19 @@
 		(define W (list-ref settings 1))
 		(define X (list-ref settings 2))
 		(define A (list-ref settings 3))
-		; (printf "R:~a W:~a X:~a A:~a~n" R W X A)
+		(when (use-debug-mode)
+			(printf "R:~a W:~a X:~a A:~a~n" R W X A))
 		(cond [(equal? A 1)
 			(define pmp (get-csr m pmp_name))
 			(define pmp_bounds (pmp-decode-napot pmp))
 
 			(define pmp_start (list-ref pmp_bounds 0))
 			(define pmp_end (bvadd (list-ref pmp_bounds 0) (list-ref pmp_bounds 1)))
-			; (printf "pmp_start: ~a~n" pmp_start)
-			; (printf "pmp_end: ~a~n" pmp_end)
-			; (printf "saddr: ~a~n" saddr)
-			; (printf "eaddr: ~a~n" eaddr)
+			(when (use-debug-mode)
+				(printf "pmp_start: ~a~n" pmp_start)
+				(printf "pmp_end: ~a~n" pmp_end)
+				(printf "saddr: ~a~n" saddr)
+				(printf "eaddr: ~a~n" eaddr))
 
 			; test the proper bounds
 			(define slegal (bv-between saddr pmp_start pmp_end))
