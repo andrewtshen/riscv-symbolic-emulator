@@ -234,7 +234,7 @@
     (define A (list-ref settings 3))
     (when (use-debug-mode)
       (printf "R:~a W:~a X:~a A:~a~n" R W X A))
-    (cond [(equal? A 1)
+    (when (equal? A 1)
       (define pmp (get-csr m pmp_name))
       (define pmp_bounds (pmp-decode-napot pmp))
 
@@ -250,12 +250,11 @@
       (define slegal (bv-between saddr pmp_start pmp_end))
       (define elegal (bv-between eaddr pmp_start pmp_end))
 
-      (cond
-        [(and slegal elegal)
-          (set! done #t)
-          (if (and (equal? R 1) (equal? W 1) (equal? X 1))
-            (set! legal #t)
-            (set! legal #f))])]))
+      (when (and slegal elegal)
+        (set! done #t)
+        (if (and (equal? R 1) (equal? W 1) (equal? X 1))
+          (set! legal #t)
+          (set! legal #f)))))
   legal)
 
 ; PMP test address ranging from saddr to eaddr 
@@ -276,20 +275,3 @@
     #t
     legal))
 (provide pmp-check)
-
-(define (print-pmp m)
-  (printf "pmpcfg0: ~a~n" (get-csr m 'pmpcfg0))
-  (printf "pmpcfg2: ~a~n" (get-csr m 'pmpcfg2))
-  (printf "pmpaddr0: ~a~n" (get-csr m 'pmpaddr0))
-  (printf "pmpaddr1: ~a~n" (get-csr m 'pmpaddr1))
-  (printf "pmpaddr2: ~a~n" (get-csr m 'pmpaddr2))
-  (printf "pmpaddr3: ~a~n" (get-csr m 'pmpaddr3))
-  (printf "pmpaddr4: ~a~n" (get-csr m 'pmpaddr4))
-  (printf "pmpaddr5: ~a~n" (get-csr m 'pmpaddr5))
-  (printf "pmpaddr6: ~a~n" (get-csr m 'pmpaddr6))
-  (printf "pmpaddr7: ~a~n" (get-csr m 'pmpaddr7))
-  (printf "pmpaddr8: ~a~n" (get-csr m 'pmpaddr8))
-  (printf "pmpaddr0 base/range: ~a~n" (pmp-decode-napot (get-csr m 'pmpaddr0)))
-  (printf "pmpaddr1 base/range: ~a~n" (pmp-decode-napot (get-csr m 'pmpaddr1)))
-  (printf "pmpaddr8 base/range: ~a~n" (pmp-decode-napot (get-csr m 'pmpaddr8))))
-(provide print-pmp)

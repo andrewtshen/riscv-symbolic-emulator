@@ -684,7 +684,5 @@
         ; TODO: FENCE_I instruction not implemented yet
         (illegal-instr m)]
       [else
-          (illegal-instr m)])
-    )
-)
+          (illegal-instr m)])))
 (provide execute)

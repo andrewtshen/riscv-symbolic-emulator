@@ -7,7 +7,8 @@
 	"machine.rkt"
 	"pmp.rkt"
 	"decode.rkt"
-	"parameters.rkt")
+	"parameters.rkt"
+	"print_utils.rkt")
 (require (only-in racket/base parameterize call-with-parameterization parameterize* for for/list for/vector in-range))
 (require rackunit rackunit/text-ui)
 

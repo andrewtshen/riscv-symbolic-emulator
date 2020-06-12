@@ -6,7 +6,8 @@
   "execute.rkt"
   "machine.rkt"
   "pmp.rkt"
-  "parameters.rkt")
+  "parameters.rkt"
+  "print_utils.rkt")
 (require (only-in racket/base parameter? for in-range))
 
 ; Set up the machine and execute each instruction.
@@ -14,29 +15,6 @@
 
 (define-syntax-rule (while test body ...) ; while loop
   (let loop () (when test body ... (loop))))
-
-(define (print-memory m start end)
-  (for ([i (in-range start end)])
-    (printf "~x: ~a~n" i (vector-ref (machine-ram m) i))))
-(provide print-memory)
-
-(define (print-csr m)
-  (printf "pc: ~a~n" (get-pc m))
-  (printf "mode: ~a~n" (machine-mode m))
-  (printf "mtvec: ~a~n" (get-csr m 'mtvec))
-  (printf "mepc: ~a~n" (get-csr m 'mepc))
-  (printf "pmpcfg0: ~a~n" (get-csr m 'pmpcfg0))
-  (printf "pmpcfg2: ~a~n" (get-csr m 'pmpcfg2))
-  (printf "pmpaddr0: ~a~n" (get-csr m 'pmpaddr0))
-  (printf "pmpaddr1: ~a~n" (get-csr m 'pmpaddr1))
-  (printf "pmpaddr2: ~a~n" (get-csr m 'pmpaddr2))
-  (printf "pmpaddr3: ~a~n" (get-csr m 'pmpaddr3))
-  (printf "pmpaddr4: ~a~n" (get-csr m 'pmpaddr4))
-  (printf "pmpaddr5: ~a~n" (get-csr m 'pmpaddr5))
-  (printf "pmpaddr6: ~a~n" (get-csr m 'pmpaddr6))
-  (printf "pmpaddr7: ~a~n" (get-csr m 'pmpaddr7))
-  (printf "pmpaddr8: ~a~n" (get-csr m 'pmpaddr8)))
-(provide print-csr)
 
 (define (step m)
   (define next_instr

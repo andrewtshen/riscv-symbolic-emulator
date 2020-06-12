@@ -20,6 +20,9 @@
 (define ramsize (make-parameter (bv #x100000000 64)))
 (provide ramsize)
 
+(define use-fnmem (make-parameter #t))
+(provide use-fnmem)
+
 ; Base address
 ; (base address is in 64 because though the pointer to memory is 32
 ; we are using RISC-V 64)

@@ -2,7 +2,8 @@
 
 (require
   "machine.rkt"
-  "parameters.rkt")
+  "parameters.rkt"
+  "print_utils.rkt")
 (require (only-in racket/file file->bytes)
      (only-in racket/base bytes-length for for/list in-range subbytes bytes-ref in-naturals))
 (require syntax/parse/define)
@@ -37,10 +38,6 @@
   (for/list ([i (in-range 0 length)])
     (bv (bytes-ref contents i) 8))))
 (provide file->bytearray)
-
-(define (print-memory m ramsize)
-  (for [(i (in-range 0 ramsize))]
-    (printf "i: ~a value: ~a~n" i ((machine-ram m) (bv i 32)))))
 
 ;; Different ways to set up machine
 

@@ -1,5 +1,8 @@
 #lang rosette/safe
 
+(require
+	"machine.rkt")
+
 (require (only-in racket/base for in-range))
 
 ; PMP utilities for decoding registers and checking
@@ -34,12 +37,6 @@
 	(define range (bvsub (bvshl (bv 1 64) (bvadd (bv t1 64) (bv 3 64))) (bv 1 64)))
 	(list base range))
 (provide pmp-decode-napot)
-
-; uint64_t get_pmp_napot_addr(uint64_t base, uint64_t size) {
-;     uint64_t napot_size = ((size/2)-1);
-;     uint64_t pmp_addr = (base + napot_size)>>2;
-;     return pmp_addr;
-; }
 
 (define (pmp-encode-napot base size)
 	(define napot_size (bvsub (bvudiv size (bv 2 64)) (bv 1 64)))
