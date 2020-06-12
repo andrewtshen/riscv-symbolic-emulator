@@ -75,14 +75,14 @@
   (set! pmpaddr15 (bv 0 64))
 
   ; use this for undefined memory
-  (define mem (fresh-symbolic mem (~> (bitvector (ramsize-log2)) (bitvector 8))))
+  (define fnmem (fresh-symbolic fnmem (~> (bitvector (ramsize-log2)) (bitvector 8))))
   ; use this for defined memory but it's "fake" code
-  ; (define mem (lambda (addr*) (bv 0 8)))
+  ; (define fnmem (lambda (addr*) (bv 0 8)))
 
   ; All concrete values here, so we can use (bv i 64) without issues
   (for ([byte program]
         [i (in-naturals)])
-    (set! mem (memory-write mem (bv i (ramsize-log2)) byte)))
+    (set! fnmem (memory-write fnmem (bv i (ramsize-log2)) byte)))
   (when (use-debug-mode) (printf "ramsize-log2: ~a~n" (ramsize-log2)))
 
   (define m
@@ -94,7 +94,7 @@
           pmpaddr10 pmpaddr11 pmpaddr12 pmpaddr13 pmpaddr14 pmpaddr15)
         (make-sym-vector 31 64 gpr) ; be careful of -1 for offset
         (bv 0 64)) ; make pc symbolic
-      mem
+      fnmem
       1)) ; start in machine mode
 
   ; default all gprs to 0
@@ -134,7 +134,7 @@
   (set! pmpaddr15 (bv 0 64))
 
   (when (use-debug-mode) (printf "ramsize-log2: ~a~n" (ramsize-log2)))
-  (define mem (fresh-symbolic mem (~> (bitvector (ramsize-log2)) (bitvector 8))))
+  (define fnmem (fresh-symbolic fnmem (~> (bitvector (ramsize-log2)) (bitvector 8))))
 
   (define m
     (machine
@@ -145,7 +145,7 @@
           pmpaddr10 pmpaddr11 pmpaddr12 pmpaddr13 pmpaddr14 pmpaddr15)
         (make-sym-vector 31 64 gpr) ; be careful of -1 for offset
         pc) ; make pc symbolic
-      mem
+      fnmem
       0)) ; start in user mode
   m)
 (provide init-machine)

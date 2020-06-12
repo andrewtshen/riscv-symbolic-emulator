@@ -1,8 +1,5 @@
 #lang rosette/safe
 
-(require
-	"machine.rkt")
-
 (require (only-in racket/base for in-range))
 
 ; PMP utilities for decoding registers and checking
