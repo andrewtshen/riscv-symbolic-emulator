@@ -46,8 +46,8 @@
 
 (define (init-machine-with-prog program ramsize)
   (define proglength (vector-length program))
-  (printf "ramsize: ~a~n" ramsize)
-  (printf "proglength: ~a~n" proglength)
+  (when (use-debug-mode) (printf "ramsize: ~x~n" (expt 2 (ramsize-log2))))
+  (when (use-debug-mode) (printf "proglength: ~a~n" proglength))
   (unless (>= ramsize proglength)
     (printf "Not enough RAM provided to run program~n"))
   (define-symbolic* mtvec mepc mstatus pmpcfg0 pmpcfg2 pmpaddr0 pmpaddr1 pmpaddr2
@@ -77,15 +77,16 @@
   (set! pmpaddr14 (bv 0 64))
   (set! pmpaddr15 (bv 0 64))
 
-  ; TODO, this is fake code and doesn't exactly work since you can't use the lambda to cover everything
-  ; default memory to 0
-  ; (define mem (fresh-symbolic mem (~> (bitvector 64) (bitvector 8))))
-  (define mem (lambda (addr*) (bv 0 8)))
+  ; use this for undefined memory
+  (define mem (fresh-symbolic mem (~> (bitvector (ramsize-log2)) (bitvector 8))))
+  ; use this for defined memory but it's "fake" code
+  ; (define mem (lambda (addr*) (bv 0 8)))
 
   ; All concrete values here, so we can use (bv i 64) without issues
   (for ([byte program]
         [i (in-naturals)])
-    (set! mem (memory-write mem (bv i 64) byte)))
+    (set! mem (memory-write mem (bv i (ramsize-log2)) byte)))
+  (when (use-debug-mode) (printf "ramsize-log2: ~a~n" (ramsize-log2)))
 
   (define m
     (machine
@@ -137,7 +138,6 @@
 
   (when (use-debug-mode) (printf "ramsize-log2: ~a~n" (ramsize-log2)))
   (define mem (fresh-symbolic mem (~> (bitvector (ramsize-log2)) (bitvector 8))))
-  ; (define mem (fresh-symbolic mem (~> (bitvector 64) (bitvector 8))))
 
   (define m
     (machine
