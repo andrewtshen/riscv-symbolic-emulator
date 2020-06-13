@@ -147,15 +147,19 @@
 
 ; mem: uf, addr: bitvector 64, value: any
 (define (memory-write mem addr value)
-  (lambda (addr*)
-    (if (bveq addr addr*)
-      value
-      (mem addr*))))
+  (if (use-fnmem)
+    (lambda (addr*)
+      (if (bveq addr addr*)
+        value
+        (mem addr*)))
+    (vector-set! mem addr value)))
 (provide memory-write)
 
-; mem: uf, addr: bitvector 64, val: bitvector 8
+; mem: uf, addr: bitvector: ramsize-log2, val: bitvector 8
 (define (memory-read mem addr)
-  (mem addr))
+  (if (use-fnmem)
+    (mem addr)
+    (vector-ref mem (bitvector->natural addr))))
 (provide memory-read)
 
 ; Read an nbytes from a machine-ram ba starting at address addr

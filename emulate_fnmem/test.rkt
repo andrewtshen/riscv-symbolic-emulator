@@ -9,10 +9,15 @@
 	"decode.rkt"
 	"parameters.rkt"
 	"print_utils.rkt")
-(require (only-in racket/base parameterize call-with-parameterization parameterize* for for/list for/vector in-range))
+(require (only-in racket/base 
+	custodian-limit-memory current-custodian parameterize call-with-parameterization parameterize* for for/list for/vector in-range))
 (require rackunit rackunit/text-ui)
 
-; Test Cases for Symbolic Executions
+; Raise the memory limit
+(custodian-limit-memory
+   (current-custodian) (expt 2 32))
+
+;; Test Cases for Symbolic Executions
 
 (define-test-suite instruction-check
   (test-case "add test"
@@ -339,6 +344,8 @@
 			([ramsize-log2 32])
 			(init-machine ramsize)))
 		(define m1 (deep-copy-machine m))
+		; (printf "m: ~a~n" 	(machine-ram m))
+		; (printf "m1: ~a~n" 	(machine-ram m1))
 		(define next_instr (parameterize
 			([use-sym-optimizations #f]
 			[use-debug-mode #f]
