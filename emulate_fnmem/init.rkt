@@ -41,9 +41,10 @@
 
 ;; Different ways to set up machine
 
-(define (init-machine-with-prog program ramsize)
+(define (init-machine-with-prog program)
   (define proglength (vector-length program))
-  (when (use-debug-mode) (printf "ramsize: ~x~n" (expt 2 (ramsize-log2))))
+  (define ramsize (expt 2 (ramsize-log2)))
+  (when (use-debug-mode) (printf "ramsize: ~x~n" ramsize))
   (when (use-debug-mode) (printf "proglength: ~a~n" proglength))
   (unless (>= ramsize proglength)
     (printf "Not enough RAM provided to run program~n"))
@@ -112,7 +113,7 @@
   m)
 (provide init-machine-with-prog)
 
-(define (init-machine ramsize)
+(define (init-machine)
   (define-symbolic* mtvec mepc mstatus pmpcfg0 pmpcfg2 pmpaddr0 pmpaddr1 pmpaddr2
     pmpaddr3 pmpaddr4 pmpaddr5 pmpaddr6 pmpaddr7 pmpaddr8 pmpaddr9 pmpaddr10
     pmpaddr11 pmpaddr12 pmpaddr13 pmpaddr14 pmpaddr15 pc (bitvector 64))

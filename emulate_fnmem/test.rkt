@@ -27,7 +27,7 @@
 		(define ramsize 1000)
 		(define m (parameterize
 			([ramsize-log2 32])
-			(init-machine-with-prog program ramsize)))
+			(init-machine-with-prog program)))
 		(parameterize
 			([use-debug-mode #f]
 			 [ramsize-log2 32])
@@ -43,7 +43,7 @@
 		(define program (file->bytearray "build/addi.bin"))
 		(define ramsize 1000)
 		(printf "* Running addi.bin test ~n")
-		(define m (init-machine-with-prog program ramsize))
+		(define m (init-machine-with-prog program))
 		(parameterize
 			([use-debug-mode #f])
 			(execute-until-mret m))
@@ -57,7 +57,7 @@
 		(define program (file->bytearray "build/addw.bin"))
 		(define ramsize 1000)
 		(printf "* Running addw.bin test ~n")
-		(define m (init-machine-with-prog program ramsize))
+		(define m (init-machine-with-prog program))
 		(parameterize
 			([use-debug-mode #f])
 			(execute-until-mret m))
@@ -72,7 +72,7 @@
 		(define program (file->bytearray "build/sub.bin"))
 		(define ramsize 10000)
 		(printf "* Running sub.bin test ~n")
-		(define m (init-machine-with-prog program ramsize))
+		(define m (init-machine-with-prog program))
 		(parameterize
 			([use-debug-mode #f])
 			(execute-until-mret m)))
@@ -80,7 +80,7 @@
 		(define program (file->bytearray "build/jal.bin"))
 		(define ramsize 10000)
 		(printf "* Running jal.bin test ~n")
-		(define m (init-machine-with-prog program ramsize))
+		(define m (init-machine-with-prog program))
 		(parameterize
 			([use-debug-mode #f])
 			(execute-until-mret m)))
@@ -88,7 +88,7 @@
 		(define program (file->bytearray "build/sd_ld.bin"))
 		(printf "* Running sd_ld.bin test ~n")
 		(define ramsize 1000)
-		(define m (init-machine-with-prog program ramsize))
+		(define m (init-machine-with-prog program))
 		(parameterize
 			([use-debug-mode #f])
 			(execute-until-mret m))
@@ -104,7 +104,7 @@
 		(define program (file->bytearray "build/sw_lw.bin"))
 		(printf "* Running sw_lw.bin test ~n")
 		(define ramsize 1000)
-		(define m (init-machine-with-prog program ramsize))
+		(define m (init-machine-with-prog program))
 		(parameterize
 			([use-debug-mode #f])
 			(execute-until-mret m))
@@ -125,7 +125,7 @@
 		(define program (file->bytearray "build/sh_lh.bin"))
 		(printf "* Running sh_lh.bin test ~n")
 		(define ramsize 1000)
-		(define m (init-machine-with-prog program ramsize))
+		(define m (init-machine-with-prog program))
 		(parameterize
 			([use-debug-mode #f])
 			(execute-until-mret m))
@@ -143,7 +143,7 @@
 		(define program (file->bytearray "build/sb_lb.bin"))
 		(printf "* Running sb_lb.bin test ~n")
 		(define ramsize 1000)
-		(define m (init-machine-with-prog program ramsize))
+		(define m (init-machine-with-prog program))
 		(parameterize
 			([use-debug-mode #f])
 			(execute-until-mret m))
@@ -162,7 +162,7 @@
     (printf "* Running srliw.bin test ~n" )
 		; make machine
 		(define ramsize 1000)
-		(define m (init-machine-with-prog program ramsize))
+		(define m (init-machine-with-prog program))
 		(parameterize
 			([use-debug-mode #f])
 			(execute-until-mret m))
@@ -182,7 +182,7 @@
     (printf "* Running addiw.bin test ~n" )
 		; make machine
 		(define ramsize 1000)
-		(define m (init-machine-with-prog program ramsize))
+		(define m (init-machine-with-prog program))
 		(parameterize
 			([use-debug-mode #f])
 			(execute-until-mret m))
@@ -204,13 +204,13 @@
   	(define program (file->bytearray "build/stack.bin"))
   	(printf "* Running stack.bin test ~n" )
   	(define ramsize 1000)
-  	(define m (init-machine-with-prog program ramsize))
+  	(define m (init-machine-with-prog program))
   	(execute-until-mret m))
 	(test-case "pmp test"
 		(define program (file->bytearray "build/pmp.bin"))
 		(printf "* Running pmp.bin test ~n")
 		(define ramsize 10000)
-		(define m (init-machine-with-prog program ramsize))
+		(define m (init-machine-with-prog program))
 		(parameterize
 			([use-debug-mode #f])
 			(execute-until-mret m))
@@ -229,7 +229,7 @@
 		(define program (file->bytearray "build/pmp.bin"))
 		(printf "* Running pmp.bin test ~n")
 		(define ramsize 10000)
-		(define m (init-machine-with-prog program ramsize))
+		(define m (init-machine-with-prog program))
 		(execute-until-mret m)
 		(check-true (pmp-check m (bv #x80800000 64) (bv #x80800000 64)))
 		(check-true (pmp-check m (bv #x80FFFFFF 64) (bv #x80FFFFFF 64)))
@@ -256,7 +256,7 @@
 	(test-case "decoding-instr-edge cases"
 		(printf "* decoding-instr-edge cases ~n")
 		(define ramsize 1000)
-		(define m (init-machine ramsize))
+		(define m (init-machine))
 		(check-equal? (decode m (bv #xffffffff 32)) null)
 		(check-equal? (list-ref (decode m (bv #x0107c663 32)) 0) 'blt)
 		; check decoding
@@ -267,7 +267,7 @@
 		(printf "* decoding-uncoded-instrs ~n")
 		(define program (file->bytearray "build/dret.bin"))
 		(define ramsize 1000)
-		(define m (init-machine-with-prog program ramsize))
+		(define m (init-machine-with-prog program))
 		(step m)
 		; check that it has returned successfully
 		(check-true #t)))
@@ -277,7 +277,7 @@
 		(define program (file->bytearray "kernel/kernel.bin"))
 		(printf "* Running kernel.bin test ~n")
 		(define ramsize 1000000)
-		(define m (init-machine-with-prog program ramsize))
+		(define m (init-machine-with-prog program))
 		(execute-until-mret m)
 		(print-pmp m)
 		(check-true (equal? (machine-mode m) 0))))
@@ -334,6 +334,7 @@
 
 (define (assert-mem-equal m1 m2 pos)
 	(assert (bveq (memory-read (machine-ram m1) pos) (memory-read (machine-ram m2) pos))))
+(provide assert-mem-equal)
 
 (define-test-suite noninterference
 	(test-case "noninterference"
@@ -342,7 +343,7 @@
 		; set up our machine state
 		(define m (parameterize
 			([ramsize-log2 32])
-			(init-machine ramsize)))
+			(init-machine)))
 		(define m1 (deep-copy-machine m))
 		; (printf "m: ~a~n" 	(machine-ram m))
 		; (printf "m1: ~a~n" 	(machine-ram m1))
@@ -380,10 +381,4 @@
 ; (define res-utils (run-tests utils))
 ; (define res-high-level-test (run-tests high-level-test))
 ; (define res-kernel (run-tests kernel))
-(define res-noninterference (run-tests noninterference))
-
-; (define program (file->bytearray "build/sw_lw.bin"))
-; (printf "* Running sw_lw.bin test ~n")
-; (define ramsize 1000)
-; (define m (init-machine-with-prog program ramsize))
-; (execute-until-mret m)
+; (define res-noninterference (run-tests noninterference))
