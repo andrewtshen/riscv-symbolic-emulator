@@ -16,7 +16,7 @@
 (define ramsize-log2 (make-parameter 24))
 (provide ramsize-log2)
 
-(define use-fnmem (make-parameter #t))
+(define use-fnmem (make-parameter #f))
 (provide use-fnmem)
 
 ; Base address
