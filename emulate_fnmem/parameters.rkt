@@ -13,10 +13,10 @@
 (provide use-debug-mode)
 
 ; RAM size log2
-(define ramsize-log2 (make-parameter 24))
+(define ramsize-log2 (make-parameter 31))
 (provide ramsize-log2)
 
-(define use-fnmem (make-parameter #f))
+(define use-fnmem (make-parameter #t))
 (provide use-fnmem)
 
 ; Base address
@@ -24,4 +24,3 @@
 ; we are using RISC-V 64)
 (define base-address (make-parameter (bv #x80000000 64)))
 (provide base-address)
-

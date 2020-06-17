@@ -1,0 +1,12 @@
+report draft
+
+high level: cool things, ideas that worked here
+
+problem statement/motivation
+(spend more time, niche ideas)
+
+approach
+(design kernel, properties to prove correct, functionality, implementation (different represenations), optimizations)
+
+evaluation
+(performance, workloads, generation of workload, bugs that are eliminated)

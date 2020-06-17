@@ -22,8 +22,8 @@
   (define model_noninterference_with_sym_idx (verify
     #:assume
     ; use to test a range of values
-    (assert (and (bvule (bv #x2000 (ramsize-log2)) sym-idx)
-                 (bvule sym-idx (bv (+ #x2000 mmax) (ramsize-log2)))))
+    (assert (and (bvule (bv #x20000 (ramsize-log2)) sym-idx)
+                 (bvule sym-idx (bv (+ #x20000 mmax) (ramsize-log2)))))
     ; ; use to test a certain value
     ; (assert (bveq sym-idx (bv #x2000 64)))
     #:guarantee

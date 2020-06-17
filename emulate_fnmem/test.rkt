@@ -22,7 +22,7 @@
 (define-test-suite instruction-check
   (test-case "add test"
     (define program (file->bytearray "build/add.bin"))
-    (printf "* Running add.bin test ~n" )
+    (printf "* Running add.bin test ~n")
 		; make machine
 		(define ramsize 1000)
 		(define m (parameterize
@@ -337,43 +337,45 @@
 (provide assert-mem-equal)
 
 (define-test-suite noninterference
-	(test-case "noninterference"
-		(printf "* Running noninterference proof ~n")
-
-		; set up our machine state
+	(test-case "noninterference tests"
+		(printf "* Running noninterference tests ~n")
 		(define m (parameterize
 			([ramsize-log2 32])
 			(init-machine)))
 		(define m1 (deep-copy-machine m))
-		; (printf "m: ~a~n" 	(machine-ram m))
-		; (printf "m1: ~a~n" 	(machine-ram m1))
+
 		(define next_instr (parameterize
 			([use-sym-optimizations #f]
 			[use-debug-mode #f]
 			[ramsize-log2 32])
 			(step m)))
 
-		; show that they can execute independently, but still refer to the same symbolic variables.
-		(printf "m: ~a~n" 	(machine-ram m))
-		(printf "m1: ~a~n" 	(machine-ram m1))
-
 		(define-symbolic* sym-idx (bitvector 32))
 
-		; Currently PMP allows user to only write in the region 0x0 --> 0x1FFF
-		(define model_noninterference_with_sym_idx (verify
+		; Currently PMP allows user to only write in the region 0x0 --> 0x1FFFF
+		(define model_noninterference (verify
 			#:assume
-			; use to test a range of values
-			(assert (and (bvule (bv #x2000 32) sym-idx)
-						 			 (bvule sym-idx (bv #x4000 32))))
-			; ; use to test a certain value
-			; (assert (bveq sym-idx (bv #x2000 64)))
+			(assert (and (bvule (bv #x20000 32) sym-idx) (bvule sym-idx (bv #x40000 32))))
 			#:guarantee
-			; (assert (equal? (memory-read (machine-ram m) sym-idx)
-			; 							  (memory-read (machine-ram m1) sym-idx)))
 			(assert-mem-equal m m1 sym-idx)))
-		(printf "model_noninterference: ~a~n" model_noninterference_with_sym_idx)
-		(printf "done!~n")
-		(check-true (unsat? model_noninterference_with_sym_idx))))
+		; (printf "evaulted next_instr: ~a~n" (evaluate next_instr model_noninterference_with_sym_idx))
+		(check-true (unsat? model_noninterference))
+
+		(clear-asserts!)
+		(define model_ubound (verify
+			#:assume
+			(assert (bveq sym-idx (bv #x1FFFF 32)))
+			#:guarantee
+			(assert-mem-equal m m1 sym-idx)))
+		(check-true (not (unsat? model_ubound)))
+
+		(clear-asserts!)
+		(define model_lbound (verify
+			#:assume
+			(assert (bveq sym-idx (bv #x0 32)))
+			#:guarantee
+			(assert-mem-equal m m1 sym-idx)))
+		(check-true (not (unsat? model_lbound)))))
 
 ; other test cases work with pmpaddr0 set to #x00000000200003ff
 
@@ -381,4 +383,4 @@
 ; (define res-utils (run-tests utils))
 ; (define res-high-level-test (run-tests high-level-test))
 ; (define res-kernel (run-tests kernel))
-; (define res-noninterference (run-tests noninterference))
+(define res-noninterference (run-tests noninterference))
