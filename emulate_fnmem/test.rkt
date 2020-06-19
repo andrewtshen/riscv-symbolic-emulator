@@ -337,8 +337,8 @@
 (provide assert-mem-equal)
 
 (define-test-suite noninterference
-	(test-case "noninterference tests"
-		(printf "* Running noninterference tests ~n")
+	(test-case "memory tests"
+		(printf "* Running memory tests ~n")
 		(define m (parameterize
 			([ramsize-log2 32])
 			(init-machine)))
@@ -353,12 +353,12 @@
 		(define-symbolic* sym-idx (bitvector 32))
 
 		; Currently PMP allows user to only write in the region 0x0 --> 0x1FFFF
+		(clear-asserts!)
 		(define model_noninterference (verify
 			#:assume
 			(assert (and (bvule (bv #x20000 32) sym-idx) (bvule sym-idx (bv #x40000 32))))
 			#:guarantee
 			(assert-mem-equal m m1 sym-idx)))
-		; (printf "evaulted next_instr: ~a~n" (evaluate next_instr model_noninterference_with_sym_idx))
 		(check-true (unsat? model_noninterference))
 
 		(clear-asserts!)
@@ -375,7 +375,26 @@
 			(assert (bveq sym-idx (bv #x0 32)))
 			#:guarantee
 			(assert-mem-equal m m1 sym-idx)))
-		(check-true (not (unsat? model_lbound)))))
+		(check-true (not (unsat? model_lbound))))
+
+	(test-case "mode tests"
+		(printf "* Running mode tests ~n")
+		(define m (parameterize
+			([ramsize-log2 32])
+			(init-machine)))
+		(define m1 (deep-copy-machine m))
+
+		(define next_instr (parameterize
+			([use-sym-optimizations #f]
+			[use-debug-mode #f]
+			[ramsize-log2 32])
+			(step m)))
+
+		(clear-asserts!)
+		(define model_mode (verify
+			(assert (or (equal? (machine-mode m) (machine-mode m1))
+									(and (bveq (get-pc m) (bvsub (get-csr m 'mtvec) (base-address))) (equal? (machine-mode m) 1))))))
+		(check-true (unsat? model_mode))))
 
 ; other test cases work with pmpaddr0 set to #x00000000200003ff
 

@@ -209,10 +209,11 @@
         (define imm (zero-extend (list-ref instr 3) (bitvector 32)))
         (define shifted (sign-extend (bvshl v_rs1 imm) (bitvector 64)))
         (gprs-set-x! m rd shifted)
-        (when (not (bveq (extract 5 5 imm) (bv 0 1)))
-          (illegal-instr m))
-        (set-pc! m (bvadd pc (bv 4 64)))
-        instr]
+        (if (not (bveq (extract 5 5 imm) (bv 0 1)))
+          (illegal-instr m)
+          (begin
+            (set-pc! m (bvadd pc (bv 4 64)))
+            instr))]
       [(eq? opcode 'srliw)
         (when (use-debug-mode) (printf " --> srliw ~n"))
         (define rd (list-ref-nat instr 1))
@@ -220,10 +221,11 @@
         (define imm (zero-extend (list-ref instr 3) (bitvector 32)))
         (define shifted (sign-extend (bvlshr v_rs1 imm) (bitvector 64)))
         (gprs-set-x! m rd shifted)
-        (when (not (bveq (extract 5 5 imm) (bv 0 1)))
-          (illegal-instr m))
-        (set-pc! m (bvadd pc (bv 4 64)))
-        instr]
+        (if (not (bveq (extract 5 5 imm) (bv 0 1)))
+          (illegal-instr m)
+          (begin 
+            (set-pc! m (bvadd pc (bv 4 64)))
+            instr))]
       [(eq? opcode 'sraiw)
         (when (use-debug-mode) (printf " --> sraiw ~n"))
         (define rd (list-ref-nat instr 1))
@@ -231,10 +233,11 @@
         (define imm (zero-extend (list-ref instr 3) (bitvector 32)))
         (define shifted (sign-extend (bvashr v_rs1 imm) (bitvector 64)))
         (gprs-set-x! m rd shifted)
-        (when (not (bveq (extract 5 5 imm) (bv 0 1)))
-            (illegal-instr m))
-        (set-pc! m (bvadd pc (bv 4 64)))
-        instr]
+        (if (not (bveq (extract 5 5 imm) (bv 0 1)))
+          (illegal-instr m)
+          (begin 
+            (set-pc! m (bvadd pc (bv 4 64)))
+            instr))]
       [(eq? opcode 'lb)
         (when (use-debug-mode) (printf " --> lb ~n"))
         (define rd (list-ref-nat instr 1))

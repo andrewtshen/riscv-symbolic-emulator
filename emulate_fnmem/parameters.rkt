@@ -13,7 +13,7 @@
 (provide use-debug-mode)
 
 ; RAM size log2
-(define ramsize-log2 (make-parameter 31))
+(define ramsize-log2 (make-parameter 32))
 (provide ramsize-log2)
 
 (define use-fnmem (make-parameter #t))
