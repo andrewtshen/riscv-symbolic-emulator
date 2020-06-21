@@ -145,15 +145,18 @@
 
 ;; Memory Reads/Writes
 
-; mem: uf, addr: bitvector ramsize-log2, value: any
-(define (memory-write m addr value)
-  (if (use-fnmem)
-    (lambda (addr*)
-      (if (bveq addr addr*)
-        value
-        ((machine-ram m) addr*)))
-    (vector-set! (machine-ram m) (bitvector->natural addr) value)))
-(provide memory-write)
+; mem: uf, addr: bitvector ramsize-log2, value: bitvector 8
+(define (uf-memory-write mem addr value)
+  (lambda (addr*)
+    (if (bveq addr addr*)
+      value
+      (mem addr*))))
+(provide uf-memory-write)
+
+; m: machine, addr, bitvector ramsize-log2, value: bitvector 8
+(define (vector-memory-write! m addr value)
+  (vector-set! (machine-ram m) (bitvector->natural addr) value))
+(provide vector-memory-write!)
 
 ; mem: uf, addr: bitvector: ramsize-log2, val: bitvector 8
 (define (memory-read mem addr)
@@ -217,8 +220,8 @@
     ; adjust pos for bitvector size (ramsize-log2)
     (define adj_pos (extract (- (ramsize-log2) 1) 0 pos))
     (if (use-fnmem)
-      (set-machine-ram! m (memory-write m adj_pos v))
-      (memory-write m adj_pos v))))
+      (set-machine-ram! m (uf-memory-write (machine-ram m) adj_pos v))
+      (vector-memory-write! m adj_pos v))))
 
 ;; PMP checks
 

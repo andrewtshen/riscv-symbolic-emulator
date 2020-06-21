@@ -84,7 +84,7 @@
   (when (use-fnmem)
     (for ([byte program]
           [i (in-naturals)])
-      (set! fnmem (memory-write fnmem (bv i (ramsize-log2)) byte))))
+      (set! fnmem (uf-memory-write fnmem (bv i (ramsize-log2)) byte))))
   (when (use-debug-mode) (printf "ramsize-log2: ~a~n" (ramsize-log2)))
 
   (define m
