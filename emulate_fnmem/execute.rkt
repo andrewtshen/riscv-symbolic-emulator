@@ -582,11 +582,12 @@
               (define-symbolic* v_rs2 (bitvector 64)) ; fetch arbitrary instruction
               (define-symbolic* adj_addr (bitvector 64)) ; fetch arbitrary instruction
               (machine-ram-write! m adj_addr v_rs2 nbits))
-            (begin 
+            (begin
               (define v_rs1 (gprs-get-x m (list-ref-nat instr 1)))
               (define v_rs2 (gprs-get-x m (list-ref-nat instr 2)))
               (define imm (sign-extend (list-ref instr 3) (bitvector 64)))
               (define addr (bvadd v_rs1 imm))
+              ; (printf "addr: ~a~n" addr)
               (define adj_addr (bvsub addr (base-address)))
               (machine-ram-write! m adj_addr v_rs2 nbits))))
         (cond
