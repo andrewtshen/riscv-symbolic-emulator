@@ -364,7 +364,7 @@
 	(assert (bveq (memory-read (machine-ram m1) pos) (memory-read (machine-ram m2) pos))))
 (provide assert-mem-equal)
 
-(define-test-suite noninterference
+(define-test-suite step-checks
 	(test-case "memory tests"
 		(printf "* Running memory tests ~n")
 		(define m (parameterize
@@ -424,12 +424,45 @@
 									(and (bveq (get-pc m) (bvsub (get-csr m 'mtvec) (base-address))) (equal? (machine-mode m) 1))))))
 		(check-true (unsat? model_mode))))
 
+(define-test-suite inductive-step
+	(test-case "inductive step test"
+		(define m (parameterize
+			([ramsize-log2 20])
+			(init-machine)))
+		(define m1 (deep-copy-machine m))
+
+		(define next_instr (parameterize
+			([use-sym-optimizations #f]
+			[use-debug-mode #f]
+			[ramsize-log2 20])
+			(step m)))
+
+		(define model_mode (verify
+			(assert (or (equal? (machine-mode m) (machine-mode m1))
+									(and (bveq (get-pc m) (bvsub (get-csr m 'mtvec) (base-address))) (equal? (machine-mode m) 1))))))
+		(check-true (unsat? model_mode))
+
+		(clear-asserts!)
+		(define model_OK (verify
+			(assert-OK m1)))
+		(check-true (unsat? model_OK))
+
+		(clear-asserts!)
+		(define-symbolic* sym-idx (bitvector 20))
+		(define model_noninterference (verify
+			#:assume
+			(assert (and (not (bvule (bv #x20000 32) sym-idx) (bvule sym-idx (bv #x3FFFF 32)))))
+			#:guarantee
+			(assert-mem-equal m m1 sym-idx)))
+		(check-true (unsat? model_noninterference))))
+
 ; other test cases work with pmpaddr0 set to #x00000000200003ff
 
 ; (define res-instruction-check (run-tests instruction-check))
 ; (define res-utils (run-tests utils))
 ; (define res-high-level-test (run-tests high-level-test))
-(define res-kernel (time (run-tests boot-sequence)))
-(printf "~a~n" res-kernel)
-(define res-noninterference (time (run-tests noninterference)))
-(printf "~a~n" res-noninterference)
+; (define res-step-checks (time (run-tests step-checks)))
+
+;; These two test cases correspond to the base case and inductive step
+(define res-boot-sequence (time (run-tests boot-sequence)))
+(define res-inductive-step (time (run-tests inductive-step)))
