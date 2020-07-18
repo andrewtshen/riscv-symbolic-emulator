@@ -4,7 +4,7 @@ Andrew Shen
 ## 1 Introduction
 Modern personal computers (PCs) often contain numerous security vulnerabilities due to bugs in their complex operating systems, which have millions of lines of code[1]. In other words, the size of the Trusted Computing Base (TCB), or the code assumed to be implemented correctly, is relatively large, and as a result, writing a bug-free operating system on the scale of Linux or Windows is nearly impossible. However, many applications that might run on the PC including cryptocurrency or banking software require strong guarantees to ensure secure transactions. The security guarantees provided by PCs are insufficient for these security sensitive operations. Hardware wallets, small devices with an independent operating system, provide the capabilities to isolate these sensitive operations and complete them securely. Hardware wallets have a screen and buttons used to authorize and sign transactions and connect to the PC through a USB port. This allows for the application to be split into two parts where the majority of the application still runs on the PC, but the secure transaction approval step occurs on the hardware wallet. Figure 1.1 illustrates this process. The private keys used to sign the transactions are stored solely on the hardware wallet, completely isolating them from the PC. Because hardware wallets only need to perform a small subset of the operations that a PC would, they use a significantly smaller operating system. With a smaller codebase and TCB, there would be less room for attacks and fewer bugs. Rather than trusting the PC, the user only needs to trust that the hardware wallet works as intended. For example, a compromised PC would be unable to steal Bitcoin from a hardware wallet as it would be unable to access the confidential information stored solely on the hardware wallet. If the PC tried to perform a malicious action, the hardware wallet would receive the transaction and then display the exact transaction it received on the screen. This way if the compromised PC requested a malicious transaction, for example, the user could decline said transaction. There is no other method of signing the transaction other than using the private keys, which reside solely on the hardware wallet.
 
-![Hardware Wallet Diagram](Hardware-Wallet-Diagram.png)
+![](Hardware-Wallet-Diagram.png)
 
 **Figure 1.1.** A diagram of a hardware wallet receiving and approving a transaction from the PC after the user has physically confirmed the transaction shown on the display using the buttons on the hardware wallet.
 
@@ -44,7 +44,7 @@ pmpaddr15 = 0x0
 
 Also, we must show that after booting up into this “OK” state and switching to user mode for execution of the application, that any instruction running in user mode causes exactly one of the following two cases to occur: either the kernel remains in user mode and the kernel maintains the “OK” property, or the kernel switches to kernel mode and begins executing at the location predefined by the mtvec register, which handles system calls (Figure 2.2). This corresponds to a standard inductive proof where the base case is setting up our kernel into the “OK” state and the inductive step proves that no individual instruction can tamper with protected RAM.
 
-![Proof Diagram](Proof-Diagram.jpg)
+![](Proof-Diagram.jpg)
 
 **Figure 2.2.** A diagram of the workflow of our kernel. The kernel configures during the boot sequence until it reaches state s0, where s0 is the state of the machine immediately after the kernel boots up. Then the kernel runs for an arbitrary number of steps n, where it remains in U-mode and “OK” until it reaches state sn at which point it switches to M-mode and begins executing at the address defined by mtvec.
 
@@ -110,7 +110,8 @@ To implement a machine emulator that works with symbolic variables, we turn to t
             (define rd (list-ref-nat instr 1))
             (define v_rs1 (gprs-get-x m (list-ref-nat instr 2)))
             [...]
-            (define val (sign-extend (machine-ram-read m adj_addr 1) (bitvector 64)))
+            (define val (sign-extend (machine-ram-read m adj_addr 1)
+                                    (bitvector 64)))
             (gprs-set-x! m rd val)
             (set-pc! m (bvadd pc (bv 4 64)))
             instr]
@@ -161,7 +162,8 @@ Oftentimes, due to the nature of Rosette, it can be beneficial to express certai
 (printf "After Write: ~a~n" (array-memory-read array_memory idx))
 
 ; >>> Before Write: (ite* (⊢ (= 0 idx$0) 0) (⊢ (= 1 idx$0) 1) (⊢ (= 2 idx$0) 2))
-; >>> After Write: (ite* (⊢ (= 0 idx$0) (ite (= 0 pos$0) val$0 0)) (⊢ (= 1 idx$0) (ite (= 1 pos$0) val$0 1)) (⊢ (= 2 idx$0) (ite (= 2 pos$0) val$0 2)))
+; >>> After Write: (ite* (⊢ (= 0 idx$0) (ite (= 0 pos$0) val$0 0)) (⊢ (= 1 idx$0)
+                    (ite (= 1 pos$0) val$0 1)) (⊢ (= 2 idx$0) (ite (= 2 pos$0) val$0 2)))
 
 (define uf_memory (fresh-symbolic fnmem (~> integer? integer?)))
 (uf-memory-write! uf_memory 0 0)
