@@ -2,13 +2,14 @@
 Andrew Shen
 
 ## 1 Introduction
-Modern personal computers (PCs) often contain numerous security vulnerabilities due to bugs in their complex operating systems, which have millions of lines of code. In other words, the size of the Trusted Computing Base (TCB), or the code assumed to be implemented correctly, is relatively large, and as a result, writing a bug-free operating system on the scale of Linux or Windows is nearly impossible. However, many applications that might run on the PC including cryptocurrency or banking software require strong guarantees to ensure secure transactions. The security guarantees provided by PCs are insufficient for these security sensitive operations. Hardware wallets, small devices with an independent operating system, provide the capabilities to isolate these sensitive operations and complete them securely. Hardware wallets have a screen and buttons used to authorize and sign transactions and connect to the PC through a USB port. This allows for the application to be split into two parts where the majority of the application still runs on the PC, but the secure transaction approval step occurs on the hardware wallet. Figure 1.1 illustrates this process. The private keys used to sign the transactions are stored solely on the hardware wallet, completely isolating them from the PC. Because hardware wallets only need to perform a small subset of the operations that a PC would, they use a significantly smaller operating system. With a smaller codebase and TCB, there would be less room for attacks and fewer bugs. Rather than trusting the PC, the user only needs to trust that the hardware wallet works as intended. For example, a compromised PC would be unable to steal Bitcoin from a hardware wallet as it would be unable to access the confidential information stored solely on the hardware wallet. If the PC tried to perform a malicious action, the hardware wallet would receive the transaction and then display the exact transaction it received on the screen. This way if the compromised PC requested a malicious transaction, for example, the user could decline said transaction. There is no other method of signing the transaction other than using the private keys, which reside solely on the hardware wallet.
+Modern personal computers (PCs) often contain numerous security vulnerabilities due to bugs in their complex operating systems, which have millions of lines of code[1]. In other words, the size of the Trusted Computing Base (TCB), or the code assumed to be implemented correctly, is relatively large, and as a result, writing a bug-free operating system on the scale of Linux or Windows is nearly impossible. However, many applications that might run on the PC including cryptocurrency or banking software require strong guarantees to ensure secure transactions. The security guarantees provided by PCs are insufficient for these security sensitive operations. Hardware wallets, small devices with an independent operating system, provide the capabilities to isolate these sensitive operations and complete them securely. Hardware wallets have a screen and buttons used to authorize and sign transactions and connect to the PC through a USB port. This allows for the application to be split into two parts where the majority of the application still runs on the PC, but the secure transaction approval step occurs on the hardware wallet. Figure 1.1 illustrates this process. The private keys used to sign the transactions are stored solely on the hardware wallet, completely isolating them from the PC. Because hardware wallets only need to perform a small subset of the operations that a PC would, they use a significantly smaller operating system. With a smaller codebase and TCB, there would be less room for attacks and fewer bugs. Rather than trusting the PC, the user only needs to trust that the hardware wallet works as intended. For example, a compromised PC would be unable to steal Bitcoin from a hardware wallet as it would be unable to access the confidential information stored solely on the hardware wallet. If the PC tried to perform a malicious action, the hardware wallet would receive the transaction and then display the exact transaction it received on the screen. This way if the compromised PC requested a malicious transaction, for example, the user could decline said transaction. There is no other method of signing the transaction other than using the private keys, which reside solely on the hardware wallet.
 
 ![Hardware Wallet Diagram](Hardware-Wallet-Diagram.png)
 
 **Figure 1.1.** A diagram of a hardware wallet receiving and approving a transaction from the PC after the user has physically confirmed the transaction shown on the display using the buttons on the hardware wallet.
 
-Although operating systems on hardware wallets are less complex than those on PCs, they are still prone to error and have many thousands of lines of code. For example, security vulnerabilities have been previously discovered in modern hardware wallets such as Ledger. These vulnerabilities range from hardware misconfiguration bugs that can be abused without even leaving user mode to system call argument validation bugs in the kernel. One method used to eliminate these sorts of bugs is by using formal verification, a technique used to reason about the behavior of a program. Prior work such as HV6 and Serval tackle verifying a desktop-style operating system by using push-button formal verification. However, these previous works only reason about individual system calls and do not reason about code that runs between these system calls in user mode. One bug that Serval would not detect would be a misconfigured physical memory protection (PMP) register, which would allow user code to access memory that it should not. We seek to reduce the TCB further by using formal verification to eliminate certain classes of bugs that could be exploited while running in user mode. One such security property would be guaranteeing that user code is unable to modify any memory that it is not permitted to access. To accomplish this task, we build a kernel in RISC-V, which represents a simplified version of an actual hardware wallet kernel. In addition, we also build a QEMU-like symbolic machine emulator to reason about the behavior of our kernel. This machine emulator differs from QEMU in that it can reason about symbolic values in the machine state, essentially allowing us to reason about machine execution even when some aspects such as the user code are unknown, which allows us to reason about arbitrary user mode code. This enables us to state and prove important security properties such as the inability of code running in user mode to change RAM of protected regions. We prove that applications cannot tamper with the isolation set up while executing in user mode. With proofs further reasoning about system calls, we could complete an end-to-end proof about the system's execution. Although this is not yet an end-to-end correctness proof, we prove important properties that are also useful. 
+Although operating systems on hardware wallets are less complex than those on PCs, they are still prone to error and have many thousands of lines of code[2]. For example, security vulnerabilities have been previously discovered in modern hardware wallets such as Ledger. These vulnerabilities range from hardware misconfiguration bugs that can be abused without even leaving user mode to system call argument validation bugs in the kernel. One method used to eliminate these sorts of bugs is by using formal verification, a technique used to reason about the behavior of a program. Prior work such as HV6[3] and Serval[4] tackle verifying a desktop-style operating system by using push-button formal verification. However, these previous works only reason about individual system calls and do not reason about code that runs between these system calls in user mode. One bug that Serval would not detect would be a misconfigured physical memory protection (PMP) register, which would allow user code to access memory that it should not. We seek to reduce the TCB further by using formal verification to eliminate certain classes of bugs that could be exploited while running in user mode. One such security property would be guaranteeing that user code is unable to modify any memory that it is not permitted to access. To accomplish this task, we build a kernel in RISC-V, which represents a simplified version of an actual hardware wallet kernel. In addition, we also build a QEMU-like symbolic machine emulator to reason about the behavior of our kernel. This machine emulator differs from QEMU in that it can reason about symbolic values in the machine state, essentially allowing us to reason about machine execution even when some aspects such as the user code are unknown, which allows us to reason about arbitrary user mode code. This enables us to state and prove important security properties such as the inability of code running in user mode to change RAM of protected regions. We prove that applications cannot tamper with the isolation set up while executing in user mode. With proofs further reasoning about system calls, we could complete an end-to-end proof about the system's execution. Although this is not yet an end-to-end correctness proof, we prove important properties that are also useful. 
+
 
 ## 2 Approach
 ### 2.1 Kernel Design
@@ -65,67 +66,67 @@ To implement a machine emulator that works with symbolic variables, we turn to t
 
 ```racket
 (define (decode m b_instr)
-	(define instr null)
-	(define opcode (extract 6 0 b_instr))
-	(define fmt (get-fmt m opcode))
-	(cond
-		[(eq? fmt 'R)
-			(decode-R m b_instr)]
-		[(eq? fmt 'I)
-			(decode-I m b_instr)]
-		[...]
-		[else
-			(illegal-instr m)]))
+    (define instr null)
+    (define opcode (extract 6 0 b_instr))
+    (define fmt (get-fmt m opcode))
+    (cond
+        [(eq? fmt 'R)
+	    (decode-R m b_instr)]
+	[(eq? fmt 'I)
+	    (decode-I m b_instr)]
+	[...]
+	[else
+		(illegal-instr m)]))
 (provide decode)
 ```
 **Figure 2.4.** A snippet of the `decode` function used to retrieve the instruction and parameters from a byte string.
 
 ```racket
 (define (decode-R m b_instr)
-	(define op null)
-	(define rd (extract 11 7 b_instr))
-	(define funct3 (extract 14 12 b_instr))
-	[...]
-	(define valid null)
-	(cond
-		[(and (bveq funct3 (bv #b000 3))
-			(bveq funct7 (bv #b0000000 7)))
-			(list 'add rd rs1 rs2)]
-		[(and (bveq funct3 (bv #b000 3))
-			(bveq funct7 (bv #b0100000 7)))
-			(list 'sub rd rs1 rs2)]
-		[...]
-		[else
-			(illegal-instr m)]))
+    (define op null)
+    (define rd (extract 11 7 b_instr))
+    (define funct3 (extract 14 12 b_instr))
+    [...]
+    (define valid null)
+    (cond
+        [(and (bveq funct3 (bv #b000 3))
+                (bveq funct7 (bv #b0000000 7)))
+                (list 'add rd rs1 rs2)]
+        [(and (bveq funct3 (bv #b000 3))
+                (bveq funct7 (bv #b0100000 7)))
+                (list 'sub rd rs1 rs2)]
+        [...]
+        [else
+            (illegal-instr m)]))
 ```
 **Figure 2.5.** A snippet of a utility function used by the main `decode` function to decode “R-Format” instructions, one of the few types of formats possible. 
 
 ```racket
 (define (execute instr m)
-	(define opcode (list-ref instr 0))
-	(define pc (get-pc m))
-	(cond
-		[(eq? opcode 'lb)
-			(define rd (list-ref-nat instr 1))
-			(define v_rs1 (gprs-get-x m (list-ref-nat instr 2)))
-			[...]
-			(define val (sign-extend (machine-ram-read m adj_addr 1) (bitvector 64)))
-			(gprs-set-x! m rd val)
-			(set-pc! m (bvadd pc (bv 4 64)))
-			instr]
-		[(eq? opcode 'sb)
-			(define v_rs1 (gprs-get-x m (list-ref-nat instr 1)))
-			[...]			
-			(define success (machine-ram-write! m adj_addr v_rs2 8))
-			instr])]))
+    (define opcode (list-ref instr 0))
+    (define pc (get-pc m))
+    (cond
+        [(eq? opcode 'lb)
+            (define rd (list-ref-nat instr 1))
+            (define v_rs1 (gprs-get-x m (list-ref-nat instr 2)))
+            [...]
+            (define val (sign-extend (machine-ram-read m adj_addr 1) (bitvector 64)))
+            (gprs-set-x! m rd val)
+            (set-pc! m (bvadd pc (bv 4 64)))
+            instr]
+        [(eq? opcode 'sb)
+            (define v_rs1 (gprs-get-x m (list-ref-nat instr 1)))
+            [...]			
+            (define success (machine-ram-write! m adj_addr v_rs2 8))
+            instr])]))
 ```
 **Figure 2.6.** A snippet of the `execute` function, which takes a decoded instruction and executes it, applying the result on the state of the machine `m`.
 
 ```racket
 (define (step m)
-	(define next_instr (get-next-instr m)) ; fetch raw instruction
-	(define decoded_instr (decode m next_instr))
-	(execute decoded_instr m))
+    (define next_instr (get-next-instr m)) ; fetch raw instruction
+    (define decoded_instr (decode m next_instr))
+    (execute decoded_instr m))
 ```
 **Figure 2.7.** The `step` function is analogous to the `step` referenced by the proof. Each step fetches, decodes, and executes one instruction from the machine `m` RAM.
 
@@ -184,7 +185,7 @@ Though our symbolic machine emulator implements enough of the RISC-V instruction
 
 ## 4 Related Work
 HV6 and Serval use push-button verification to prove properties about system calls operating in kernel mode for desktop-like operating systems.
-sel4 uses a manual proof with Isabelle, a proof assistant, to prove the correctness of a microcontroller style kernel for use on an embedded device. CertiKOS is another recent work that also uses proof assistants to prove security properties about their kernel, which has the unique capability of supporting concurrent operations. This technique uses a high level of effort to construct the proof.
+sel4[5] uses a manual proof with Isabelle, a proof assistant, to prove the correctness of a microcontroller style kernel for use on an embedded device. CertiKOS[6] is another recent work that also uses proof assistants to prove security properties about their kernel, which has the unique capability of supporting concurrent operations. This technique uses a high level of effort to construct the proof.
 
 ## 5 Conclusion
 We make progress on developing a proof of end-to-end correctness for application isolation on cryptocurrency hardware wallets by using formal verification techniques. We build a kernel and symbolic machine emulator, which can reason about the machine state even when some aspects are unknown, and prove that we can set up the kernel at boot time in such a way that user applications are properly isolated and are unable to modify private memory.
