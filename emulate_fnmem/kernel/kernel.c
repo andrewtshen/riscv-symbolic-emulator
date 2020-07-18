@@ -14,6 +14,7 @@ static void pmp_init(void);
 static void pmp_decode_napot(uint64_t a);
 static inline int ctz64(uint64_t val);
 
+// TODO: Make sure these numbers are correct
 #define USER_BASE 0x80020000L
 #define USER_SIZE 0x00020000L
 #define PROG_INDEX 0
@@ -43,12 +44,14 @@ static void pmp_init(void) {
     w_pmpaddr0(get_pmp_napot_addr(0x80020000L, 0x20000L));
     w_pmp0cfg(PMPCFG(0, PMPCFG_A_NAPOT, 1, 1, 1));
 
+    // TODO: enable, for now fix so that it doesn't enable
+    // (also see how this affects OK property)
     // // PMP region 1: enable uart for all users
     // w_pmpaddr1(get_pmp_napot_addr(0x10000000L, 0x800000L));
     // w_pmp1cfg(PMPCFG(0, PMPCFG_A_NAPOT, 1, 1, 1));
 
     // PMP region 2: user has no access to entire memory range
-    w_pmpaddr8((~0L) >> 1);
+    w_pmpaddr8(((unsigned long long)~0L) >> 1);
     w_pmp8cfg(PMPCFG(0, PMPCFG_A_NAPOT, 0, 0, 0));
 }
 

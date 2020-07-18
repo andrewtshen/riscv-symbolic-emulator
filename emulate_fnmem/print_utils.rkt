@@ -24,11 +24,11 @@
   (printf "pmpaddr8 base/range: ~a~n" (pmp-decode-napot (get-csr m 'pmpaddr8))))
 (provide print-pmp)
 
-; TODO: fix to work with uf mem or array mem
-(define (print-memory m ramsize)
-  (for [(i (in-range 0 ramsize))]
-    (printf "i: ~a value: ~a~n" i ((machine-ram m) (bv i 32)))))
-(provide print-memory)
+; ; TODO: fix to work with uf mem or array mem
+; (define (print-memory m ramsize)
+;   (for [(i (in-range 0 ramsize))]
+;     (printf "i: ~a value: ~a~n" i ((machine-ram m) (bv i 32)))))
+; (provide print-memory)
 
 ; (define (print-memory m start end)
 ;   (for ([i (in-range start end)])

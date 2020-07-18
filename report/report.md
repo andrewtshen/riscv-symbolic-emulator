@@ -17,10 +17,10 @@ We built a kernel similar to one found in a real hardware wallet. We design our 
 Our goal is to prove that our applications are isolated from one another. To prove this property about our kernel, we must show that we can set up our kernel in such a way that by the time we enter use mode, the application is running in user mode and cannot modify confidential memory. We use the PMP registers to restrict the user application memory access as well as configure other critical registers at boot time (mtvec, mstatus, etc) at boot time to create this state, which we will refer to this configuration of kernel registers as being “OK” (Figure 2.1). 
 
 ```
-mtvec = 0x0000000080000000
+mtvec = 0x0000000080000080
 pmpcfg0 = 0x000000000000001f
 pmpcfg2 = 0x0000000000000018
-pmpaddr0 = 0x0000000020000bff
+pmpaddr0 = 0x000000002000bfff
 pmpaddr1 = 0x0
 pmpaddr1 = 0x0
 pmpaddr2 = 0x0

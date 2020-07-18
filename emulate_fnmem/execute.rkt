@@ -587,7 +587,8 @@
               (define v_rs2 (gprs-get-x m (list-ref-nat instr 2)))
               (define imm (sign-extend (list-ref instr 3) (bitvector 64)))
               (define addr (bvadd v_rs1 imm))
-              ; (printf "addr: ~a~n" addr)
+              ; (when (and (not (use-fnmem)) (bveq (bvsmod addr (bv #x100 64)) (bv 0 64)))
+              ;   (printf "addr: ~a~n" addr))
               (define adj_addr (bvsub addr (base-address)))
               (machine-ram-write! m adj_addr v_rs2 nbits))))
         (cond

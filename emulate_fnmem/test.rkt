@@ -12,6 +12,7 @@
 (require (only-in racket/base 
 	custodian-limit-memory current-custodian parameterize call-with-parameterization parameterize* for for/list for/vector in-range))
 (require rackunit rackunit/text-ui)
+(require profile)
 
 ;; Test Cases for Symbolic Executions
 
@@ -266,14 +267,48 @@
 		; check that it has returned successfully
 		(check-true #t)))
 
-(define-test-suite kernel
-	(test-case "kernel test"
+(define-test-suite boot-sequence
+	(test-case "boot sequence test"
 		(define program (file->bytearray "kernel/kernel.bin"))
 		(printf "* Running kernel.bin test ~n")
-		(define m (init-machine-with-prog program))
-		(execute-until-mret m)
+		(define m (parameterize
+			([use-sym-optimizations #f]
+			 [use-debug-mode #f]
+			 [use-fnmem #f])
+			(init-machine-with-prog program)))
+		(parameterize
+			([use-sym-optimizations #f]
+			 [use-debug-mode #f]
+			 [use-fnmem #f])
+			(execute-until-mret m))
 		(print-pmp m)
-		(check-true (equal? (machine-mode m) 0))))
+		(check-true (equal? (machine-mode m) 0))
+		(assert-OK m)))
+
+(define (assert-OK m)
+	; mode is not always equal, do not assert
+	; OK property
+	(assert (bveq (get-csr m 'mtvec) (bv #x0000000080000080 64)))
+	(assert (bveq (get-csr m 'pmpcfg0) (bv #x000000000000001f 64)))
+	(assert (bveq (get-csr m 'pmpcfg2) (bv #x0000000000000018 64)))
+	(assert (bveq (get-csr m 'pmpaddr0) (bv #x000000002000bfff 64)))
+	(assert (bveq (get-csr m 'pmpaddr1) (bv #x0 64)))
+	(assert (bveq (get-csr m 'pmpaddr1) (bv #x0 64)))
+	(assert (bveq (get-csr m 'pmpaddr2) (bv #x0 64)))
+	(assert (bveq (get-csr m 'pmpaddr3) (bv #x0 64)))
+	(assert (bveq (get-csr m 'pmpaddr4) (bv #x0 64)))
+	(assert (bveq (get-csr m 'pmpaddr5) (bv #x0 64)))
+	(assert (bveq (get-csr m 'pmpaddr6) (bv #x0 64)))
+	(assert (bveq (get-csr m 'pmpaddr7) (bv #x0 64)))
+	(assert (bveq (get-csr m 'pmpaddr8) (bv #x7fffffffffffffff 64)))
+	(assert (bveq (get-csr m 'pmpaddr9) (bv #x0 64)))
+	(assert (bveq (get-csr m 'pmpaddr10) (bv #x0 64)))
+	(assert (bveq (get-csr m 'pmpaddr11) (bv #x0 64)))
+	(assert (bveq (get-csr m 'pmpaddr12) (bv #x0 64)))
+	(assert (bveq (get-csr m 'pmpaddr13) (bv #x0 64)))
+	(assert (bveq (get-csr m 'pmpaddr14) (bv #x0 64)))
+	(assert (bveq (get-csr m 'pmpaddr15) (bv #x0 64))))
+(provide assert-OK)
 
 (define (assert-csr-equal m1 m2)
 	; mode is not always equal, do not assert
@@ -349,15 +384,16 @@
 		(clear-asserts!)
 		(define model_noninterference (verify
 			#:assume
-			(assert (and (bvule (bv #x20000 32) sym-idx) (bvule sym-idx (bv #x40000 32))))
+			(assert (and (not (bvule (bv #x20000 32) sym-idx) (bvule sym-idx (bv #x3FFFF 32)))))
 			#:guarantee
 			(assert-mem-equal m m1 sym-idx)))
 		(check-true (unsat? model_noninterference))
 
+		; check the upper/lower bounds of the user region
 		(clear-asserts!)
 		(define model_ubound (verify
 			#:assume
-			(assert (bveq sym-idx (bv #x1FFFF 32)))
+			(assert (bveq sym-idx (bv #x3FFFF 32)))
 			#:guarantee
 			(assert-mem-equal m m1 sym-idx)))
 		(check-true (not (unsat? model_ubound)))
@@ -365,7 +401,7 @@
 		(clear-asserts!)
 		(define model_lbound (verify
 			#:assume
-			(assert (bveq sym-idx (bv #x0 32)))
+			(assert (bveq sym-idx (bv #x20000 32)))
 			#:guarantee
 			(assert-mem-equal m m1 sym-idx)))
 		(check-true (not (unsat? model_lbound))))
@@ -386,27 +422,14 @@
 		(define model_mode (verify
 			(assert (or (equal? (machine-mode m) (machine-mode m1))
 									(and (bveq (get-pc m) (bvsub (get-csr m 'mtvec) (base-address))) (equal? (machine-mode m) 1))))))
-		(check-true (unsat? model_mode)))
-	(test-case "boot test"
-		(printf "* Running boot test ~n")
-		(define program (file->bytearray "kernel/kernel.bin"))
-
-		(define m (parameterize
-			([use-fnmem #f])
-			(init-machine-with-prog program)))
-		(parameterize
-			([use-fnmem #f])
-			(execute-until-mret m))
-		(print-pmp m)
-		; (define model_mode (verify
-		; 	(assert )))
-		; (check-true (unsat? model_mode))
-		(check-true (equal? (machine-mode m) 0))))
+		(check-true (unsat? model_mode))))
 
 ; other test cases work with pmpaddr0 set to #x00000000200003ff
 
-(define res-instruction-check (run-tests instruction-check))
-(define res-utils (run-tests utils))
-(define res-high-level-test (run-tests high-level-test))
-(define res-kernel (run-tests kernel))
-(define res-noninterference (run-tests noninterference))
+; (define res-instruction-check (run-tests instruction-check))
+; (define res-utils (run-tests utils))
+; (define res-high-level-test (run-tests high-level-test))
+(define res-kernel (time (run-tests boot-sequence)))
+(printf "~a~n" res-kernel)
+(define res-noninterference (time (run-tests noninterference)))
+(printf "~a~n" res-noninterference)
