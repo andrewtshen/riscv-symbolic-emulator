@@ -1,5 +1,6 @@
 # RISC-V Symbolic Emulator
 This project was built during the PRIMES 2019-2020 program by Andrew Shen under the mentorship of Anish Athalye.
+The paper can be found at: https://math.mit.edu/research/highschool/primes/materials/2020/Shen.pdf
 
 ## Roadmap to the Directories
 For more information on each of the directories use the README.md in each of the directories.
