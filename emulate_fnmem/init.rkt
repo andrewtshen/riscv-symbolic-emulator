@@ -46,8 +46,6 @@
   (define ramsize (expt 2 (ramsize-log2)))
   (when (use-debug-mode) (printf "ramsize: ~x~n" ramsize))
   (when (use-debug-mode) (printf "proglength: ~a~n" proglength))
-  (printf "proglength: ~a~n" proglength)
-  (printf "ramsize: ~x~n" ramsize)
   (unless (>= ramsize proglength)
     (printf "Not enough RAM provided to run program~n"))
   (define-symbolic* mtvec mepc mstatus pmpcfg0 pmpcfg2 pmpaddr0 pmpaddr1 pmpaddr2
@@ -79,7 +77,7 @@
 
   ; use this for undefined memory
   (define fnmem (fresh-symbolic fnmem (~> (bitvector (ramsize-log2)) (bitvector 8))))
-  ; use this for defined memory but it's "fake" code
+  ; use this for defined memory but it's "fake" code in the sense that it maps everything to 0
   ; (define fnmem (lambda (addr*) (bv 0 8)))
 
   ; All concrete values here, so we can use (bv i 64) without issues
@@ -143,8 +141,6 @@
 
   (when (use-debug-mode) (printf "ramsize-log2: ~a~n" (ramsize-log2)))
   (define fnmem (fresh-symbolic fnmem (~> (bitvector (ramsize-log2)) (bitvector 8))))
-
-  (printf "ramsize: ~a~n" (expt 2 (ramsize-log2)))
   (define m
     (machine
       (cpu 
@@ -153,7 +149,7 @@
           pmpaddr3 pmpaddr4 pmpaddr5 pmpaddr6 pmpaddr7 pmpaddr8 pmpaddr9
           pmpaddr10 pmpaddr11 pmpaddr12 pmpaddr13 pmpaddr14 pmpaddr15)
         (make-sym-vector 31 64 gpr) ; be careful of -1 for offset
-        pc) ; make pc symbolic
+        pc) ; symbolic pc
       (if (use-fnmem)
         fnmem
         (make-sym-vector (expt 2 (ramsize-log2)) 8 mem))

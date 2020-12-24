@@ -47,3 +47,4 @@
 
 ; (printf "base: #x80000000, size: #x20000 ~a~n" (pmp-encode-napot (bv #x80020000 64) (bv #x20000 64)))
 ; (printf "decoding #x: ~a~n" (pmp-decode-napot (bv #x7fffffffffffffff 64)))
+; (printf "decoding #x: ~a~n" (pmp-decode-napot (bv #x00000000200003ff 64)))
