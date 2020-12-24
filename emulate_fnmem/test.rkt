@@ -145,7 +145,6 @@
 										(bvadd (list-ref gprsx 5) (list-ref gprsx 3)))))))
 		(check-true (unsat? model_addw)))
 	(test-case "sub test"
-		; TODO: make this into an actual test case
 		(define program (file->bytearray "build/sub.bin"))
 		(printf "* Running sub.bin test ~n")
 		(define m (init-machine-with-prog program))
@@ -190,9 +189,6 @@
 		(define model_sw_lw (verify (begin 
 			(assert (bveq (extract 31 0 (list-ref gprsx 2))
 				(extract 31 0 (list-ref gprsx 3)))))))
-		; (define model_lw_sw (verify (begin 
-		; 	(assert (bveq (extract 32 0 (list-ref gprsx 2))
-		; 		(extract 32 0 (list-ref gprsx 3)))))))
 		(check-true (unsat? model_sw_lw)))
 	(test-case "sh/lh test"
 		(define program (file->bytearray "build/sh_lh.bin"))
@@ -201,11 +197,9 @@
 		(parameterize
 			([use-debug-mode #f])
 			(execute-until-mret m))
-
 		(define gprsx
 			(for/list ([i (in-range 10 18)])
 				(gprs-get-x m i)))
-
 		; half-word, index into the 15 lower bits
 		(define model_sh_lh (verify (begin 
 			(assert (bveq (extract 15 0 (list-ref gprsx 2))
@@ -218,24 +212,21 @@
 		(parameterize
 			([use-debug-mode #f])
 			(execute-until-mret m))
-
 		(define gprsx
 			(for/list ([i (in-range 10 18)])
 				(gprs-get-x m i)))
-
 		; half-word, index into the 15 lower bits
 		(define model_sb_lb (verify (begin 
 			(assert (bveq (extract 7 0 (list-ref gprsx 2))
 				(extract 7 0 (list-ref gprsx 3)))))))
 		(check-true (unsat? model_sb_lb)))
-	  (test-case "srliw test"
+  (test-case "srliw test"
     (define program (file->bytearray "build/srliw.bin"))
     (printf "* Running srliw.bin test ~n" )
 		(define m (init-machine-with-prog program))
 		(parameterize
 			([use-debug-mode #f])
 			(execute-until-mret m))
-
 		(define gprsx
 			(for/list ([i (in-range 10 18)])
 				(gprs-get-x m i)))
@@ -253,11 +244,9 @@
 		(parameterize
 			([use-debug-mode #f])
 			(execute-until-mret m))
-
 		(define gprsx
 			(for/list ([i (in-range 10 18)])
 				(gprs-get-x m i)))
-		; (displayln gprsx)
 		(define model_addiw (verify (begin 
 			(assert (and (bveq (list-ref gprsx 1) (bv #x000000007fffffff 64))
 										(bveq (list-ref gprsx 2) (bv #xffffffff800007fe 64))
@@ -379,7 +368,7 @@
 			#:guarantee
 			(assert-mem-equal m m1 sym-idx)))
 		(check-true (not (unsat? model_lbound))))
-	(test-case "Mode Test"
+	(test-case "mode test"
 		(printf "* Running mode tests ~n")
 		(define m (parameterize
 			([ramsize-log2 32])
@@ -457,8 +446,6 @@
 			#:guarantee
 			(assert-mem-equal m m1 sym-idx)))
 			(check-true (unsat? model_noninterference))))
-
-; other test cases work with pmpaddr0 set to #x00000000200003ff
 
 ; (define res-instruction-check (run-tests instruction-check))
 ; (define res-utils (run-tests utils))
