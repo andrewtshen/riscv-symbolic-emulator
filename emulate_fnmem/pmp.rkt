@@ -5,16 +5,11 @@
 ; PMP utilities for decoding registers and checking
 
 (define (ctz64 val)
-	(define numz 0)
-	(cond
-		[(bveq val (bv 0 64))
-			(set! numz 0)]
-		[else
-			; iterate through the bitvector and stop on first 1
-			(for [(i (in-range 0 64))]
-				#:break (bveq (extract numz numz val) (bv 1 1))
-				(set! numz (+ numz 1)))])
-	numz)
+  ; If bv with all zeros return 0, else ctz
+  (let helper ((i 0))
+    (if (or (bveq val (bv 0 64)) (bveq (extract i i val) (bv 1 1)))
+      i
+      (helper (+ 1 i)))))
 (provide ctz64)
 
 ; Decode R W X A settings for cfg register

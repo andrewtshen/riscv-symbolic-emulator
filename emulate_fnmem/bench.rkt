@@ -29,8 +29,6 @@
     ; ; use to test a certain value
     ; (assert (bveq sym-idx (bv #x2000 64)))
     #:guarantee
-    ; (assert (equal? (memory-read (machine-ram m) sym-idx)
-    ;                 (memory-read (machine-ram m1) sym-idx)))
     (assert-mem-equal m m1 sym-idx)))
   (printf "model_noninterference: ~a~n" model_noninterference_with_sym_idx)
   (clear-asserts!))
