@@ -2,7 +2,16 @@
 \usepackage{lmodern}
 \usepackage{amssymb,amsmath}
 \usepackage{ifxetex,ifluatex}
-\usepackage{fixltx2e} % provides \textsubscript
+\usepackage{minted}
+% \usepackage{fixltx2e} % provides \textsubscript
+\usepackage{cite} % use for bibtex
+\usepackage{listings}% http://ctan.org/pkg/listings
+\lstset{
+  basicstyle=\ttfamily,
+  columns=fullflexible,
+  frame=single,
+  breaklines=true,
+}
 \ifnum 0\ifxetex 1\fi\ifluatex 1\fi=0 % if pdftex
   \usepackage[T1]{fontenc}
   \usepackage[utf8]{inputenc}
@@ -61,137 +70,41 @@
 \def\fps@figure{htbp}
 \makeatother
 
-
-\date{}
-
 \begin{document}
 
-\section{Towards Proving Application Isolation for Cryptocurrency
+\date{}
+\title{Towards Proving Application Isolation for Cryptocurrency
 Hardware
 Wallets}\label{towards-proving-application-isolation-for-cryptocurrency-hardware-wallets}
+\author{Andrew Shen \\ \href{mailto:shenandrew95@gmail.com}{shenandrew95@gmail.com} \\ MIT PRIMES 2020}
 
-Andrew Shen
+\maketitle
 
 \subsection{1 Introduction}\label{introduction}
 
-Modern personal computers (PCs) often contain numerous security
-vulnerabilities due to bugs in their complex operating systems, which
-have millions of lines of code{[}1{]}. In other words, the size of the
-Trusted Computing Base (TCB), or the code assumed to be implemented
-correctly, is relatively large, and as a result, writing a bug-free
-operating system on the scale of Linux or Windows is nearly impossible.
-However, many applications that might run on the PC including
-cryptocurrency or banking software require strong guarantees to ensure
-secure transactions. The security guarantees provided by PCs are
-insufficient for these security sensitive operations. Hardware wallets,
-small devices with an independent operating system, provide the
-capabilities to isolate these sensitive operations and complete them
-securely. Hardware wallets have a screen and buttons used to authorize
-and sign transactions and connect to the PC through a USB port. This
-allows for the application to be split into two parts where the majority
-of the application still runs on the PC, but the secure transaction
-approval step occurs on the hardware wallet. Figure 1.1 illustrates this
-process. The private keys used to sign the transactions are stored
-solely on the hardware wallet, completely isolating them from the PC.
-Because hardware wallets only need to perform a small subset of the
-operations that a PC would, they use a significantly smaller operating
-system. With a smaller codebase and TCB, there would be less room for
-attacks and fewer bugs. Rather than trusting the PC, the user only needs
-to trust that the hardware wallet works as intended. For example, a
-compromised PC would be unable to steal Bitcoin from a hardware wallet
-as it would be unable to access the confidential information stored
-solely on the hardware wallet. If the PC tried to perform a malicious
-action, the hardware wallet would receive the transaction and then
-display the exact transaction it received on the screen. This way if the
-compromised PC requested a malicious transaction, for example, the user
-could decline said transaction. There is no other method of signing the
-transaction other than using the private keys, which reside solely on
-the hardware wallet.
+Modern personal computers (PCs) often contain numerous security vulnerabilities due to bugs in their complex operating systems, which have millions of lines of code~\cite{Linux}. In other words, the size of the Trusted Computing Base (TCB), or the code assumed to be implemented correctly, is relatively large, and as a result, writing a bug-free operating system on the scale of Linux or Windows is nearly impossible. However, many applications that might run on the PC including cryptocurrency or banking software require strong guarantees to ensure secure transactions. The security guarantees provided by PCs are insufficient for these security sensitive operations. Hardware wallets, small devices with an independent operating system, provide the capabilities to isolate these sensitive operations and complete them securely. Hardware wallets have a screen and buttons used to authorize and sign transactions and connect to the PC through a USB port. This allows for the application to be split into two parts where the majority of the application still runs on the PC, but the secure transaction approval step occurs on the hardware wallet. Figure \ref{fig:figure1} illustrates this process. The private keys used to sign the transactions are stored solely on the hardware wallet, completely isolating them from the PC. Because hardware wallets only need to perform a small subset of the operations that a PC would, they use a significantly smaller operating system. With a smaller codebase and TCB, there would be less room for attacks and fewer bugs. Rather than trusting the PC, the user only needs to trust that the hardware wallet works as intended. For example, a compromised PC would be unable to steal Bitcoin from a hardware wallet as it would be unable to access the confidential information stored solely on the hardware wallet. If the PC tried to perform a malicious action, the hardware wallet would receive the transaction and then display the exact transaction it received on the screen. This way if the compromised PC requested a malicious transaction, for example, the user could decline said transaction. There is no other method of signing the transaction other than using the private keys, which reside solely on the hardware wallet.
 
 \begin{figure}
 \centering
 \includegraphics{Hardware-Wallet-Diagram.png}
-\caption{}
+\caption{A diagram of a hardware wallet receiving and approving a transaction from the PC after the user has physically confirmed the transaction shown on the display using the buttons on the hardware wallet.}
+\label{fig:figure1}
 \end{figure}
 
-\textbf{Figure 1.1.} A diagram of a hardware wallet receiving and
-approving a transaction from the PC after the user has physically
-confirmed the transaction shown on the display using the buttons on the
-hardware wallet.
-
-Although operating systems on hardware wallets are less complex than
-those on PCs, they are still prone to error and have many thousands of
-lines of code{[}2{]}. For example, security vulnerabilities have been
-previously discovered in modern hardware wallets such as Ledger. These
-vulnerabilities range from hardware misconfiguration bugs that can be
-abused without even leaving user mode to system call argument validation
-bugs in the kernel. One method used to eliminate these sorts of bugs is
-by using formal verification, a technique used to reason about the
-behavior of a program. Prior work such as HV6{[}3{]} and Serval{[}4{]}
-tackle verifying a desktop-style operating system by using push-button
-formal verification. However, these previous works only reason about
-individual system calls and do not reason about code that runs between
-these system calls in user mode. One bug that Serval would not detect
-would be a misconfigured physical memory protection (PMP) register,
-which would allow user code to access memory that it should not. We seek
-to reduce the TCB further by using formal verification to eliminate
-certain classes of bugs that could be exploited while running in user
-mode. One such security property would be guaranteeing that user code is
-unable to modify any memory that it is not permitted to access. To
-accomplish this task, we build a kernel in RISC-V, which represents a
-simplified version of an actual hardware wallet kernel. In addition, we
-also build a QEMU-like symbolic machine emulator to reason about the
-behavior of our kernel. This machine emulator differs from QEMU in that
-it can reason about symbolic values in the machine state, essentially
-allowing us to reason about machine execution even when some aspects
-such as the user code are unknown, which allows us to reason about
-arbitrary user mode code. This enables us to state and prove important
-security properties such as the inability of code running in user mode
-to change RAM of protected regions. We prove that applications cannot
-tamper with the isolation set up while executing in user mode. With
-proofs further reasoning about system calls, we could complete an
-end-to-end proof about the system's execution. Although this is not yet
-an end-to-end correctness proof, we prove important properties that are
-also useful.
+Although operating systems on hardware wallets are less complex than those on PCs, they are still prone to error and have many thousands of lines of code~\cite{software-attacks}. For example, security vulnerabilities have been previously discovered in modern hardware wallets such as Ledger. These vulnerabilities range from hardware misconfiguration bugs that can be abused without even leaving user mode to system call argument validation bugs in the kernel. One method used to eliminate these sorts of bugs is by using formal verification, a technique used to reason about the behavior of a program. Prior work such as HV6~\cite{10.1145/3132747.3132748} and Serval~\cite{10.1145/3341301.3359641} tackle verifying a desktop-style operating system by using push-button formal verification. However, these previous works only reason about individual system calls and do not reason about code that runs between these system calls in user mode. One bug that Serval would not detect would be a misconfigured physical memory protection (PMP) register, which would allow user code to access memory that it should not. We seek to reduce the TCB further by using formal verification to eliminate certain classes of bugs that could be exploited while running in user mode. One such security property would be guaranteeing that user code is unable to modify any memory that it is not permitted to access. To accomplish this task, we build a kernel in RISC-V, which represents a simplified version of an actual hardware wallet kernel. In addition, we also build a QEMU-like symbolic machine emulator to reason about the behavior of our kernel. This machine emulator differs from QEMU in that it can reason about symbolic values in the machine state, essentially allowing us to reason about the execution of arbitrary user code. This enables us to state and prove important security properties such as the inability of code running in user mode to change RAM of protected regions. We prove that applications cannot tamper with the isolation set up while executing in user mode. With proofs further reasoning about system calls, we could complete an end-to-end proof about the system's execution. Although this is not yet an end-to-end correctness proof, we prove important properties that are also useful.
 
 \subsection{2 Approach}\label{approach}
 
 \subsubsection{2.1 Kernel Design}\label{kernel-design}
 
-We built a kernel similar to one found in a real hardware wallet. We
-design our kernel to have the following features: the ability to
-download, load, and run different applications. Also, we use a smaller
-codebase to make debugging and reasoning easier. Our target hardware,
-like other hardware wallets, has no virtual memory support. To isolate
-the kernel from the user application we use RISC-V M-mode as our
-privileged level with unrestricted access to memory and use RISC-V
-U-mode for running user applications, which has only restricted access
-to memory due to our PMP register setup. The kernel begins with turning
-on and booting the kernel, where several control register configurations
-occur to set up proper privilege level settings. These boot-time
-operations include configuring the PMP registers in such a way that user
-applications can only access a predefined region of memory they are
-permitted to use and giving the user the choice to download an
-application or load an existing application to be run. Then, the kernel
-executes the application that was selected by the user during boot time.
-After finishing the execution of this program, the kernel stops, and to
-run another application, the user must restart the kernel by physically
-powering off and on the device; the kernel can only run a single
-application within a single run. This simplifies the design of our
-kernel making it easier to reason about while maintaining the same
-functionality. Furthermore, our kernel does not need to support the same
-multiplexing functionality that desktop PCs have as we only ever need to
-run one cryptocurrency application at one time. \#\#\# 2.2 Verification
-Our goal is to prove that our applications are isolated from one
-another. To prove this property about our kernel, we must show that we
-can set up our kernel in such a way that by the time we enter use mode,
-the application is running in user mode and cannot modify confidential
-memory. We use the PMP registers to restrict the user application memory
-access as well as configure other critical registers at boot time
-(mtvec, mstatus, etc) at boot time to create this state, which we will
-refer to this configuration of kernel registers as being ``OK'' (Figure
-2.1).
+We built a kernel similar to one found in a real hardware wallet. We design our kernel to have the following features: the ability to download, load, and run different applications. Also, we use a smaller codebase to make debugging and reasoning easier. Our target hardware, like other hardware wallets, has no virtual memory support. To isolate the kernel from the user application we use RISC-V M-mode as our privileged level with unrestricted access to memory and use RISC-V U-mode for running user applications, which has only restricted access to memory due to our PMP register setup. The kernel begins with turning on and booting the kernel, where several control register configurations occur to set up proper privilege level settings. These boot-time operations include configuring the PMP registers in such a way that user applications can only access a predefined region of memory and giving the user the choice to download a new application or load an existing application to be run. Then, the kernel executes the application that was selected by the user during boot time. After finishing the execution of this program, the kernel stops, and to run another application, the user must restart the kernel by physically powering off and on the device; the kernel can only run a single application within a single run. This simplifies the design of our kernel making it easier to reason about while maintaining the same functionality. Furthermore, our kernel does not need to support the same multiplexing functionality that desktop PCs have as we only ever need to run one cryptocurrency application at one time.
 
+\subsubsection{2.2 Verification}\label{verification}
+
+Our goal is to prove that our applications are isolated from one another. To prove this property about our kernel, we must show that we can set up our kernel in such a way that by the time we enter use mode, the application is running in user mode and cannot modify confidential memory. We use the PMP registers to restrict the user application memory access as well as configure other critical registers at boot time (mtvec, mstatus, etc) at boot time to create this state, which we will refer to this configuration of kernel registers as being ``OK'' (Figure \ref{fig:figure2}).
+
+\begin{figure}
+\centering
 \begin{verbatim}
 mtvec = 0x0000000080000080
 pmpcfg0 = 0x000000000000001f
@@ -214,76 +127,41 @@ pmpaddr13 = 0x0
 pmpaddr14 = 0x0
 pmpaddr15 = 0x0
 \end{verbatim}
-
-\textbf{Figure 2.1.} We define a state to be ``OK'' if the state has
-specific registers configured as shown above.
-
-Also, we must show that after booting up into this ``OK'' state and
-switching to user mode for execution of the application, that any
-instruction running in user mode causes exactly one of the following two
-cases to occur: either the kernel remains in user mode and the kernel
-maintains the ``OK'' property, or the kernel switches to kernel mode and
-begins executing at the location predefined by the mtvec register, which
-handles system calls (Figure 2.2). This corresponds to a standard
-inductive proof where the base case is setting up our kernel into the
-``OK'' state and the inductive step proves that no individual
-instruction can tamper with protected RAM.
-
-\begin{figure}
-\centering
-\includegraphics{Proof-Diagram.jpg}
-\caption{}
+\caption{We define a state to be ``OK'' if the state has
+specific registers configured as shown above.}
+\label{fig:figure2}
 \end{figure}
 
-\textbf{Figure 2.2.} A diagram of the workflow of our kernel. The kernel
-configures during the boot sequence until it reaches state s0, where s0
-is the state of the machine immediately after the kernel boots up. Then
-the kernel runs for an arbitrary number of steps n, where it remains in
-U-mode and ``OK'' until it reaches state sn at which point it switches
-to M-mode and begins executing at the address defined by mtvec.
+Also, we must show that after booting up into this ``OK'' state and switching to user mode for execution of the application, that any instruction running in user mode causes exactly one of the following two cases to occur: either the kernel remains in user mode and the kernel maintains the ``OK'' property, or the kernel switches to kernel mode and begins executing at the location predefined by the mtvec register, which handles system calls (Figure \ref{fig:figure3}). This corresponds to a standard inductive proof where the base case is setting up our kernel into the ``OK'' state and the inductive step proves that no individual instruction can tamper with protected RAM.
 
-Though we do not reason about system calls in our work, the system call
-handler could be verified similarly to Serval and allows our user
-application to perform different operations such as gaining access to
-the UART, which handles input and output. Since any application is the
-composition of many instructions, our proof covers all possible user
-applications that could be run on the kernel including those with
-illegal instructions. To complete the proof of these properties, we need
-to employ symbolic values, which will allow us to reason about unknown
-values in our machine. For the base case, only some registers and
-regions of memory are defined, which allows us to use symbolic values to
-represent the rest of the undefined parts of the machine. In the
-inductive step, we use symbolic values to represent key parts of the
-machine including the program counter and the user application region of
-memory. This symbolic memory allows us to read an arbitrary instruction
-from an arbitrary address and execute one instruction from our current
-state s generating a new state s'. Using these two states, we can assert
-that the confidential memory remains unchanged despite running this
-arbitrary instruction on the address. If our assertion holds and there
-exist no values for which the symbolic variables could be such that the
-memory is changed between s and s', then this implies that it is not
-possible under any circumstance that the memory was changed.
-Furthermore, we can extend this to reason about the privilege level. We
-can assert that either the mode is unchanged and remains in user mode or
-exits user mode and begins executing at the address predetermined by the
-mtvec register. This proof can be written as a more formal mathematical
-formula as shown in Figure 2.3.
+\begin{figure}
+    \centering
+    \includegraphics{Proof-Diagram.jpg}
+    \caption{A diagram of the workflow of our kernel. The kernel
+    configures during the boot sequence until it reaches state $s_0$, where $s_0$ is the state of the machine immediately after the kernel boots up. Then the kernel runs for an arbitrary number of steps n, where it remains in U-mode and ``OK'' until it reaches state sn at which point it switches to M-mode and begins executing at the address defined by mtvec.}
+    \label{fig:figure3}
+\end{figure}
 
+Though we do not reason about system calls in our work, the system call handler could be verified similarly to Serval and allows our user application to perform different operations such as gaining access to the UART, which handles input and output. Since any application is the composition of many instructions, our proof covers all possible user applications that could be run on the kernel including those with illegal instructions. To complete the proof of these properties, we need to employ symbolic values, which will allow us to reason about unknown values in our machine. For the base case, only some registers and regions of memory are defined, which allows us to use symbolic values to represent the rest of the undefined parts of the machine. In the inductive step, we use symbolic values to represent key parts of the machine including the program counter and the user application region of memory. This symbolic memory allows us to read an arbitrary instruction from an arbitrary address and execute one instruction from our current state s generating a new state s'. Using these two states, we can assert that the confidential memory remains unchanged despite running this arbitrary instruction on the address. If our assertion holds and there exist no values for which the symbolic variables could be such that the memory is changed between s and s', then this implies that it is not possible under any circumstance that the memory was changed. Furthermore, we can extend this to reason about the privilege level. We can assert that either the mode is unchanged and remains in user mode or exits user mode and begins executing at the address predetermined by the mtvec register. This proof can be written as a more formal mathematical formula as shown in Figure \ref{fig:figure4}.
+
+\begin{figure}
 Base Case:
+\vspace{5pt}
 
-\begin{verbatim}
-OK(s0), where s0 is the machine state immediately after the boot sequence.
-\end{verbatim}
+$OK(s_0)$, where s0 is the machine state immediately after the boot
+sequence.
+
+\vspace{15pt}
 
 Induction Case:
+\vspace{5pt}
 
-\begin{verbatim}
-∀s, s′ : OK(s) ⟹ s′ = step(s) ⟹ is_user(s′) ∧ OK(s) ⟹ 
-(is_user(s′) ∧ OK(s′)) ∨ (is_m(s′) ∧ pc(s′) = mtvec(s))
-\end{verbatim}
+$\forall s, s' : OK(s) \implies s' = step(s) \implies is\_user(s) \land OK(s) \implies (is\_user(s') \land OK(s')) \lor (is\_m(s') \land pc(s') = mtvec(s))$
 
-\textbf{Figure 2.3.} The proof expressed in more formal terms using
-mathematical notation.
+\caption{The proof expressed in more formal terms using mathematical notation.}
+\label{fig:figure4}
+\end{figure}
+
 
 \subsubsection{2.3 Symbolic RISC-V Machine
 Emulator}\label{symbolic-risc-v-machine-emulator}
@@ -296,17 +174,18 @@ Rosette to lift that emulator to function as a symbolic emulator capable
 of operating on arbitrary instructions. Mirroring the implementation of
 a regular machine emulator, the workflow of the emulator, we separate
 the execution of each instruction into three functions: fetch, decode
-(Figures 2.4 and 2.5), execute (Figure 2.6). The fetch functions
-extracts the raw bits that make up the instruction from RAM. The next
-function, decode, decodes those raw bits and based on the RISC-V
-specification, interprets which instruction and parameters to run. The
-final function, execute, emulates the decoded instruction and executes
-it on our machine state updating all necessary values such as the
-program counter. These functions are combined in the step function
-(Figure 2.7) to make up what we refer to as applying one ``step'' on our
-state in Figures 2.1 and 2.2.
+(Figures \ref{fig:figure5} and \ref{fig:figure6}), execute (Figure \ref{fig:figure7}). The fetch functions extracts the
+raw bits that make up the instruction from RAM. The next function,
+decode, decodes those raw bits and based on the RISC-V specification,
+interprets which instruction and parameters to run. The final function,
+execute, emulates the decoded instruction and executes it on our machine
+state updating all necessary values such as the program counter. These
+functions are combined in the step function (Figure \ref{fig:figure8}) to make up what
+we refer to as applying one ``step'' on our state in Figures 2 and 3.
 
-\begin{verbatim}
+\begin{figure}
+\centering
+\begin{minted} [breaklines] {racket}
 (define (decode m b_instr)
     (define instr null)
     (define opcode (extract 6 0 b_instr))
@@ -320,12 +199,16 @@ state in Figures 2.1 and 2.2.
     [else
         (illegal-instr m)]))
 (provide decode)
-\end{verbatim}
+\end{minted}
 
-\textbf{Figure 2.4.} A snippet of the \texttt{decode} function used to
-retrieve the instruction and parameters from a byte string.
+\caption{A snippet of the \texttt{decode} function used to
+retrieve the instruction and parameters from a byte string.}
+\label{fig:figure5}
+\end{figure}
 
-\begin{verbatim}
+\begin{figure}
+\centering
+\begin{minted} [breaklines] {racket}
 (define (decode-R m b_instr)
     (define op null)
     (define rd (extract 11 7 b_instr))
@@ -342,13 +225,14 @@ retrieve the instruction and parameters from a byte string.
         [...]
         [else
             (illegal-instr m)]))
-\end{verbatim}
+\end{minted}
+\caption{A snippet of a utility function used by the main \texttt{decode} function to decode ``R-Format'' instructions, one of the few types of formats possible.}
+\label{fig:figure6}
+\end{figure}
 
-\textbf{Figure 2.5.} A snippet of a utility function used by the main
-\texttt{decode} function to decode ``R-Format'' instructions, one of the
-few types of formats possible.
-
-\begin{verbatim}
+\begin{figure}
+\centering
+\begin{minted} [breaklines] {racket}
 (define (execute instr m)
     (define opcode (list-ref instr 0))
     (define pc (get-pc m))
@@ -357,8 +241,7 @@ few types of formats possible.
             (define rd (list-ref-nat instr 1))
             (define v_rs1 (gprs-get-x m (list-ref-nat instr 2)))
             [...]
-            (define val (sign-extend (machine-ram-read m adj_addr 1)
-                                    (bitvector 64)))
+            (define val (sign-extend (machine-ram-read m adj_addr 1) (bitvector 64)))
             (gprs-set-x! m rd val)
             (set-pc! m (bvadd pc (bv 4 64)))
             instr]
@@ -367,22 +250,29 @@ few types of formats possible.
             [...]           
             (define success (machine-ram-write! m adj_addr v_rs2 8))
             instr])]))
-\end{verbatim}
+\end{minted}
+\caption{A snippet of the \texttt{execute} function, which
+takes a decoded instruction and executes it, applying the result on the state of the machine \texttt{m}.}
+\label{fig:figure7}
+\end{figure}
 
-\textbf{Figure 2.6.} A snippet of the \texttt{execute} function, which
-takes a decoded instruction and executes it, applying the result on the
-state of the machine \texttt{m}.
 
-\begin{verbatim}
+\begin{figure}
+\centering
+\begin{minted} [breaklines] {racket}
 (define (step m)
-    (define next_instr (get-next-instr m)) ; fetch raw instruction
+    ; fetch raw instruction
+    (define next_instr (get-next-instr m))
+    ; decode into readable instruction
     (define decoded_instr (decode m next_instr))
+    ; execute decoded instruction
     (execute decoded_instr m))
-\end{verbatim}
+\end{minted}
+\caption{The \texttt{step} function is analogous to the
+\texttt{step} referenced by the proof. Each step fetches, decodes, and executes one instruction from the machine \texttt{m} RAM.}
+\label{fig:figure8}
+\end{figure}
 
-\textbf{Figure 2.7.} The \texttt{step} function is analogous to the
-\texttt{step} referenced by the proof. Each step fetches, decodes, and
-executes one instruction from the machine \texttt{m} RAM.
 
 \subsubsection{2.4 Challenges}\label{challenges}
 
@@ -398,78 +288,77 @@ memory aspect of our proof. To completely verify that the entire region
 of confidential memory is unchanged, it is necessary to prove that each
 individual address remains unchanged. This results in the time to run
 our proof growing linearly with the size of the array and subsequently,
-the size of the RAM. Figure 2.9 demonstrates the issue with writes to
-memory using symbolic addresses. When we try to run the proof with 128
-megabytes of RAM, we find that it takes an unreasonable amount of time
-to complete the proof and therefore, turn to an alternative
-implementation. We instead decide to use an uninterpreted function
-representation of memory where memory is represented as a function that
-takes an address and returns the value at that address. Then each time
-we wish to write a value v to an address a, we essentially wrap our
-current memory function in an if case that returns the value v if the
-user tries to get address a and the old memory function applied to the
-address if the address is not a. The Racket implementation of these two
-memory representations is described in Figure 2.8. Furthermore, the
-benefits of using uninterpreted function based memory is illustrated in
-the constant size term produced even after writing to an address as
-shown in Figure 2.9.
+the size of the RAM. Figure \ref{fig:figure10} demonstrates the issue with writes to
+memory using symbolic addresses. When we try to run the proof with 1 MB
+of RAM, we find that it takes an unreasonable amount of time to complete
+the proof and therefore, turn to an alternative implementation. We
+instead decide to use an uninterpreted function representation of memory
+where memory is represented as a function that takes an address and
+returns the value at that address. Then each time we wish to write a
+value v to an address a, we essentially wrap our current memory function
+in an if case that returns the value v if the user tries to get address
+a and the old memory function applied to the address if the address is
+not a. The Racket implementation of these two memory representations is
+described in Figure 9. Furthermore, the benefits of using uninterpreted
+function based memory is illustrated in the constant size term produced
+even after writing to an address as shown in Figure \ref{fig:figure10}.
 
-\begin{verbatim}
-(define (uf-memory-write! mem addr val)
-  (lambda (addr*)
-    (if (bveq addr addr*)
-      val
-      (mem addr*))))
+\begin{figure}
+\centering
+\begin{minted} {racket}
+(define (uf-memory-write mem addr val)
+    (lambda (addr*)
+        (if (equal? addr addr*)
+            val
+            (mem addr*))))
 
 (define (uf-memory-read mem addr)
-  (mem addr))
+    (mem addr))
 
 (define (array-memory-write! mem addr val)
-  (vector-set! mem addr val))
+    (vector-set! mem addr val))
 
 (define (array-memory-read mem addr)
-  (vector-ref mem addr))
-\end{verbatim}
+    (vector-ref mem addr))
+\end{minted}
+\caption{Rosette implementation of read and write for array-based memory and uninterpreted function (uf) based memory.}
+\label{fig:figure9}
+\end{figure}
 
-\textbf{Figure 2.8.} Rosette implementation of read and write for
-array-based memory and uninterpreted function (uf) based memory.
 
-\begin{verbatim}
-(define array_memory (vector 0 1 2))
-(define-symbolic* idx integer?)
-(define-symbolic* pos val integer?)
+\begin{figure}
+\begin{minted} [breaklines] {racket}
+(require syntax/parse/define)
+(require (only-in racket/base build-vector))
 
-(printf "Before Write: ~a~n" (array-memory-read array_memory idx))
-(array-memory-write! array_memory pos val)
-(printf "After Write: ~a~n" (array-memory-read array_memory idx))
+(define-simple-macro (make-sym-vector n:expr size:expr m:id)
+  (build-vector n (lambda (i) (define-symbolic* m (bitvector size)) m)))
+  
+(define-simple-macro (fresh-symbolic name type)
+  (let () (define-symbolic* name type) name))
 
-; >>> Before Write: (ite* (⊢ (= 0 idx$0) 0) (⊢ (= 1 idx$0) 1) (⊢ (= 2 idx$0) 2))
-; >>> After Write: (ite* (⊢ (= 0 idx$0) (ite (= 0 pos$0) val$0 0)) (⊢ (= 1 idx$0)
-                    (ite (= 1 pos$0) val$0 1)) (⊢ (= 2 idx$0) (ite (= 2 pos$0) val$0 2)))
+(define-symbolic* pos idx (bitvector 2))
+(define-symbolic* val (bitvector 8))
 
-(define uf_memory (fresh-symbolic fnmem (~> integer? integer?)))
-(uf-memory-write! uf_memory 0 0)
-(uf-memory-write! uf_memory 1 1)
-(uf-memory-write! uf_memory 2 2)
+(define array_mem (make-sym-vector 4 8 mem))
+(printf "Before Write: ~a~n" (array-memory-read array_mem (bitvector->integer idx)))
+; > Before Write: (ite* (|- (= 0 (bitvector->integer idx$0)) mem$0) (|- (= 1 (bitvector->integer idx$0)) mem$1) (|- (= 2 (bitvector->integer idx$0)) mem$2) (|- (= 3 (bitvector->integer idx$0)) mem$3))
+(array-memory-write! array_mem (bitvector->integer pos) val)
+(printf "After Write: ~a~n" (array-memory-read array_mem (bitvector->integer idx)))
+; > After Write: (ite* (|- (= 0 (bitvector->integer idx$0)) (ite (= 0 (bitvector->integer pos$0)) val$0 mem$0)) (|- (= 1 (bitvector->integer idx$0)) (ite (= 1 (bitvector->integer pos$0)) val$0 mem$1)) (|- (= 2 (bitvector->integer idx$0)) (ite (= 2 (bitvector->integer pos$0)) ...)) ...)
 
-(printf "Before Write: ~a~n" (uf-memory-read uf_memory idx))
-(uf-memory-write! uf_memory pos val)
-(printf "After Write: ~a~n" (uf-memory-read uf_memory idx))
+(define uf_mem (fresh-symbolic fnmem (~> (bitvector 2) (bitvector 8))))
+(printf "Before Write: ~a~n" (uf-memory-read uf_mem idx))
+; > Before Write: (app fnmem$0 idx$0)
+(define uf_mem* (uf-memory-write! uf_mem pos val))
+(printf "After Write: ~a~n" (uf-memory-read uf_mem* idx))
+; > After Write: (ite (bveq pos$0 idx$0) val$0 (app fnmem$0 idx$0))
+\end{minted}
 
-; >>> Before Write: (app fnmem$0 idx$0)
-; >>> After Write: (app fnmem$0 idx$0)
-\end{verbatim}
+\caption{An example demonstrating how terms generated from reading and writing to array based memory are much larger and complex than those generated from uninterpreted function based memory. In this example, both memory representations can hold 4 bitvectors of size 8. The print statements corresponding to \texttt{Before\ Write} and \texttt{After\ Write} refer to the terms generated by reading from a symbolic index. The array based memory term grows significantly, while the uninterpreted function based memory term remains constant.}
+\label{fig:figure10}
+\end{figure}
 
-\textbf{Figure 2.9.} An example demonstrating how terms generated from
-reading and writing to array based memory are much larger and complex
-than those generated from uninterpreted function based memory. In this
-example, both memory representations begin with the values 0, 1, and 2
-in the index 0, 1, and 2 respectively, then write the symbolic integer
-\texttt{val} to position \texttt{pos} in the memory representation. The
-print statements corresponding to \texttt{Before\ Write:} and
-\texttt{After\ Write:} refer to the terms generated by reading from a
-symbolic index. The array based memory term grows significantly, while
-the uninterpreted function based memory term remains constant.
 
 \subsection{3 Evaluation}\label{evaluation}
 
@@ -500,9 +389,9 @@ hope to improve.
 
 HV6 and Serval use push-button verification to prove properties about
 system calls operating in kernel mode for desktop-like operating
-systems. sel4{[}5{]} uses a manual proof with Isabelle, a proof
+systems. sel4~\cite{10.1145/1629575.1629596} uses a manual proof with Isabelle, a proof
 assistant, to prove the correctness of a microcontroller style kernel
-for use on an embedded device. CertiKOS{[}6{]} is another recent work
+for use on an embedded device. CertiKOS~\cite{199344} is another recent work
 that also uses proof assistants to prove security properties about their
 kernel, which has the unique capability of supporting concurrent
 operations. This technique uses a high level of effort to construct the
@@ -516,25 +405,13 @@ verification techniques. We build a kernel and symbolic machine
 emulator, which can reason about the machine state even when some
 aspects are unknown, and prove that we can set up the kernel at boot
 time in such a way that user applications are properly isolated and are
-unable to modify private memory.
+unable to modify private memory. Our code for this project can be found at \url{https://github.com/AndrewTShen/riscv-symbolic-emulator}.
 
-\subsection{References}\label{references}
+\subsection{6 Acknowledgements}\label{acknowledgements}
+Thank you to the MIT PRIMES program for providing me with this opportunity and my mentor, Anish Athalye, for providing me with this project and his invaluable guidance.
 
-\begin{enumerate}
-\def\labelenumi{\arabic{enumi}.}
-\tightlist
-\item
-  https://ostoday.org/windows/how-many-lines-of-code-in-windows-10.html
-\item
-  https://www.riscure.com/uploads/2018/08/Riscure\_Hacking\_Secure\_Cryptowallet.pdf
-\item
-  https://unsat.cs.washington.edu/papers/nelson-hyperkernel.pdf
-\item
-  https://unsat.cs.washington.edu/papers/nelson-serval.pdf
-\item
-  https://www.sigops.org/s/conferences/sosp/2009/papers/klein-sosp09.pdf
-\item
-  https://www.usenix.org/system/files/conference/osdi16/osdi16-gu.pdf
-\end{enumerate}
+\nocite{*}
+\bibliography{citations}
+\bibliographystyle{unsrt}
 
 \end{document}
