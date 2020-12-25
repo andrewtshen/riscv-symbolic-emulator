@@ -2,7 +2,7 @@ _stack_size = 0x1024;
 
 SECTIONS
 {
-    . = 0x80020000;         /* User prog from 0x80002000 - 0x80004000 */
+    . = 0x80020000;         /* User prog from 0x80020000 - 0x80040000 */
     .text : 
     {   
         KEEP(*(.init_text)) /* ASM to main function */

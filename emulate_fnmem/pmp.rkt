@@ -6,10 +6,13 @@
 
 (define (ctz64 val)
   ; If bv with all zeros return 0, else ctz
-  (let helper ((i 0))
-    (if (or (bveq val (bv 0 64)) (bveq (extract i i val) (bv 1 1)))
-      i
-      (helper (+ 1 i)))))
+  (cond
+    [(bveq val (bv 0 64)) 0]
+    [else
+      (let helper ([i 0])
+        (if (bveq (extract i i val) (bv 1 1))
+          i
+          (helper (+ 1 i))))]))
 (provide ctz64)
 
 ; Decode R W X A settings for cfg register

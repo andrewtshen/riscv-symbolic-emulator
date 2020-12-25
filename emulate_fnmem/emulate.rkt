@@ -40,18 +40,28 @@
     [else null]))
 (provide step)
 
+;; Two ways of implementing execute-until-mret (unclear which way is better)
+
 ; get instructions until reach mret
 (define (execute-until-mret m)
   (define op null)
   (while (not (eq? op 'mret))
-    (define next_decoded_instr (step m))
-    (when (use-debug-mode)
-      (printf "PC: ~x INS: ~a~n" (bitvector->natural (get-pc m)) next_decoded_instr))
-    (cond
-      [(eq? next_decoded_instr null) null]
-      [else
-        (set! op (list-ref next_decoded_instr 0))])))
+    (time (define next_decoded_instr (step m))
+        (printf "PC: ~x INS: ~a~n" (bitvector->natural (get-pc m)) next_decoded_instr)
+        (cond
+          [(eq? next_decoded_instr null) null]
+          [else
+            (set! op (list-ref next_decoded_instr 0))]))))
 (provide execute-until-mret)
+
+; ; get instructions until reach mret
+; (define (execute-until-mret m)
+;   (let helper ([op null] [next_decoded_instr (step m)])
+;     (unless (eq? op 'mret)
+;       (when (use-debug-mode)
+;         (printf "PC: ~x INS: ~a~n" (bitvector->natural (get-pc m)) next_decoded_instr))
+;       (helper (list-ref next_decoded_instr 0) (step m)))))
+; (provide execute-until-mret)
 
 ; ; example execution
 ; (define program (file->bytearray "build/pmp.bin"))

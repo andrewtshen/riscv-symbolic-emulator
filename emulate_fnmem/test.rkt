@@ -438,7 +438,7 @@
 			(assert-OK m1)))
 		(check-true (unsat? model_OK))
 
-		; Check that memory between m and m1 except for in user memory (0x20000 -> 0x3FFFF)
+		; Check that memory between m and m1 is same except for in user memory (0x20000 -> 0x3FFFF)
 		(clear-asserts!)
 		(define-symbolic* sym-idx (bitvector 20))
 		(define model_noninterference (verify
@@ -448,10 +448,10 @@
 			(assert-mem-equal m m1 sym-idx)))
 			(check-true (unsat? model_noninterference))))
 
-(define res-instruction-check (run-tests instruction-check))
-(define res-utils (run-tests utils))
-(define res-high-level-test (run-tests high-level-test))
-(define res-step-checks (run-tests step-checks))
+; (define res-instruction-check (run-tests instruction-check))
+; (define res-utils (run-tests utils))
+; (define res-high-level-test (run-tests high-level-test))
+; (define res-step-checks (run-tests step-checks))
 
 ;; Testing the base case and inductive step
 
