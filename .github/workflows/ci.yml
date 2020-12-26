@@ -26,7 +26,7 @@ jobs:
         #run: raco pkg install rosette
       
       - name: Install Racket Packages and their Dependencies
-        run: raco pkg install --auto --batch emulator/info.rkt
+        run: raco pkg install --auto --batch ./emulator
 
       # Runs Emulator Tests Tests
       - name: Run Racket Tests
