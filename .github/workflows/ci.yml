@@ -10,7 +10,7 @@ jobs:
     steps:
       # Checks out a copy of your repository on the ubuntu-latest machine
       - name: Checkout Code
-        uses: actions/checkout@master
+        uses: actions/checkout@v2
 
       # Installs Racket
       - name: Install Racket
