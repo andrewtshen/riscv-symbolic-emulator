@@ -29,28 +29,33 @@
   (cond
     [(not (eq? next_instr null))
       (define decoded_instr (decode m next_instr))
-      (when (use-debug-mode)
-        (printf "decoded_instr: ~a~n" decoded_instr))
       (cond
         [(not (eq? decoded_instr null))
-          (when (use-debug-mode)
-            (printf "execute instr: ~a~n" decoded_instr))
           (execute decoded_instr m)]
         [else null])]
     [else null]))
 (provide step)
 
+;; Two ways of implementing execute-until-mret (unclear which way is better)
+
+; ; get instructions until reach mret
+; (define (execute-until-mret m)
+;   (define op null)
+;   (while (not (eq? op 'mret))
+;     (define next_decoded_instr (step m))
+;     (printf "PC: ~x INS: ~a~n" (bitvector->natural (get-pc m)) next_decoded_instr)
+;     (cond
+;       [(eq? next_decoded_instr null) null]
+;       [else
+;         (set! op (list-ref next_decoded_instr 0))])))
+; (provide execute-until-mret)
+
 ; get instructions until reach mret
 (define (execute-until-mret m)
-  (define op null)
-  (while (not (eq? op 'mret))
-    (define next_decoded_instr (step m))
-    (when (use-debug-mode)
-      (printf "PC: ~x INS: ~a~n" (bitvector->natural (get-pc m)) next_decoded_instr))
-    (cond
-      [(eq? next_decoded_instr null) null]
-      [else
-        (set! op (list-ref next_decoded_instr 0))])))
+  (let loop ([op null] [next_decoded_instr (step m)] [counter 0])
+    (unless (eq? op 'mret)
+      ; (printf "PC: ~x INS: ~a CNT: ~a~n" (bitvector->natural (get-pc m)) next_decoded_instr counter)
+      (loop (list-ref next_decoded_instr 0) (step m) (add1 counter)))))
 (provide execute-until-mret)
 
 ; ; example execution

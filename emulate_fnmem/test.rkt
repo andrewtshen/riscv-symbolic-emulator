@@ -281,6 +281,7 @@
 		(assert (check-equal? 8 (ctz64 (bv #xffffffffffffff00 64))))
 		(assert (check-equal? 7 (ctz64 (bv #xffffffffffffff80 64))))
 		(assert (check-equal? 2 (ctz64 (bv #xfffffffffffffff4 64))))
+		(assert (check-equal? 63 (ctz64 (bv #x8000000000000000 64))))
 		(assert (check-equal? 0 (ctz64 (bv #xffffffffffffffff 64))))
 		(assert (check-equal? 0 (ctz64 (bv #x0000000000000000 64)))))
 	(test-case "pmp check"
@@ -437,7 +438,7 @@
 			(assert-OK m1)))
 		(check-true (unsat? model_OK))
 
-		; Check that memory between m and m1 except for in user memory (0x20000 -> 0x3FFFF)
+		; Check that memory between m and m1 is same except for in user memory (0x20000 -> 0x3FFFF)
 		(clear-asserts!)
 		(define-symbolic* sym-idx (bitvector 20))
 		(define model_noninterference (verify
@@ -447,12 +448,14 @@
 			(assert-mem-equal m m1 sym-idx)))
 			(check-true (unsat? model_noninterference))))
 
-; (define res-instruction-check (run-tests instruction-check))
-; (define res-utils (run-tests utils))
-; (define res-high-level-test (run-tests high-level-test))
-; (define res-step-checks (run-tests step-checks))
+(define res-instruction-check (run-tests instruction-check))
+(define res-utils (run-tests utils))
+(define res-high-level-test (run-tests high-level-test))
+(define res-step-checks (run-tests step-checks))
 
 ;; Testing the base case and inductive step
 
-(define res-boot-sequence (time (run-tests boot-sequence)))
-(define res-inductive-step (time (run-tests inductive-step)))
+; (define res-boot-sequence (run-tests boot-sequence))
+(define res-inductive-step (run-tests inductive-step))
+; (define res-boot-sequence (time (run-tests boot-sequence)))
+; (define res-inductive-step (time (run-tests inductive-step)))

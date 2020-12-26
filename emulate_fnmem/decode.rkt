@@ -42,6 +42,7 @@
       (illegal-instr m)]))
 
 (define (decode-I m b_instr)
+  ; TODO Could group by opcode first and then check for funct3
   (define op null)
   (define opcode (extract 6 0 b_instr))
   (define rd (extract 11 7 b_instr))
@@ -50,38 +51,7 @@
   (define imm (extract 31 20 b_instr))
   (define shift_type (extract 30 30 b_instr))
   (cond
-    [(and (bveq funct3 (bv #b000 3)) (bveq opcode (bv #b0010011 7)))
-      (list 'addi rd rs1 imm)]
-    [(and (bveq funct3 (bv #b010 3)) (bveq opcode (bv #b0010011 7)))
-      (list 'slti rd rs1 imm)]
-    [(and (bveq funct3 (bv #b011 3)) (bveq opcode (bv #b0010011 7)))
-      (list 'sltiu rd rs1 imm)]
-    [(and (bveq funct3 (bv #b100 3)) (bveq opcode (bv #b0010011 7)))
-      (list 'xori rd rs1 imm)]
-    [(and (bveq funct3 (bv #b110 3)) (bveq opcode (bv #b0010011 7)))
-      (list 'ori rd rs1 imm)]
-    [(and (bveq funct3 (bv #b111 3)) (bveq opcode (bv #b0010011 7)))
-      (list 'andi rd rs1 imm)]
-    [(and (bveq funct3 (bv #b001 3)) (bveq opcode (bv #b0010011 7)))
-      (set! imm (extract 24 20 b_instr))
-      (list 'slli rd rs1 imm)]
-    [(and (bveq funct3 (bv #b101 3)) (bveq opcode (bv #b0010011 7)) (bveq shift_type (bv #b0 1)))
-      (set! imm (extract 25 20 b_instr))
-      (list 'srli rd rs1 imm)]
-    [(and (bveq funct3 (bv #b101 3)) (bveq opcode (bv #b0010011 7)) (bveq shift_type (bv #b1 1)))
-      (set! imm (extract 25 20 b_instr))
-      (list 'srai rd rs1 imm)]
-    [(and (bveq funct3 (bv #b000 3)) (bveq opcode (bv #b0011011 7)))
-      (list 'addiw rd rs1 imm)]
-    [(and (bveq funct3 (bv #b001 3)) (bveq opcode (bv #b0011011 7)))
-      (set! imm (extract 25 20 b_instr))
-      (list 'slliw rd rs1 imm)]
-    [(and (bveq funct3 (bv #b101 3)) (bveq opcode (bv #b0011011 7)) (bveq shift_type (bv #b0 1)))
-      (set! imm (extract 25 20 b_instr))
-      (list 'srliw rd rs1 imm)]
-    [(and (bveq funct3 (bv #b101 3)) (bveq opcode (bv #b0011011 7)) (bveq shift_type (bv #b1 1)))
-      (set! imm (extract 25 20 b_instr))
-      (list 'sraiw rd rs1 imm)]
+    ; Move some instructions to the top for potentially faster speed (less branches to check)
     [(and (bveq funct3 (bv #b000 3)) (bveq opcode (bv #b0000011 7)))
       (list 'lb rd rs1 imm)]
     [(and (bveq funct3 (bv #b001 3)) (bveq opcode (bv #b0000011 7)))
@@ -98,6 +68,35 @@
       (list 'lwu rd rs1 imm)]
     [(and (bveq funct3 (bv #b000 3)) (bveq opcode (bv #b1100111 7)))
       (list 'jalr rd rs1 imm)]
+
+    [(and (bveq funct3 (bv #b000 3)) (bveq opcode (bv #b0010011 7)))
+      (list 'addi rd rs1 imm)]
+    [(and (bveq funct3 (bv #b010 3)) (bveq opcode (bv #b0010011 7)))
+      (list 'slti rd rs1 imm)]
+    [(and (bveq funct3 (bv #b011 3)) (bveq opcode (bv #b0010011 7)))
+      (list 'sltiu rd rs1 imm)]
+    [(and (bveq funct3 (bv #b100 3)) (bveq opcode (bv #b0010011 7)))
+      (list 'xori rd rs1 imm)]
+    [(and (bveq funct3 (bv #b110 3)) (bveq opcode (bv #b0010011 7)))
+      (list 'ori rd rs1 imm)]
+    [(and (bveq funct3 (bv #b111 3)) (bveq opcode (bv #b0010011 7)))
+      (list 'andi rd rs1 imm)]
+    [(and (bveq funct3 (bv #b001 3)) (bveq opcode (bv #b0010011 7)))
+      ; TODO: Check if supposed to be 24?
+      (list 'slli rd rs1 (extract 24 20 b_instr))]
+    [(and (bveq funct3 (bv #b101 3)) (bveq opcode (bv #b0010011 7)) (bveq shift_type (bv #b0 1)))
+      (list 'srli rd rs1 (extract 25 20 b_instr))]
+    [(and (bveq funct3 (bv #b101 3)) (bveq opcode (bv #b0010011 7)) (bveq shift_type (bv #b1 1)))
+      (list 'srai rd rs1 (extract 25 20 b_instr))] 
+    [(and (bveq funct3 (bv #b000 3)) (bveq opcode (bv #b0011011 7)))
+      ; TODO: Check if supposed to be normal imm
+      (list 'addiw rd rs1 imm)]
+    [(and (bveq funct3 (bv #b001 3)) (bveq opcode (bv #b0011011 7)))
+      (list 'slliw rd rs1 (extract 25 20 b_instr))]
+    [(and (bveq funct3 (bv #b101 3)) (bveq opcode (bv #b0011011 7)) (bveq shift_type (bv #b0 1)))
+      (list 'srliw rd rs1 (extract 25 20 b_instr))]
+    [(and (bveq funct3 (bv #b101 3)) (bveq opcode (bv #b0011011 7)) (bveq shift_type (bv #b1 1)))
+      (list 'sraiw rd rs1 (extract 25 20 b_instr))]
     [else
       ; (printf "No such I FMT ~n")
       (illegal-instr m)]))
@@ -178,11 +177,10 @@
     (extract 30 21 b_instr)))
   (cond
     [(bveq opcode (bv #b1101111 7))
-      (set! op 'jal)]
+      (list 'jal rd imm)]
     [else
       ; (printf "No such J FMT ~n")
-      (illegal-instr m)])
-  (list op rd imm))
+      (illegal-instr m)]))
 
 (define (decode-csr m b_csr)
   (cond

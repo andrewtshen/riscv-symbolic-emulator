@@ -241,8 +241,6 @@
     (define W (list-ref settings 1))
     (define X (list-ref settings 2))
     (define A (list-ref settings 3))
-    (when (use-debug-mode)
-      (printf "R:~a W:~a X:~a A:~a~n" R W X A))
     (when (equal? A 1)
       (define pmp (get-csr m pmp_name))
       (define pmp_bounds (pmp-decode-napot pmp))
