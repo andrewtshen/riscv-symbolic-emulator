@@ -22,4 +22,4 @@ jobs:
 
       # Runs Emulator Tests Tests
       - name: Run Racket Tests
-      - run: raco test test.rkt  
+        run: raco test test.rkt  
