@@ -20,6 +20,10 @@ jobs:
           distribution: 'full'
           version: '7.4'
 
+      # Install Racket Packages
+      - name: Install Package and its Dependencies
+        run: raco pkg install --auto --batch
+
       # Runs Emulator Tests Tests
       - name: Run Racket Tests
         run: raco test emulator/test.rkt  
