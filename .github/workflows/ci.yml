@@ -19,11 +19,11 @@ jobs:
           architecture: 'x64'
           distribution: 'full'
           version: '7.4'
-          packages: 'rosette'
+          #packages: 'rosette'
 
-      # Install Racket Packages
-      #- name: Install Package and its Dependencies
-        #run: raco pkg install --auto --batch
+      # Install Rosette Packages
+      - name: Install Rosette
+        run: raco pkg install rosette
 
       # Runs Emulator Tests Tests
       - name: Run Racket Tests
