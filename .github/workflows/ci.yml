@@ -11,8 +11,6 @@ jobs:
       # Checks out a copy of your repository on the ubuntu-latest machine
       - name: Checkout Code
         uses: actions/checkout@v2
-          with:
-        repo-token: ${{ secrets.GITHUB_TOKEN }}
 
       # Installs Racket
       - name: Install Racket
