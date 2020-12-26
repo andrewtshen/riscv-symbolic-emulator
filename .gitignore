@@ -3,6 +3,5 @@
 *.rkt~
 *.o
 *.pyc
-*.bin
 *.lst
 *.elf
