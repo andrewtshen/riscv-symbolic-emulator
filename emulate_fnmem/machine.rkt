@@ -35,33 +35,31 @@
 ; be careful to decrement by 1 to access right location for gprs
 
 (define (get-csr m csr)
-  (define v_csr null)
   (cond
-    [(eq? csr 'mtvec)     (set! v_csr (csrs-mtvec     (cpu-csrs (machine-cpu m))))]
-    [(eq? csr 'mepc)      (set! v_csr (csrs-mepc      (cpu-csrs (machine-cpu m))))]
-    [(eq? csr 'mstatus)   (set! v_csr (csrs-mstatus   (cpu-csrs (machine-cpu m))))]
-    [(eq? csr 'pmpcfg0)   (set! v_csr (csrs-pmpcfg0   (cpu-csrs (machine-cpu m))))]
-    [(eq? csr 'pmpcfg2)   (set! v_csr (csrs-pmpcfg2   (cpu-csrs (machine-cpu m))))]
-    [(eq? csr 'pmpaddr0)  (set! v_csr (csrs-pmpaddr0  (cpu-csrs (machine-cpu m))))]
-    [(eq? csr 'pmpaddr1)  (set! v_csr (csrs-pmpaddr1  (cpu-csrs (machine-cpu m))))]
-    [(eq? csr 'pmpaddr2)  (set! v_csr (csrs-pmpaddr2  (cpu-csrs (machine-cpu m))))]
-    [(eq? csr 'pmpaddr3)  (set! v_csr (csrs-pmpaddr3  (cpu-csrs (machine-cpu m))))]
-    [(eq? csr 'pmpaddr4)  (set! v_csr (csrs-pmpaddr4  (cpu-csrs (machine-cpu m))))]
-    [(eq? csr 'pmpaddr5)  (set! v_csr (csrs-pmpaddr5  (cpu-csrs (machine-cpu m))))]
-    [(eq? csr 'pmpaddr6)  (set! v_csr (csrs-pmpaddr6  (cpu-csrs (machine-cpu m))))]
-    [(eq? csr 'pmpaddr7)  (set! v_csr (csrs-pmpaddr7  (cpu-csrs (machine-cpu m))))]
-    [(eq? csr 'pmpaddr8)  (set! v_csr (csrs-pmpaddr8  (cpu-csrs (machine-cpu m))))]
-    [(eq? csr 'pmpaddr9)  (set! v_csr (csrs-pmpaddr9  (cpu-csrs (machine-cpu m))))]
-    [(eq? csr 'pmpaddr10) (set! v_csr (csrs-pmpaddr10 (cpu-csrs (machine-cpu m))))]
-    [(eq? csr 'pmpaddr11) (set! v_csr (csrs-pmpaddr11 (cpu-csrs (machine-cpu m))))]
-    [(eq? csr 'pmpaddr12) (set! v_csr (csrs-pmpaddr12 (cpu-csrs (machine-cpu m))))]
-    [(eq? csr 'pmpaddr13) (set! v_csr (csrs-pmpaddr13 (cpu-csrs (machine-cpu m))))]
-    [(eq? csr 'pmpaddr14) (set! v_csr (csrs-pmpaddr14 (cpu-csrs (machine-cpu m))))]
-    [(eq? csr 'pmpaddr15) (set! v_csr (csrs-pmpaddr15 (cpu-csrs (machine-cpu m))))]
+    [(eq? csr 'mtvec)     (csrs-mtvec     (cpu-csrs (machine-cpu m)))]
+    [(eq? csr 'mepc)      (csrs-mepc      (cpu-csrs (machine-cpu m)))]
+    [(eq? csr 'mstatus)   (csrs-mstatus   (cpu-csrs (machine-cpu m)))]
+    [(eq? csr 'pmpcfg0)   (csrs-pmpcfg0   (cpu-csrs (machine-cpu m)))]
+    [(eq? csr 'pmpcfg2)   (csrs-pmpcfg2   (cpu-csrs (machine-cpu m)))]
+    [(eq? csr 'pmpaddr0)  (csrs-pmpaddr0  (cpu-csrs (machine-cpu m)))]
+    [(eq? csr 'pmpaddr1)  (csrs-pmpaddr1  (cpu-csrs (machine-cpu m)))]
+    [(eq? csr 'pmpaddr2)  (csrs-pmpaddr2  (cpu-csrs (machine-cpu m)))]
+    [(eq? csr 'pmpaddr3)  (csrs-pmpaddr3  (cpu-csrs (machine-cpu m)))]
+    [(eq? csr 'pmpaddr4)  (csrs-pmpaddr4  (cpu-csrs (machine-cpu m)))]
+    [(eq? csr 'pmpaddr5)  (csrs-pmpaddr5  (cpu-csrs (machine-cpu m)))]
+    [(eq? csr 'pmpaddr6)  (csrs-pmpaddr6  (cpu-csrs (machine-cpu m)))]
+    [(eq? csr 'pmpaddr7)  (csrs-pmpaddr7  (cpu-csrs (machine-cpu m)))]
+    [(eq? csr 'pmpaddr8)  (csrs-pmpaddr8  (cpu-csrs (machine-cpu m)))]
+    [(eq? csr 'pmpaddr9)  (csrs-pmpaddr9  (cpu-csrs (machine-cpu m)))]
+    [(eq? csr 'pmpaddr10) (csrs-pmpaddr10 (cpu-csrs (machine-cpu m)))]
+    [(eq? csr 'pmpaddr11) (csrs-pmpaddr11 (cpu-csrs (machine-cpu m)))]
+    [(eq? csr 'pmpaddr12) (csrs-pmpaddr12 (cpu-csrs (machine-cpu m)))]
+    [(eq? csr 'pmpaddr13) (csrs-pmpaddr13 (cpu-csrs (machine-cpu m)))]
+    [(eq? csr 'pmpaddr14) (csrs-pmpaddr14 (cpu-csrs (machine-cpu m)))]
+    [(eq? csr 'pmpaddr15) (csrs-pmpaddr15 (cpu-csrs (machine-cpu m)))]
     [else
       ; (printf "No such CSR: ~a~n" csr)
-      (illegal-instr m)])
-  v_csr)
+      (illegal-instr m)]))
 (provide get-csr)
 
 (define (set-csr! m csr val)
@@ -127,10 +125,7 @@
 ; Get next instruction using current program counter
 (define (get-next-instr m)
   (define pc (get-pc m))
-  (when (use-debug-mode) (printf "pc: ~a~n" pc))
-  (define val (machine-ram-read m pc 4))
-  (when (use-debug-mode) (printf "val: ~a~n" val))
-  val)
+  (machine-ram-read m pc 4))
 (provide get-next-instr)
 
 ;; Illegal Instruction Handling
@@ -184,7 +179,7 @@
   (define bytes
     (for/list ([i (in-range nbytes)])
       ; adjust address for bitvector size (ramsize-log2) and index
-      (define adj_addr (extract (- (ramsize-log2) 1) 0 (bvadd addr (bv i 64))))
+      (define adj_addr (extract (sub1 (ramsize-log2)) 0 (bvadd addr (bv i 64))))
       (memory-read ba adj_addr)))
   ; little endian
   (apply concat (reverse bytes)))
@@ -192,7 +187,7 @@
 (define (machine-ram-write! m addr value nbits)
   (define saddr (bvadd addr (base-address)))
   ; adjust to include the endpoint
-  (define eaddr (bvadd addr (bv (- (/ nbits 8) 1) 64) (base-address)))
+  (define eaddr (bvadd addr (bv (sub1 (/ nbits 8)) 64) (base-address)))
   (define legal (pmp-check m saddr eaddr))
 
   ; machine mode (1) or legal, we can read the memory
@@ -215,10 +210,8 @@
           (define hi (+ 7 low))
           (define v (extract hi low value))
           v)))
-    (when (use-debug-mode)
-      (printf "pos: ~a and v: ~a~n" pos v))
     ; adjust pos for bitvector size (ramsize-log2)
-    (define adj_pos (extract (- (ramsize-log2) 1) 0 pos))
+    (define adj_pos (extract (sub1 (ramsize-log2)) 0 pos))
     (if (use-fnmem)
       (set-machine-ram! m (uf-memory-write (machine-ram m) adj_pos v))
       (vector-memory-write! m adj_pos v))))
@@ -236,7 +229,7 @@
 
     (define settings (pmp-decode-cfg pmpcfg i))
 
-    ; TODO check type of access
+    ; TODO: implement check type of access
     (define R (list-ref settings 0))
     (define W (list-ref settings 1))
     (define X (list-ref settings 2))
@@ -247,12 +240,7 @@
 
       (define pmp_start (list-ref pmp_bounds 0))
       (define pmp_end (bvadd (list-ref pmp_bounds 0) (list-ref pmp_bounds 1)))
-      (when (use-debug-mode)
-        (printf "pmp_start: ~a~n" pmp_start)
-        (printf "pmp_end: ~a~n" pmp_end)
-        (printf "saddr: ~a~n" saddr)
-        (printf "eaddr: ~a~n" eaddr))
-
+      
       ; test the proper bounds
       (define slegal (bv-between saddr pmp_start pmp_end))
       (define elegal (bv-between eaddr pmp_start pmp_end))

@@ -9,13 +9,11 @@
 ; objdump output so that it is easier to parse.
 
 (define (decode-R m b_instr)
-  (define op null)
   (define rd (extract 11 7 b_instr))
   (define funct3 (extract 14 12 b_instr))
   (define rs1 (extract 19 15 b_instr))
   (define rs2 (extract 24 20 b_instr))
   (define funct7 (extract 31 25 b_instr))
-  (define valid null)
   (cond
     [(and (bveq funct3 (bv #b000 3)) (bveq funct7 (bv #b0000000 7)))
       (list 'add rd rs1 rs2)]
@@ -43,7 +41,6 @@
 
 (define (decode-I m b_instr)
   ; TODO Could group by opcode first and then check for funct3
-  (define op null)
   (define opcode (extract 6 0 b_instr))
   (define rd (extract 11 7 b_instr))
   (define funct3 (extract 14 12 b_instr))
@@ -102,7 +99,6 @@
       (illegal-instr m)]))
 
 (define (decode-B m b_instr)
-  (define op null)
   (define funct3 (extract 14 12 b_instr))
   (define rs1 (extract 19 15 b_instr))
   (define rs2 (extract 24 20 b_instr))
@@ -130,7 +126,6 @@
       (illegal-instr m)]))
 
 (define (decode-U m b_instr)
-  (define op null)
   (define opcode (extract 6 0 b_instr))
   ; append upper imm and lower imm into imm
   (define rd (extract 11 7 b_instr))
@@ -145,7 +140,6 @@
       (illegal-instr m)]))
 
 (define (decode-S m b_instr)
-  (define op null)
   (define opcode (extract 6 0 b_instr))
   (define funct3 (extract 14 12 b_instr))
   (define rs1 (extract 19 15 b_instr))
@@ -167,7 +161,6 @@
       (illegal-instr m)]))
 
 (define (decode-J m b_instr)
-  (define op null)
   (define opcode (extract 6 0 b_instr))
   (define rd (extract 11 7 b_instr))
   (define imm (concat
@@ -228,7 +221,6 @@
       (illegal-instr m)]))
 
 (define (decode-SPECIAL m b_instr)
-  (define op null)
   (define is_csr #f)
   (define opcode (extract 6 0 b_instr))
   (define rd (extract 11 7 b_instr))

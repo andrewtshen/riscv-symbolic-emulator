@@ -272,7 +272,8 @@
 		(parameterize
 			([use-debug-mode #f])
 			(execute-until-mret m))
-		(pmp-check m (bv #x00700001 64) (bv #x007FFFFF 64))))
+		(pmp-check m (bv #x00700001 64) (bv #x007FFFFF 64))
+		))
 
 ;; Sanity Checks for Misc. Utilities
 
@@ -456,6 +457,6 @@
 ;; Testing the base case and inductive step
 
 ; (define res-boot-sequence (run-tests boot-sequence))
-(define res-inductive-step (run-tests inductive-step))
-; (define res-boot-sequence (time (run-tests boot-sequence)))
-; (define res-inductive-step (time (run-tests inductive-step)))
+; (define res-inductive-step (run-tests inductive-step))
+(define res-boot-sequence (time (run-tests boot-sequence)))
+(define res-inductive-step (time (run-tests inductive-step)))

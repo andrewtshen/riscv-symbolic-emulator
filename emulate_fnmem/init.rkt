@@ -44,8 +44,6 @@
 (define (init-machine-with-prog program)
   (define proglength (vector-length program))
   (define ramsize (expt 2 (ramsize-log2)))
-  (when (use-debug-mode) (printf "ramsize: ~x~n" ramsize))
-  (when (use-debug-mode) (printf "proglength: ~a~n" proglength))
   (unless (>= ramsize proglength)
     (printf "Not enough RAM provided to run program~n"))
   (define-symbolic* mtvec mepc mstatus pmpcfg0 pmpcfg2 pmpaddr0 pmpaddr1 pmpaddr2
@@ -85,8 +83,6 @@
     (for ([byte program]
           [i (in-naturals)])
       (set! fnmem (uf-memory-write fnmem (bv i (ramsize-log2)) byte))))
-  (when (use-debug-mode)
-    (printf "ramsize-log2: ~a~n" (ramsize-log2)))
 
   (define m
     (machine
@@ -139,7 +135,6 @@
   (set! pmpaddr14 (bv 0 64))
   (set! pmpaddr15 (bv 0 64))
 
-  (when (use-debug-mode) (printf "ramsize-log2: ~a~n" (ramsize-log2)))
   (define fnmem (fresh-symbolic fnmem (~> (bitvector (ramsize-log2)) (bitvector 8))))
   (define m
     (machine
