@@ -4,7 +4,7 @@ on: push
 
 jobs:
   test:
-    name: Instruction Check
+    name: Emulator Test Cases
     runs-on: ubuntu-latest
 
     steps:
@@ -19,13 +19,9 @@ jobs:
           architecture: 'x64'
           distribution: 'full'
           version: '7.4'
-          #packages: 'rosette'
-
-      # Install Rosette Packages
-      #- name: Install Rosette
-        #run: raco pkg install rosette
-      
-      - name: Install Racket Packages and their Dependencies
+     
+      # Install Racket Dependencies for the emulator
+      - name: Install Racket Dependencies
         run: raco pkg install --auto --batch ./emulator
 
       # Runs Emulator Tests Tests

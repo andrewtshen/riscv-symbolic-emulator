@@ -14,7 +14,7 @@
 	path = related_works/serval-sosp19
 	url = https://github.com/uw-unsat/serval-sosp19
 [submodule "serval-tutorial-sosp19"]
-	path = related_works/eerval-tutorial-sosp19
+	path = related_works/serval-tutorial-sosp19
 	url = https://github.com/uw-unsat/serval-tutorial-sosp19
 [submodule "unitary"]
 	path = related_works/unitary
