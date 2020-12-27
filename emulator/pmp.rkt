@@ -1,13 +1,15 @@
 #lang rosette/safe
 
 (require (only-in racket/base for in-range))
+(require syntax/parse/define)
+
+(define-simple-macro (fresh-symbolic name type)
+  (let () (define-symbolic* name type) name))
 
 ;; Structs to Build PMP
 
 (struct pmp
-  (pmpcfg0 pmpcfg2 
-    pmpaddr0 pmpaddr1 pmpaddr2 pmpaddr3 pmpaddr4 pmpaddr5 pmpaddr6 pmpaddr7 
-    pmpaddr8 pmpaddr9 pmpaddr10 pmpaddr11 pmpaddr12 pmpaddr13 pmpaddr14 pmpaddr15)
+  (pmpcfg0 pmpcfg2 pmpaddrs)
   #:mutable #:transparent)
 (provide (struct-out pmp))
 
@@ -22,6 +24,25 @@
   (value start_addr end_addr)
   #:mutable #:transparent)
 (provide (struct-out pmpaddr))
+
+;; Helper Functions to Build PMP Structs
+
+(define (make-pmpcfg)
+  (pmpcfg
+    (fresh-symbolic value (bitvector 64))
+    (fresh-symbolic R (bitvector 1))
+    (fresh-symbolic W (bitvector 1))
+    (fresh-symbolic X (bitvector 1))
+    (fresh-symbolic A (bitvector 2))
+    (fresh-symbolic L (bitvector 1))))
+(provide make-pmpcfg)
+
+(define (make-pmpaddr)
+  (pmpaddr
+    (fresh-symbolic value (bitvector 64))
+    (fresh-symbolic start_addr (bitvector 64))
+    (fresh-symbolic end_addr (bitvector 64))))
+(provide make-pmpaddr)
 
 ;; PMP checks
 

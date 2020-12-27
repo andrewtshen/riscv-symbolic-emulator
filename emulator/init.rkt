@@ -27,6 +27,9 @@
 (define-simple-macro (fresh-symbolic name type)
   (let () (define-symbolic* name type) name))
 
+(define-simple-macro (make-pmpaddrs n:expr)
+  (build-vector n (lambda (i) (define p (make-pmpaddr)) p)))
+
 ;; Helper Methods
 
 ; Convert a file to a bytearray
@@ -110,25 +113,6 @@
   m)
 (provide init-machine-with-prog)
 
-(define (make-pmpcfg)
-  (pmpcfg
-    (fresh-symbolic value (bitvector 64))
-    (fresh-symbolic R (bitvector 1))
-    (fresh-symbolic W (bitvector 1))
-    (fresh-symbolic X (bitvector 1))
-    (fresh-symbolic A (bitvector 2))
-    (fresh-symbolic L (bitvector 1))))
-
-(define (make-pmpaddr)
-  (pmpaddr
-    (fresh-symbolic value (bitvector 64))
-    (fresh-symbolic start_addr (bitvector 64))
-    (fresh-symbolic end_addr (bitvector 64))))
-
-(define (make-pmp)
-  (pmp
-    ))
-
 (define (init-machine)
   (define-symbolic* mtvec mepc mstatus pc (bitvector 64))
 
@@ -136,22 +120,7 @@
     (pmp
       (make-pmpcfg)
       (make-pmpcfg)
-      (make-pmpaddr)
-      (make-pmpaddr)
-      (make-pmpaddr)
-      (make-pmpaddr)
-      (make-pmpaddr)
-      (make-pmpaddr)
-      (make-pmpaddr)
-      (make-pmpaddr)
-      (make-pmpaddr)
-      (make-pmpaddr)
-      (make-pmpaddr)
-      (make-pmpaddr)
-      (make-pmpaddr)
-      (make-pmpaddr)
-      (make-pmpaddr)
-      (make-pmpaddr)))
+      (make-pmpaddrs 15)))
 
   (set! mtvec (bv #x0000000080000080 64))
   ; (set! pmpcfg0 (bv #x000000000000001f 64))

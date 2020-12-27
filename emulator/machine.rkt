@@ -30,31 +30,35 @@
 
 ;; Wrappers for Mutator and Accessor Functions
 
-; be careful to decrement by 1 to access right location for gprs
+(define (get-pmpaddr-from-machine m i)
+  (vector-ref (pmp-pmpaddrs (csrs-pmp  (cpu-csrs (machine-cpu m)))) i))
+(define (get-csrs-from-machine m)
+  (cpu-csrs (machine-cpu m)))
 
+; be careful to decrement by 1 to access right location for gprs
 (define (get-csr m csr)
   (cond
-    [(eq? csr 'mtvec)     (csrs-mtvec     (cpu-csrs (machine-cpu m)))]
-    [(eq? csr 'mepc)      (csrs-mepc      (cpu-csrs (machine-cpu m)))]
-    [(eq? csr 'mstatus)   (csrs-mstatus   (cpu-csrs (machine-cpu m)))]
-    [(eq? csr 'pmpcfg0)   (pmp-pmpcfg0 (csrs-pmp   (cpu-csrs (machine-cpu m))))]
-    [(eq? csr 'pmpcfg2)   (pmp-pmpcfg2 (csrs-pmp   (cpu-csrs (machine-cpu m))))]
-    [(eq? csr 'pmpaddr0)  (pmp-pmpaddr0 (csrs-pmp  (cpu-csrs (machine-cpu m))))]
-    [(eq? csr 'pmpaddr1)  (pmp-pmpaddr1 (csrs-pmp  (cpu-csrs (machine-cpu m))))]
-    [(eq? csr 'pmpaddr2)  (pmp-pmpaddr2 (csrs-pmp  (cpu-csrs (machine-cpu m))))]
-    [(eq? csr 'pmpaddr3)  (pmp-pmpaddr3 (csrs-pmp  (cpu-csrs (machine-cpu m))))]
-    [(eq? csr 'pmpaddr4)  (pmp-pmpaddr4 (csrs-pmp  (cpu-csrs (machine-cpu m))))]
-    [(eq? csr 'pmpaddr5)  (pmp-pmpaddr5 (csrs-pmp  (cpu-csrs (machine-cpu m))))]
-    [(eq? csr 'pmpaddr6)  (pmp-pmpaddr6 (csrs-pmp  (cpu-csrs (machine-cpu m))))]
-    [(eq? csr 'pmpaddr7)  (pmp-pmpaddr7 (csrs-pmp  (cpu-csrs (machine-cpu m))))]
-    [(eq? csr 'pmpaddr8)  (pmp-pmpaddr8 (csrs-pmp  (cpu-csrs (machine-cpu m))))]
-    [(eq? csr 'pmpaddr9)  (pmp-pmpaddr9 (csrs-pmp  (cpu-csrs (machine-cpu m))))]
-    [(eq? csr 'pmpaddr10) (pmp-pmpaddr10 (csrs-pmp (cpu-csrs (machine-cpu m))))]
-    [(eq? csr 'pmpaddr11) (pmp-pmpaddr11 (csrs-pmp (cpu-csrs (machine-cpu m))))]
-    [(eq? csr 'pmpaddr12) (pmp-pmpaddr12 (csrs-pmp (cpu-csrs (machine-cpu m))))]
-    [(eq? csr 'pmpaddr13) (pmp-pmpaddr13 (csrs-pmp (cpu-csrs (machine-cpu m))))]
-    [(eq? csr 'pmpaddr14) (pmp-pmpaddr14 (csrs-pmp (cpu-csrs (machine-cpu m))))]
-    [(eq? csr 'pmpaddr15) (pmp-pmpaddr15 (csrs-pmp (cpu-csrs (machine-cpu m))))]
+    [(eq? csr 'mtvec)     (csrs-mtvec            (get-csrs-from-machine))]
+    [(eq? csr 'mepc)      (csrs-mepc             (get-csrs-from-machine))]
+    [(eq? csr 'mstatus)   (csrs-mstatus          (get-csrs-from-machine))]
+    [(eq? csr 'pmpcfg0)   (pmp-pmpcfg0 (csrs-pmp (get-csrs-from-machine)))]
+    [(eq? csr 'pmpcfg2)   (pmp-pmpcfg2 (csrs-pmp (get-csrs-from-machine)))]
+    [(eq? csr 'pmpaddr0)  (get-pmpaddr-from-machine m 0)]
+    [(eq? csr 'pmpaddr1)  (get-pmpaddr-from-machine m 1)]
+    [(eq? csr 'pmpaddr2)  (get-pmpaddr-from-machine m 2)]
+    [(eq? csr 'pmpaddr3)  (get-pmpaddr-from-machine m 3)]
+    [(eq? csr 'pmpaddr4)  (get-pmpaddr-from-machine m 4)]
+    [(eq? csr 'pmpaddr5)  (get-pmpaddr-from-machine m 5)]
+    [(eq? csr 'pmpaddr6)  (get-pmpaddr-from-machine m 6)]
+    [(eq? csr 'pmpaddr7)  (get-pmpaddr-from-machine m 7)]
+    [(eq? csr 'pmpaddr8)  (get-pmpaddr-from-machine m 8)]
+    [(eq? csr 'pmpaddr9)  (get-pmpaddr-from-machine m 9)]
+    [(eq? csr 'pmpaddr10) (get-pmpaddr-from-machine m 10)]
+    [(eq? csr 'pmpaddr11) (get-pmpaddr-from-machine m 11)]
+    [(eq? csr 'pmpaddr12) (get-pmpaddr-from-machine m 12)]
+    [(eq? csr 'pmpaddr13) (get-pmpaddr-from-machine m 13)]
+    [(eq? csr 'pmpaddr14) (get-pmpaddr-from-machine m 14)]
+    [(eq? csr 'pmpaddr15) (get-pmpaddr-from-machine m 15)]
     [else
       ; (printf "No such CSR: ~a~n" csr)
       (illegal-instr m)]))
