@@ -1,6 +1,7 @@
 #lang rosette/safe
 
 (require
+  "pmp.rkt"
   "machine.rkt"
   "parameters.rkt"
   "print_utils.rkt")
@@ -109,40 +110,75 @@
   m)
 (provide init-machine-with-prog)
 
+(define (make-pmpcfg)
+  (pmpcfg
+    (fresh-symbolic value (bitvector 64))
+    (fresh-symbolic R (bitvector 1))
+    (fresh-symbolic W (bitvector 1))
+    (fresh-symbolic X (bitvector 1))
+    (fresh-symbolic A (bitvector 2))
+    (fresh-symbolic L (bitvector 1))))
+
+(define (make-pmpaddr)
+  (pmpaddr
+    (fresh-symbolic value (bitvector 64))
+    (fresh-symbolic start_addr (bitvector 64))
+    (fresh-symbolic end_addr (bitvector 64))))
+
+(define (make-pmp)
+  (pmp
+    ))
+
 (define (init-machine)
-  (define-symbolic* mtvec mepc mstatus pmpcfg0 pmpcfg2 pmpaddr0 pmpaddr1 pmpaddr2
-    pmpaddr3 pmpaddr4 pmpaddr5 pmpaddr6 pmpaddr7 pmpaddr8 pmpaddr9 pmpaddr10
-    pmpaddr11 pmpaddr12 pmpaddr13 pmpaddr14 pmpaddr15 pc (bitvector 64))
+  (define-symbolic* mtvec mepc mstatus pc (bitvector 64))
+
+  (define pmps
+    (pmp
+      (make-pmpcfg)
+      (make-pmpcfg)
+      (make-pmpaddr)
+      (make-pmpaddr)
+      (make-pmpaddr)
+      (make-pmpaddr)
+      (make-pmpaddr)
+      (make-pmpaddr)
+      (make-pmpaddr)
+      (make-pmpaddr)
+      (make-pmpaddr)
+      (make-pmpaddr)
+      (make-pmpaddr)
+      (make-pmpaddr)
+      (make-pmpaddr)
+      (make-pmpaddr)
+      (make-pmpaddr)
+      (make-pmpaddr)))
 
   (set! mtvec (bv #x0000000080000080 64))
-  (set! pmpcfg0 (bv #x000000000000001f 64))
-  (set! pmpcfg2 (bv #x0000000000000018 64))
-  (set! pmpaddr0 (bv #x000000002000bfff 64))
-  (set! pmpaddr1 (bv 0 64))
-  (set! pmpaddr1 (bv 0 64))
-  (set! pmpaddr2 (bv 0 64))
-  (set! pmpaddr3 (bv 0 64))
-  (set! pmpaddr4 (bv 0 64))
-  (set! pmpaddr5 (bv 0 64))
-  (set! pmpaddr6 (bv 0 64))
-  (set! pmpaddr7 (bv 0 64))
-  (set! pmpaddr8 (bv #x7fffffffffffffff 64))
-  (set! pmpaddr9 (bv 0 64))
-  (set! pmpaddr10 (bv 0 64))
-  (set! pmpaddr11 (bv 0 64))
-  (set! pmpaddr12 (bv 0 64))
-  (set! pmpaddr13 (bv 0 64))
-  (set! pmpaddr14 (bv 0 64))
-  (set! pmpaddr15 (bv 0 64))
+  ; (set! pmpcfg0 (bv #x000000000000001f 64))
+  ; (set! pmpcfg2 (bv #x0000000000000018 64))
+  ; (set! pmpaddr0 (bv #x000000002000bfff 64))
+  ; (set! pmpaddr1 (bv 0 64))
+  ; (set! pmpaddr2 (bv 0 64))
+  ; (set! pmpaddr3 (bv 0 64))
+  ; (set! pmpaddr4 (bv 0 64))
+  ; (set! pmpaddr5 (bv 0 64))
+  ; (set! pmpaddr6 (bv 0 64))
+  ; (set! pmpaddr7 (bv 0 64))
+  ; (set! pmpaddr8 (bv #x7fffffffffffffff 64))
+  ; (set! pmpaddr9 (bv 0 64))
+  ; (set! pmpaddr10 (bv 0 64))
+  ; (set! pmpaddr11 (bv 0 64))
+  ; (set! pmpaddr12 (bv 0 64))
+  ; (set! pmpaddr13 (bv 0 64))
+  ; (set! pmpaddr14 (bv 0 64))
+  ; (set! pmpaddr15 (bv 0 64))
 
   (define fnmem (fresh-symbolic fnmem (~> (bitvector (ramsize-log2)) (bitvector 8))))
   (define m
     (machine
       (cpu 
         (csrs
-          mtvec mepc mstatus pmpcfg0 pmpcfg2 pmpaddr0 pmpaddr1 pmpaddr2
-          pmpaddr3 pmpaddr4 pmpaddr5 pmpaddr6 pmpaddr7 pmpaddr8 pmpaddr9
-          pmpaddr10 pmpaddr11 pmpaddr12 pmpaddr13 pmpaddr14 pmpaddr15)
+          mtvec mepc mstatus pmps)
         (make-sym-vector 31 64 gpr) ; be careful of -1 for offset
         pc) ; symbolic pc
       (if (use-fnmem)
@@ -154,20 +190,9 @@
 
 ;; Examples
 
-; ; get program and init machine example
-; (define program (file->bytearray "build/add.bin"))
-; (printf "Program: ~a~n" program)
-; (define ramsize 100)
-; (define m (init-machine-with-prog program ramsize))
-; (print-memory m ramsize)
-; ; ((machine-ram m) (bv 100 32)) ; illegal instruction
-; (displayln (gprs-get-x m 2))
-; (get-next-instr m)
-
-; ; machine init examples
-; (define ramsize 100)
-; (define m1 (init-machine ramsize))
-; (print-memory m1 ramsize)
+; ; machine init example
+(define m (init-machine))
+(printf "~a~n" m)
 
 ; ; example symbolic vector: 3 bitvectors size 32 named foo$0 foo$1 foo$2
 ; (make-sym-vector 3 32 foo) 

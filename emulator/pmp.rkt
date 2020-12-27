@@ -2,6 +2,85 @@
 
 (require (only-in racket/base for in-range))
 
+;; Structs to Build PMP
+
+(struct pmp
+  (pmpcfg0 pmpcfg2 
+    pmpaddr0 pmpaddr1 pmpaddr2 pmpaddr3 pmpaddr4 pmpaddr5 pmpaddr6 pmpaddr7 
+    pmpaddr8 pmpaddr9 pmpaddr10 pmpaddr11 pmpaddr12 pmpaddr13 pmpaddr14 pmpaddr15)
+  #:mutable #:transparent)
+(provide (struct-out pmp))
+
+; pmpcfg struct
+(struct pmpcfg
+  (value R W A X L)
+  #:mutable #:transparent)
+(provide (struct-out pmpcfg))
+
+; pmpaddr struct
+(struct pmpaddr
+  (value start_addr end_addr)
+  #:mutable #:transparent)
+(provide (struct-out pmpaddr))
+
+;; PMP checks
+
+; (define (pmpcfg-check m pmpcfg saddr eaddr pmpaddrs)
+;   (define legal null)
+;   (define done #f)
+;   ; somewhat hacky way of getting right regs, doesn't work if id odd
+;   ; but this is okay because for risc-V 64, always id even
+;   (for ([i (in-range 0 8)]
+;         [pmp_name pmpaddrs]
+;         #:break (equal? done #t))
+
+;     (define settings (pmp-decode-cfg pmpcfg i))
+
+;     ; TODO: Implement check type of access
+;     (define R (list-ref settings 0))
+;     (define W (list-ref settings 1))
+;     (define X (list-ref settings 2))
+;     (define A (list-ref settings 3))
+;     ; This is case Top Of Range (TOP) encoding
+;     ; TODO: Implement different types of PMP encodings
+;     (when (equal? A 1)
+;       (define pmp (get-csr m pmp_name))
+;       (define pmp_bounds (pmp-decode-napot pmp))
+
+;       (define pmp_start (list-ref pmp_bounds 0))
+;       (define pmp_end (bvadd (list-ref pmp_bounds 0) (list-ref pmp_bounds 1)))
+      
+;       ; test the proper bounds
+;       (define slegal (bv-between saddr pmp_start pmp_end))
+;       (define elegal (bv-between eaddr pmp_start pmp_end))
+
+;       (when (and slegal elegal)
+;         (set! done #t)
+;         (if (and (equal? R 1) (equal? W 1) (equal? X 1))
+;           (set! legal #t)
+;           (set! legal #f)))))
+;   legal)
+
+; ; PMP test address ranging from saddr to eaddr 
+(define (pmp-check m saddr eaddr)
+  #f)
+;   ; check pmpcfg0, iterate through each register
+;   (define pmpcfg0 (get-csr m 'pmpcfg0))
+;   (define pmpcfg0_regs (list 'pmpaddr0 'pmpaddr1 'pmpaddr2 'pmpaddr3
+;                              'pmpaddr4 'pmpaddr5 'pmpaddr6 'pmpaddr7))
+;   (define legal (pmpcfg-check m pmpcfg0 saddr eaddr pmpcfg0_regs))
+
+;   ; check pmpcfg2, iterate through each register
+;   (when (equal? legal null)
+;     (define pmpcfg2_regs (list 'pmpaddr8 'pmpaddr9 'pmpaddr10 'pmpaddr11
+;                                'pmpaddr12 'pmpaddr13 'pmpaddr14 'pmpaddr15))
+;     (define pmpcfg2 (get-csr m 'pmpcfg2))
+;     (set! legal (pmpcfg-check m pmpcfg2 saddr eaddr pmpcfg2_regs)))
+;   (if (equal? legal null)
+;     #t
+;     legal))
+(provide pmp-check)
+
 ; PMP utilities for decoding registers and checking
 
 (define (ctz64 val)
@@ -15,6 +94,7 @@
           (helper (+ 1 i))))]))
 (provide ctz64)
 
+; TODO: Missing L bit for locking?
 ; Decode R W X A settings for cfg register
 (define (pmp-decode-cfg val idx)
 	(define base (* idx 8))

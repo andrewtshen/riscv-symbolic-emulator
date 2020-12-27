@@ -10,7 +10,7 @@
   (let () (define-symbolic* name type) name))
 (provide fresh-symbolic)
 
-;; Structs
+;; Structs to Build the Machine
 
 ; 31 64-bit-vectors (x0 is not an actual gpr)
 (struct cpu
@@ -19,9 +19,7 @@
 
 ; control status registers for u and m mode
 (struct csrs
-  (mtvec mepc mstatus pmpcfg0 pmpcfg2 pmpaddr0 pmpaddr1 pmpaddr2
-    pmpaddr3 pmpaddr4 pmpaddr5 pmpaddr6 pmpaddr7 pmpaddr8 pmpaddr9
-    pmpaddr10 pmpaddr11 pmpaddr12 pmpaddr13 pmpaddr14 pmpaddr15)
+  (mtvec mepc mstatus pmp)
   #:mutable #:transparent)
 (provide csrs)
 
@@ -39,24 +37,24 @@
     [(eq? csr 'mtvec)     (csrs-mtvec     (cpu-csrs (machine-cpu m)))]
     [(eq? csr 'mepc)      (csrs-mepc      (cpu-csrs (machine-cpu m)))]
     [(eq? csr 'mstatus)   (csrs-mstatus   (cpu-csrs (machine-cpu m)))]
-    [(eq? csr 'pmpcfg0)   (csrs-pmpcfg0   (cpu-csrs (machine-cpu m)))]
-    [(eq? csr 'pmpcfg2)   (csrs-pmpcfg2   (cpu-csrs (machine-cpu m)))]
-    [(eq? csr 'pmpaddr0)  (csrs-pmpaddr0  (cpu-csrs (machine-cpu m)))]
-    [(eq? csr 'pmpaddr1)  (csrs-pmpaddr1  (cpu-csrs (machine-cpu m)))]
-    [(eq? csr 'pmpaddr2)  (csrs-pmpaddr2  (cpu-csrs (machine-cpu m)))]
-    [(eq? csr 'pmpaddr3)  (csrs-pmpaddr3  (cpu-csrs (machine-cpu m)))]
-    [(eq? csr 'pmpaddr4)  (csrs-pmpaddr4  (cpu-csrs (machine-cpu m)))]
-    [(eq? csr 'pmpaddr5)  (csrs-pmpaddr5  (cpu-csrs (machine-cpu m)))]
-    [(eq? csr 'pmpaddr6)  (csrs-pmpaddr6  (cpu-csrs (machine-cpu m)))]
-    [(eq? csr 'pmpaddr7)  (csrs-pmpaddr7  (cpu-csrs (machine-cpu m)))]
-    [(eq? csr 'pmpaddr8)  (csrs-pmpaddr8  (cpu-csrs (machine-cpu m)))]
-    [(eq? csr 'pmpaddr9)  (csrs-pmpaddr9  (cpu-csrs (machine-cpu m)))]
-    [(eq? csr 'pmpaddr10) (csrs-pmpaddr10 (cpu-csrs (machine-cpu m)))]
-    [(eq? csr 'pmpaddr11) (csrs-pmpaddr11 (cpu-csrs (machine-cpu m)))]
-    [(eq? csr 'pmpaddr12) (csrs-pmpaddr12 (cpu-csrs (machine-cpu m)))]
-    [(eq? csr 'pmpaddr13) (csrs-pmpaddr13 (cpu-csrs (machine-cpu m)))]
-    [(eq? csr 'pmpaddr14) (csrs-pmpaddr14 (cpu-csrs (machine-cpu m)))]
-    [(eq? csr 'pmpaddr15) (csrs-pmpaddr15 (cpu-csrs (machine-cpu m)))]
+    [(eq? csr 'pmpcfg0)   (pmp-pmpcfg0 (csrs-pmp   (cpu-csrs (machine-cpu m))))]
+    [(eq? csr 'pmpcfg2)   (pmp-pmpcfg2 (csrs-pmp   (cpu-csrs (machine-cpu m))))]
+    [(eq? csr 'pmpaddr0)  (pmp-pmpaddr0 (csrs-pmp  (cpu-csrs (machine-cpu m))))]
+    [(eq? csr 'pmpaddr1)  (pmp-pmpaddr1 (csrs-pmp  (cpu-csrs (machine-cpu m))))]
+    [(eq? csr 'pmpaddr2)  (pmp-pmpaddr2 (csrs-pmp  (cpu-csrs (machine-cpu m))))]
+    [(eq? csr 'pmpaddr3)  (pmp-pmpaddr3 (csrs-pmp  (cpu-csrs (machine-cpu m))))]
+    [(eq? csr 'pmpaddr4)  (pmp-pmpaddr4 (csrs-pmp  (cpu-csrs (machine-cpu m))))]
+    [(eq? csr 'pmpaddr5)  (pmp-pmpaddr5 (csrs-pmp  (cpu-csrs (machine-cpu m))))]
+    [(eq? csr 'pmpaddr6)  (pmp-pmpaddr6 (csrs-pmp  (cpu-csrs (machine-cpu m))))]
+    [(eq? csr 'pmpaddr7)  (pmp-pmpaddr7 (csrs-pmp  (cpu-csrs (machine-cpu m))))]
+    [(eq? csr 'pmpaddr8)  (pmp-pmpaddr8 (csrs-pmp  (cpu-csrs (machine-cpu m))))]
+    [(eq? csr 'pmpaddr9)  (pmp-pmpaddr9 (csrs-pmp  (cpu-csrs (machine-cpu m))))]
+    [(eq? csr 'pmpaddr10) (pmp-pmpaddr10 (csrs-pmp (cpu-csrs (machine-cpu m))))]
+    [(eq? csr 'pmpaddr11) (pmp-pmpaddr11 (csrs-pmp (cpu-csrs (machine-cpu m))))]
+    [(eq? csr 'pmpaddr12) (pmp-pmpaddr12 (csrs-pmp (cpu-csrs (machine-cpu m))))]
+    [(eq? csr 'pmpaddr13) (pmp-pmpaddr13 (csrs-pmp (cpu-csrs (machine-cpu m))))]
+    [(eq? csr 'pmpaddr14) (pmp-pmpaddr14 (csrs-pmp (cpu-csrs (machine-cpu m))))]
+    [(eq? csr 'pmpaddr15) (pmp-pmpaddr15 (csrs-pmp (cpu-csrs (machine-cpu m))))]
     [else
       ; (printf "No such CSR: ~a~n" csr)
       (illegal-instr m)]))
@@ -68,24 +66,24 @@
     [(eq? csr 'mtvec)     (set-csrs-mtvec!     (cpu-csrs (machine-cpu m)) val)]
     [(eq? csr 'mepc)      (set-csrs-mepc!      (cpu-csrs (machine-cpu m)) val)]
     [(eq? csr 'mstatus)   (set-csrs-mstatus!   (cpu-csrs (machine-cpu m)) val)]
-    [(eq? csr 'pmpcfg0)   (set-csrs-pmpcfg0!   (cpu-csrs (machine-cpu m)) val)]
-    [(eq? csr 'pmpcfg2)   (set-csrs-pmpcfg2!   (cpu-csrs (machine-cpu m)) val)]
-    [(eq? csr 'pmpaddr0)  (set-csrs-pmpaddr0!  (cpu-csrs (machine-cpu m)) val)]
-    [(eq? csr 'pmpaddr1)  (set-csrs-pmpaddr1!  (cpu-csrs (machine-cpu m)) val)]
-    [(eq? csr 'pmpaddr2)  (set-csrs-pmpaddr2!  (cpu-csrs (machine-cpu m)) val)]
-    [(eq? csr 'pmpaddr3)  (set-csrs-pmpaddr3!  (cpu-csrs (machine-cpu m)) val)]
-    [(eq? csr 'pmpaddr4)  (set-csrs-pmpaddr4!  (cpu-csrs (machine-cpu m)) val)]
-    [(eq? csr 'pmpaddr5)  (set-csrs-pmpaddr5!  (cpu-csrs (machine-cpu m)) val)]
-    [(eq? csr 'pmpaddr6)  (set-csrs-pmpaddr6!  (cpu-csrs (machine-cpu m)) val)]
-    [(eq? csr 'pmpaddr7)  (set-csrs-pmpaddr7!  (cpu-csrs (machine-cpu m)) val)]
-    [(eq? csr 'pmpaddr8)  (set-csrs-pmpaddr8!  (cpu-csrs (machine-cpu m)) val)]
-    [(eq? csr 'pmpaddr9)  (set-csrs-pmpaddr9!  (cpu-csrs (machine-cpu m)) val)]
-    [(eq? csr 'pmpaddr10) (set-csrs-pmpaddr10! (cpu-csrs (machine-cpu m)) val)]
-    [(eq? csr 'pmpaddr11) (set-csrs-pmpaddr11! (cpu-csrs (machine-cpu m)) val)]
-    [(eq? csr 'pmpaddr12) (set-csrs-pmpaddr12! (cpu-csrs (machine-cpu m)) val)]
-    [(eq? csr 'pmpaddr13) (set-csrs-pmpaddr13! (cpu-csrs (machine-cpu m)) val)]
-    [(eq? csr 'pmpaddr14) (set-csrs-pmpaddr14! (cpu-csrs (machine-cpu m)) val)]
-    [(eq? csr 'pmpaddr15) (set-csrs-pmpaddr15! (cpu-csrs (machine-cpu m)) val)]
+    ; [(eq? csr 'pmpcfg0)   (set-pmp-pmpcfg0! (csrs-pmp   (cpu-csrs (machine-cpu m)) val))]
+    ; [(eq? csr 'pmpcfg2)   (set-pmp-pmpcfg2! (csrs-pmp   (cpu-csrs (machine-cpu m)) val))]
+    ; [(eq? csr 'pmpaddr0)  (set-pmp-pmpaddr0! (csrs-pmp  (cpu-csrs (machine-cpu m)) val))]
+    ; [(eq? csr 'pmpaddr1)  (set-pmp-pmpaddr1! (csrs-pmp  (cpu-csrs (machine-cpu m)) val))]
+    ; [(eq? csr 'pmpaddr2)  (set-pmp-pmpaddr2! (csrs-pmp  (cpu-csrs (machine-cpu m)) val))]
+    ; [(eq? csr 'pmpaddr3)  (set-pmp-pmpaddr3! (csrs-pmp  (cpu-csrs (machine-cpu m)) val))]
+    ; [(eq? csr 'pmpaddr4)  (set-pmp-pmpaddr4! (csrs-pmp  (cpu-csrs (machine-cpu m)) val))]
+    ; [(eq? csr 'pmpaddr5)  (set-pmp-pmpaddr5! (csrs-pmp  (cpu-csrs (machine-cpu m)) val))]
+    ; [(eq? csr 'pmpaddr6)  (set-pmp-pmpaddr6! (csrs-pmp  (cpu-csrs (machine-cpu m)) val))]
+    ; [(eq? csr 'pmpaddr7)  (set-pmp-pmpaddr7! (csrs-pmp  (cpu-csrs (machine-cpu m)) val))]
+    ; [(eq? csr 'pmpaddr8)  (set-pmp-pmpaddr8! (csrs-pmp  (cpu-csrs (machine-cpu m)) val))]
+    ; [(eq? csr 'pmpaddr9)  (set-pmp-pmpaddr9! (csrs-pmp  (cpu-csrs (machine-cpu m)) val))]
+    ; [(eq? csr 'pmpaddr10) (set-pmp-pmpaddr10! (csrs-pmp (cpu-csrs (machine-cpu m)) val))]
+    ; [(eq? csr 'pmpaddr11) (set-pmp-pmpaddr11! (csrs-pmp (cpu-csrs (machine-cpu m)) val))]
+    ; [(eq? csr 'pmpaddr12) (set-pmp-pmpaddr12! (csrs-pmp (cpu-csrs (machine-cpu m)) val))]
+    ; [(eq? csr 'pmpaddr13) (set-pmp-pmpaddr13! (csrs-pmp (cpu-csrs (machine-cpu m)) val))]
+    ; [(eq? csr 'pmpaddr14) (set-pmp-pmpaddr14! (csrs-pmp (cpu-csrs (machine-cpu m)) val))]
+    ; [(eq? csr 'pmpaddr15) (set-pmp-pmpaddr15! (csrs-pmp (cpu-csrs (machine-cpu m)) val))]
     [else 
       ; (printf "No such CSR: ~a~n" csr)
       (illegal-instr m)])
@@ -215,58 +213,3 @@
     (if (use-fnmem)
       (set-machine-ram! m (uf-memory-write (machine-ram m) adj_pos v))
       (vector-memory-write! m adj_pos v))))
-
-;; PMP checks
-
-(define (pmpcfg-check m pmpcfg saddr eaddr pmpaddrs)
-  (define legal null)
-  (define done #f)
-  ; somewhat hacky way of getting right regs, doesn't work if id odd
-  ; but this is okay because for risc-V 64, always id even
-  (for ([i (in-range 0 8)]
-        [pmp_name pmpaddrs]
-        #:break (equal? done #t))
-
-    (define settings (pmp-decode-cfg pmpcfg i))
-
-    ; TODO: implement check type of access
-    (define R (list-ref settings 0))
-    (define W (list-ref settings 1))
-    (define X (list-ref settings 2))
-    (define A (list-ref settings 3))
-    (when (equal? A 1)
-      (define pmp (get-csr m pmp_name))
-      (define pmp_bounds (pmp-decode-napot pmp))
-
-      (define pmp_start (list-ref pmp_bounds 0))
-      (define pmp_end (bvadd (list-ref pmp_bounds 0) (list-ref pmp_bounds 1)))
-      
-      ; test the proper bounds
-      (define slegal (bv-between saddr pmp_start pmp_end))
-      (define elegal (bv-between eaddr pmp_start pmp_end))
-
-      (when (and slegal elegal)
-        (set! done #t)
-        (if (and (equal? R 1) (equal? W 1) (equal? X 1))
-          (set! legal #t)
-          (set! legal #f)))))
-  legal)
-
-; PMP test address ranging from saddr to eaddr 
-(define (pmp-check m saddr eaddr)
-  ; check pmpcfg0, iterate through each register
-  (define pmpcfg0 (get-csr m 'pmpcfg0))
-  (define pmpcfg0_regs (list 'pmpaddr0 'pmpaddr1 'pmpaddr2 'pmpaddr3
-                             'pmpaddr4 'pmpaddr5 'pmpaddr6 'pmpaddr7))
-  (define legal (pmpcfg-check m pmpcfg0 saddr eaddr pmpcfg0_regs))
-
-  ; check pmpcfg2, iterate through each register
-  (when (equal? legal null)
-    (define pmpcfg2_regs (list 'pmpaddr8 'pmpaddr9 'pmpaddr10 'pmpaddr11
-                               'pmpaddr12 'pmpaddr13 'pmpaddr14 'pmpaddr15))
-    (define pmpcfg2 (get-csr m 'pmpcfg2))
-    (set! legal (pmpcfg-check m pmpcfg2 saddr eaddr pmpcfg2_regs)))
-  (if (equal? legal null)
-    #t
-    legal))
-(provide pmp-check)
