@@ -1,4 +1,7 @@
 # RISC-V Symbolic Emulator
+
+![CI](https://github.com/andrewtshen/riscv-symbolic-emulator/workflows/CI/badge.svg)
+
 This project was built during the PRIMES 2019-2020 program by Andrew Shen under the mentorship of Anish Athalye.
 The paper can be found at: https://math.mit.edu/research/highschool/primes/materials/2020/Shen.pdf
 

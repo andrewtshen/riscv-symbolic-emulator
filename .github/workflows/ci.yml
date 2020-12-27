@@ -1,0 +1,33 @@
+name: CI
+
+on: push
+
+jobs:
+  test:
+    name: Instruction Check
+    runs-on: ubuntu-latest
+
+    steps:
+      # Checks out a copy of your repository on the ubuntu-latest machine
+      - name: Checkout Code
+        uses: actions/checkout@v2
+
+      # Installs Racket
+      - name: Install Racket
+        uses: Bogdanp/setup-racket@v0.11
+        with:
+          architecture: 'x64'
+          distribution: 'full'
+          version: '7.4'
+          #packages: 'rosette'
+
+      # Install Rosette Packages
+      #- name: Install Rosette
+        #run: raco pkg install rosette
+      
+      - name: Install Racket Packages and their Dependencies
+        run: raco pkg install --auto --batch ./emulator
+
+      # Runs Emulator Tests Tests
+      - name: Run Racket Tests
+        run: raco test emulator/test.rkt  
