@@ -51,22 +51,24 @@
   (define pmp_bounds (pmp-decode-napot val))
   (define pmp_start (list-ref pmp_bounds 0))
   (define pmp_end (bvadd (list-ref pmp_bounds 0) (list-ref pmp_bounds 1)))
-  (set-pmpaddr-start_addr! (vector-ref (pmp-pmpcfgs (csrs-pmp (cpu-csrs (machine-cpu m)))) i) val)
-  (set-pmpaddr-end_addr! (vector-ref (pmp-pmpcfgs (csrs-pmp (cpu-csrs (machine-cpu m)))) i) val))
+
+  (set-pmpaddr-start_addr! (vector-ref (pmp-pmpaddrs (csrs-pmp (cpu-csrs (machine-cpu m)))) i) val)
+  (set-pmpaddr-end_addr! (vector-ref (pmp-pmpaddrs (csrs-pmp (cpu-csrs (machine-cpu m)))) i) val))
+(provide write-to-pmpaddr!)
 
 (define (write-to-pmpcfg! m i val)
-  (set-pmpcfg-value! (vector-ref (csrs-pmp (cpu-csrs (machine-cpu m))) i) val)
-  (for ([i (in-range 8)])
+  (set-pmpcfg-value! (vector-ref (pmp-pmpcfgs (csrs-pmp (cpu-csrs (machine-cpu m)))) i) val)
+  (for ([id (in-range 8)])
     (define settings (pmp-decode-cfg val i))
     (define R (list-ref settings 0))
     (define W (list-ref settings 1))
     (define X (list-ref settings 2))
     (define A (list-ref settings 3))
-    (set-pmpcfg_setting-R! (vector-ref (pmpcfg-settings (pmp-pmpcfgs (csrs-pmp (cpu-csrs (machine-cpu m))))) i) R)
-    (set-pmpcfg_setting-W! (vector-ref (pmpcfg-settings (pmp-pmpcfgs (csrs-pmp (cpu-csrs (machine-cpu m))))) i) W)
-    (set-pmpcfg_setting-X! (vector-ref (pmpcfg-settings (pmp-pmpcfgs (csrs-pmp (cpu-csrs (machine-cpu m))))) i) X)
-    (set-pmpcfg_setting-A! (vector-ref (pmpcfg-settings (pmp-pmpcfgs (csrs-pmp (cpu-csrs (machine-cpu m))))) i) A)
-    ))
+    (set-pmpcfg_setting-R! (vector-ref (pmpcfg-settings (vector-ref (pmp-pmpcfgs (csrs-pmp (cpu-csrs (machine-cpu m)))) i)) id) R)
+    (set-pmpcfg_setting-W! (vector-ref (pmpcfg-settings (vector-ref (pmp-pmpcfgs (csrs-pmp (cpu-csrs (machine-cpu m)))) i)) id) W)
+    (set-pmpcfg_setting-X! (vector-ref (pmpcfg-settings (vector-ref (pmp-pmpcfgs (csrs-pmp (cpu-csrs (machine-cpu m)))) i)) id) X)
+    (set-pmpcfg_setting-A! (vector-ref (pmpcfg-settings (vector-ref (pmp-pmpcfgs (csrs-pmp (cpu-csrs (machine-cpu m)))) i)) id) A)))
+(provide write-to-pmpcfg!)
 
 ; Get the value contained in a csr
 ; be careful to decrement by 1 to access right location for gprs

@@ -53,32 +53,17 @@
   (define ramsize (expt 2 (ramsize-log2)))
   (unless (>= ramsize proglength)
     (printf "Not enough RAM provided to run program~n"))
-  (define-symbolic* mtvec mepc mstatus pmpcfg0 pmpcfg2 pmpaddr0 pmpaddr1 pmpaddr2
-    pmpaddr3 pmpaddr4 pmpaddr5 pmpaddr6 pmpaddr7 pmpaddr8 pmpaddr9 pmpaddr10
-    pmpaddr11 pmpaddr12 pmpaddr13 pmpaddr14 pmpaddr15 (bitvector 64))
+  (define-symbolic* mtvec mepc mstatus (bitvector 64))
+
+  (define pmps
+    (pmp
+      (make-pmpcfgs 2)
+      (make-pmpaddrs 16)))
 
   ; set all the initial csrs to 0 (TODO: change to actual values)
   (set! mtvec (bv 0 64))
   (set! mepc (bv 0 64))
   (set! mstatus (bv 0 64))
-  (set! pmpcfg0 (bv 0 64))
-  (set! pmpcfg2 (bv 0 64))
-  (set! pmpaddr0 (bv 0 64))
-  (set! pmpaddr1 (bv 0 64))
-  (set! pmpaddr2 (bv 0 64))
-  (set! pmpaddr3 (bv 0 64))
-  (set! pmpaddr4 (bv 0 64))
-  (set! pmpaddr5 (bv 0 64))
-  (set! pmpaddr6 (bv 0 64))
-  (set! pmpaddr7 (bv 0 64))
-  (set! pmpaddr8 (bv 0 64))
-  (set! pmpaddr9 (bv 0 64))
-  (set! pmpaddr10 (bv 0 64))
-  (set! pmpaddr11 (bv 0 64))
-  (set! pmpaddr12 (bv 0 64))
-  (set! pmpaddr13 (bv 0 64))
-  (set! pmpaddr14 (bv 0 64))
-  (set! pmpaddr15 (bv 0 64))
 
   ; use this for undefined memory
   (define fnmem (fresh-symbolic fnmem (~> (bitvector (ramsize-log2)) (bitvector 8))))
@@ -95,11 +80,9 @@
     (machine
       (cpu 
         (csrs
-          mtvec mepc mstatus pmpcfg0 pmpcfg2 pmpaddr0 pmpaddr1 pmpaddr2
-          pmpaddr3 pmpaddr4 pmpaddr5 pmpaddr6 pmpaddr7 pmpaddr8 pmpaddr9
-          pmpaddr10 pmpaddr11 pmpaddr12 pmpaddr13 pmpaddr14 pmpaddr15)
+          mtvec mepc mstatus pmps)
         (make-sym-vector 31 64 gpr) ; be careful of -1 for offset
-        (bv 0 64)) ; make pc symbolic
+        (bv 0 64)) ; set pc to 0 when loading with program
       (if (use-fnmem)
         fnmem
         (vector-append
@@ -113,6 +96,28 @@
   ; do some special virt machine set up
   (gprs-set-x! m 5 (bv #x80000000 64))
   (gprs-set-x! m 10 (bv 1020 64))
+
+  ; set up values for pmp
+  ; TODO: Check that these values are correct
+  (write-to-pmpcfg! m 0 (bv 0 64))
+  (write-to-pmpcfg! m 1 (bv 0 64))
+  (write-to-pmpaddr! m 0 (bv 0 64))
+  (write-to-pmpaddr! m 1 (bv 0 64))
+  (write-to-pmpaddr! m 2 (bv 0 64))
+  (write-to-pmpaddr! m 3 (bv 0 64))
+  (write-to-pmpaddr! m 4 (bv 0 64))
+  (write-to-pmpaddr! m 5 (bv 0 64))
+  (write-to-pmpaddr! m 6 (bv 0 64))
+  (write-to-pmpaddr! m 7 (bv 0 64))
+  (write-to-pmpaddr! m 8 (bv 0 64))
+  (write-to-pmpaddr! m 9 (bv 0 64))
+  (write-to-pmpaddr! m 10 (bv 0 64))
+  (write-to-pmpaddr! m 11 (bv 0 64))
+  (write-to-pmpaddr! m 12 (bv 0 64))
+  (write-to-pmpaddr! m 13 (bv 0 64))
+  (write-to-pmpaddr! m 14 (bv 0 64))
+  (write-to-pmpaddr! m 15 (bv 0 64))
+
   m)
 (provide init-machine-with-prog)
 
@@ -125,24 +130,6 @@
       (make-pmpaddrs 16)))
 
   (set! mtvec (bv #x0000000080000080 64))
-  ; (set! pmpcfg0 (bv #x000000000000001f 64))
-  ; (set! pmpcfg2 (bv #x0000000000000018 64))
-  ; (set! pmpaddr0 (bv #x000000002000bfff 64))
-  ; (set! pmpaddr1 (bv 0 64))
-  ; (set! pmpaddr2 (bv 0 64))
-  ; (set! pmpaddr3 (bv 0 64))
-  ; (set! pmpaddr4 (bv 0 64))
-  ; (set! pmpaddr5 (bv 0 64))
-  ; (set! pmpaddr6 (bv 0 64))
-  ; (set! pmpaddr7 (bv 0 64))
-  ; (set! pmpaddr8 (bv #x7fffffffffffffff 64))
-  ; (set! pmpaddr9 (bv 0 64))
-  ; (set! pmpaddr10 (bv 0 64))
-  ; (set! pmpaddr11 (bv 0 64))
-  ; (set! pmpaddr12 (bv 0 64))
-  ; (set! pmpaddr13 (bv 0 64))
-  ; (set! pmpaddr14 (bv 0 64))
-  ; (set! pmpaddr15 (bv 0 64))
 
   (define fnmem (fresh-symbolic fnmem (~> (bitvector (ramsize-log2)) (bitvector 8))))
   (define m
@@ -156,6 +143,26 @@
         fnmem
         (make-sym-vector (expt 2 (ramsize-log2)) 8 mem))
       0)) ; start in user mode
+
+  (write-to-pmpcfg! m 0 (bv #x000000000000001f 64))
+  (write-to-pmpcfg! m 1 (bv #x0000000000000018 64))
+  (write-to-pmpaddr! m 0  (bv #x000000002000bfff 64))
+  (write-to-pmpaddr! m 1  (bv 0 64))
+  (write-to-pmpaddr! m 2  (bv 0 64))
+  (write-to-pmpaddr! m 3  (bv 0 64))
+  (write-to-pmpaddr! m 4  (bv 0 64))
+  (write-to-pmpaddr! m 5  (bv 0 64))
+  (write-to-pmpaddr! m 6  (bv 0 64))
+  (write-to-pmpaddr! m 7  (bv 0 64))
+  (write-to-pmpaddr! m 8  (bv #x7fffffffffffffff 64))
+  (write-to-pmpaddr! m 9  (bv 0 64))
+  (write-to-pmpaddr! m 10 (bv 0 64))
+  (write-to-pmpaddr! m 11 (bv 0 64))
+  (write-to-pmpaddr! m 12 (bv 0 64))
+  (write-to-pmpaddr! m 13 (bv 0 64))
+  (write-to-pmpaddr! m 14 (bv 0 64))
+  (write-to-pmpaddr! m 15 (bv 0 64))
+
   m)
 (provide init-machine)
 
