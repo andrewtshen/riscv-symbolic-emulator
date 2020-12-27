@@ -2,6 +2,7 @@
 
 (require (only-in racket/base for in-range))
 (require syntax/parse/define)
+(require (only-in racket/base build-vector))
 
 (define-simple-macro (fresh-symbolic name type)
   (let () (define-symbolic* name type) name))
@@ -9,13 +10,13 @@
 ;; Structs to Build PMP
 
 (struct pmp
-  (pmpcfg0 pmpcfg2 pmpaddrs)
+  (pmpcfgs pmpaddrs)
   #:mutable #:transparent)
 (provide (struct-out pmp))
 
 ; pmpcfg struct
 (struct pmpcfg
-  (value R W A X L)
+  (value settings)
   #:mutable #:transparent)
 (provide (struct-out pmpcfg))
 
@@ -25,16 +26,31 @@
   #:mutable #:transparent)
 (provide (struct-out pmpaddr))
 
+; pmpcfg settings setting
+(struct pmpcfg-setting
+  (R W X A L)
+  #:mutable #:transparent)
+(provide (struct-out pmpcfg-setting))
+
 ;; Helper Functions to Build PMP Structs
 
-(define (make-pmpcfg)
-  (pmpcfg
-    (fresh-symbolic value (bitvector 64))
+; Make a vector of pmpcfg settings
+(define-simple-macro (make-pmpcfg-settings n:expr)
+  (build-vector n (lambda (i) (define p (make-pmpcfg-setting)) p)))
+
+; Make 1 pmpcfg setting
+(define (make-pmpcfg-setting)
+  (pmpcfg-setting
     (fresh-symbolic R (bitvector 1))
     (fresh-symbolic W (bitvector 1))
     (fresh-symbolic X (bitvector 1))
     (fresh-symbolic A (bitvector 2))
     (fresh-symbolic L (bitvector 1))))
+
+(define (make-pmpcfg)
+  (pmpcfg
+    (fresh-symbolic value (bitvector 64))
+    (make-pmpcfg-settings 8)))
 (provide make-pmpcfg)
 
 (define (make-pmpaddr)

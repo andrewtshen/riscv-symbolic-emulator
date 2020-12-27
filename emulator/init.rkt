@@ -30,6 +30,9 @@
 (define-simple-macro (make-pmpaddrs n:expr)
   (build-vector n (lambda (i) (define p (make-pmpaddr)) p)))
 
+(define-simple-macro (make-pmpcfgs n:expr)
+  (build-vector n (lambda (i) (define p (make-pmpcfg)) p)))
+
 ;; Helper Methods
 
 ; Convert a file to a bytearray
@@ -118,9 +121,8 @@
 
   (define pmps
     (pmp
-      (make-pmpcfg)
-      (make-pmpcfg)
-      (make-pmpaddrs 15)))
+      (make-pmpcfgs 2)
+      (make-pmpaddrs 16)))
 
   (set! mtvec (bv #x0000000080000080 64))
   ; (set! pmpcfg0 (bv #x000000000000001f 64))
