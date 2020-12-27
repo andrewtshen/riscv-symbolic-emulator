@@ -27,20 +27,20 @@
 (provide (struct-out pmpaddr))
 
 ; pmpcfg settings setting
-(struct pmpcfg-setting
+(struct pmpcfg_setting
   (R W X A L)
   #:mutable #:transparent)
-(provide (struct-out pmpcfg-setting))
+(provide (struct-out pmpcfg_setting))
 
 ;; Helper Functions to Build PMP Structs
 
 ; Make a vector of pmpcfg settings
-(define-simple-macro (make-pmpcfg-settings n:expr)
-  (build-vector n (lambda (i) (define p (make-pmpcfg-setting)) p)))
+(define-simple-macro (make-pmpcfg_settings n:expr)
+  (build-vector n (lambda (i) (define p (make-pmpcfg_setting)) p)))
 
 ; Make 1 pmpcfg setting
-(define (make-pmpcfg-setting)
-  (pmpcfg-setting
+(define (make-pmpcfg_setting)
+  (pmpcfg_setting
     (fresh-symbolic R (bitvector 1))
     (fresh-symbolic W (bitvector 1))
     (fresh-symbolic X (bitvector 1))
@@ -50,7 +50,7 @@
 (define (make-pmpcfg)
   (pmpcfg
     (fresh-symbolic value (bitvector 64))
-    (make-pmpcfg-settings 8)))
+    (make-pmpcfg_settings 8)))
 (provide make-pmpcfg)
 
 (define (make-pmpaddr)

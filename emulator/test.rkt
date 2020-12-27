@@ -285,19 +285,19 @@
 		(assert (check-equal? 63 (ctz64 (bv #x8000000000000000 64))))
 		(assert (check-equal? 0 (ctz64 (bv #xffffffffffffffff 64))))
 		(assert (check-equal? 0 (ctz64 (bv #x0000000000000000 64)))))
-	(test-case "pmp check"
-		(printf "* Running pmp.bin test ~n")
-		(define program (file->bytearray "build/pmp.bin"))
-		(define m (init-machine-with-prog program))
-		(execute-until-mret m)
-		(check-true (pmp-check m (bv #x80800000 64) (bv #x80800000 64)))
-		(check-true (pmp-check m (bv #x80FFFFFF 64) (bv #x80FFFFFF 64)))
-		(check-equal? (pmp-check m (bv #x80FFFFFF 64) (bv #x81000000 64)) #f)
-		(check-equal? (pmp-check m (bv #x807FFFFF 64) (bv #x81000000 64)) #f)
-		(check-equal? (not (pmp-check m (bv #x00700001 64) (bv #x007FFFFF 64))) #t) ; disabled uart
-		(check-true (pmp-check m (bv #x10700001 64) (bv #x107FFFFF 64)))
-		(check-equal? (pmp-check m (bv #x00700001 64) (bv #x107FFFFF 64)) #f)
-		(check-true (equal? (machine-mode m) 0)))
+	; (test-case "pmp check"
+	; 	(printf "* Running pmp.bin test ~n")
+	; 	(define program (file->bytearray "build/pmp.bin"))
+	; 	(define m (init-machine-with-prog program))
+	; 	(execute-until-mret m)
+	; 	(check-true (pmp-check m (bv #x80800000 64) (bv #x80800000 64)))
+	; 	(check-true (pmp-check m (bv #x80FFFFFF 64) (bv #x80FFFFFF 64)))
+	; 	(check-equal? (pmp-check m (bv #x80FFFFFF 64) (bv #x81000000 64)) #f)
+	; 	(check-equal? (pmp-check m (bv #x807FFFFF 64) (bv #x81000000 64)) #f)
+	; 	(check-equal? (not (pmp-check m (bv #x00700001 64) (bv #x007FFFFF 64))) #t) ; disabled uart
+	; 	(check-true (pmp-check m (bv #x10700001 64) (bv #x107FFFFF 64)))
+	; 	(check-equal? (pmp-check m (bv #x00700001 64) (bv #x107FFFFF 64)) #f)
+	; 	(check-true (equal? (machine-mode m) 0)))
 	(test-case "pmp-napot-settings"
 		; Test cases for decoding PMP configurations
 		(define setting1 (pmp-decode-cfg (bv #x0000000000001f1f 64) 1))
@@ -321,11 +321,12 @@
 		(check-equal? (list-ref (decode m (bv #x00000117 32)) 0) 'auipc)
 		; check that produces null op if not applicable opcode
 		(check-equal? (decode m (bv #b11111111111111111111111110110011 32)) null))
-	(test-case "decoding-uncoded-instrs"
-		(printf "* decoding-uncoded-instrs ~n")
-		(define program (file->bytearray "build/dret.bin"))
-		(define m (init-machine-with-prog program))
-		(step m)))
+	; (test-case "decoding-uncoded-instrs"
+	; 	(printf "* decoding-uncoded-instrs ~n")
+	; 	(define program (file->bytearray "build/dret.bin"))
+	; 	(define m (init-machine-with-prog program))
+	; 	(step m))
+	)
 
 ;; Sanity Checks for Steps
 
@@ -449,14 +450,14 @@
 			(assert-mem-equal m m1 sym-idx)))
 			(check-true (unsat? model_noninterference))))
 
-(define res-instruction-check (run-tests instruction-check))
+; (define res-instruction-check (run-tests instruction-check))
 (define res-utils (run-tests utils))
-(define res-high-level-test (run-tests high-level-test))
-(define res-step-checks (run-tests step-checks))
+; (define res-high-level-test (run-tests high-level-test))
+; (define res-step-checks (run-tests step-checks))
 
 ;; Testing the base case and inductive step
 
 ; (define res-boot-sequence (run-tests boot-sequence))
 ; (define res-inductive-step (run-tests inductive-step))
-(define res-boot-sequence (time (run-tests boot-sequence)))
-(define res-inductive-step (time (run-tests inductive-step)))
+; (define res-boot-sequence (time (run-tests boot-sequence)))
+; (define res-inductive-step (time (run-tests inductive-step)))

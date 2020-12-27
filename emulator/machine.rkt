@@ -45,25 +45,36 @@
 ; Helpers for writing to pmp registers
 (define (write-to-pmpaddr! m i val)
   ; Set the value for the pmp first
-  (set-pmpaddr-value! (vector-ref (csrs-pmp (cpu-csrs (machine-cpu m))) i) val)
+  (set-pmpaddr-value! (vector-ref (pmp-pmpaddrs (csrs-pmp (cpu-csrs (machine-cpu m)))) i) val)
 
   ; decode the value
   (define pmp_bounds (pmp-decode-napot val))
   (define pmp_start (list-ref pmp_bounds 0))
   (define pmp_end (bvadd (list-ref pmp_bounds 0) (list-ref pmp_bounds 1)))
-  (set-pmpaddr-start_addr! (vector-ref (csrs-pmp (cpu-csrs (machine-cpu m))) i) val)
-  (set-pmpaddr-end_addr! (vector-ref (csrs-pmp (cpu-csrs (machine-cpu m))) i) val))
+  (set-pmpaddr-start_addr! (vector-ref (pmp-pmpcfgs (csrs-pmp (cpu-csrs (machine-cpu m)))) i) val)
+  (set-pmpaddr-end_addr! (vector-ref (pmp-pmpcfgs (csrs-pmp (cpu-csrs (machine-cpu m)))) i) val))
+
 (define (write-to-pmpcfg! m i val)
   (set-pmpcfg-value! (vector-ref (csrs-pmp (cpu-csrs (machine-cpu m))) i) val)
-  )
+  (for ([i (in-range 8)])
+    (define settings (pmp-decode-cfg val i))
+    (define R (list-ref settings 0))
+    (define W (list-ref settings 1))
+    (define X (list-ref settings 2))
+    (define A (list-ref settings 3))
+    (set-pmpcfg_setting-R! (vector-ref (pmpcfg-settings (pmp-pmpcfgs (csrs-pmp (cpu-csrs (machine-cpu m))))) i) R)
+    (set-pmpcfg_setting-W! (vector-ref (pmpcfg-settings (pmp-pmpcfgs (csrs-pmp (cpu-csrs (machine-cpu m))))) i) W)
+    (set-pmpcfg_setting-X! (vector-ref (pmpcfg-settings (pmp-pmpcfgs (csrs-pmp (cpu-csrs (machine-cpu m))))) i) X)
+    (set-pmpcfg_setting-A! (vector-ref (pmpcfg-settings (pmp-pmpcfgs (csrs-pmp (cpu-csrs (machine-cpu m))))) i) A)
+    ))
 
 ; Get the value contained in a csr
 ; be careful to decrement by 1 to access right location for gprs
 (define (get-csr m csr)
   (cond
-    [(eq? csr 'mtvec)     (csrs-mtvec   (get-csrs-from-machine))]
-    [(eq? csr 'mepc)      (csrs-mepc    (get-csrs-from-machine))]
-    [(eq? csr 'mstatus)   (csrs-mstatus (get-csrs-from-machine))]
+    [(eq? csr 'mtvec)     (csrs-mtvec   (get-csrs-from-machine m))]
+    [(eq? csr 'mepc)      (csrs-mepc    (get-csrs-from-machine m))]
+    [(eq? csr 'mstatus)   (csrs-mstatus (get-csrs-from-machine m))]
     [(eq? csr 'pmpcfg0)   (pmpcfg-value (get-pmpcfg-from-machine m 0))]
     [(eq? csr 'pmpcfg2)   (pmpcfg-value (get-pmpcfg-from-machine m 1))]
     [(eq? csr 'pmpaddr0)  (pmpaddr-value (get-pmpaddr-from-machine m 0))]
@@ -90,11 +101,11 @@
 (define (set-csr! m csr val)
   (define v_csr null)
   (cond 
-    [(eq? csr 'mtvec)     (set-csrs-mtvec!     (cpu-csrs (machine-cpu m)) val)]
-    [(eq? csr 'mepc)      (set-csrs-mepc!      (cpu-csrs (machine-cpu m)) val)]
-    [(eq? csr 'mstatus)   (set-csrs-mstatus!   (cpu-csrs (machine-cpu m)) val)]
-    ; [(eq? csr 'pmpcfg0)   (set-pmp-pmpcfg0! (csrs-pmp   (cpu-csrs (machine-cpu m)) val))]
-    ; [(eq? csr 'pmpcfg2)   (set-pmp-pmpcfg2! (csrs-pmp   (cpu-csrs (machine-cpu m)) val))]
+    [(eq? csr 'mtvec)     (set-csrs-mtvec!   (cpu-csrs (machine-cpu m)) val)]
+    [(eq? csr 'mepc)      (set-csrs-mepc!    (cpu-csrs (machine-cpu m)) val)]
+    [(eq? csr 'mstatus)   (set-csrs-mstatus! (cpu-csrs (machine-cpu m)) val)]
+    [(eq? csr 'pmpcfg0)   (write-to-pmpcfg! m 0 val)]
+    [(eq? csr 'pmpcfg2)   (write-to-pmpcfg! m 1 val)]
     [(eq? csr 'pmpaddr0)  (write-to-pmpaddr! m 0  val)]
     [(eq? csr 'pmpaddr1)  (write-to-pmpaddr! m 1  val)]
     [(eq? csr 'pmpaddr2)  (write-to-pmpaddr! m 2  val)]
