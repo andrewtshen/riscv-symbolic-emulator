@@ -32,7 +32,7 @@ For more information on each of the directories use the README.md in each of the
 - `serval-tutorial-sosp19`
 - `unitary`
 - `xv6-public`
-- `xv6-riscv-fall19``
+- `xv6-riscv-fall19`
 
 ### presentation
 `presentation` is the presentation of this work in the format of slides and speaker notes.
