@@ -52,8 +52,8 @@
   (define pmp_start (list-ref pmp_bounds 0))
   (define pmp_end (bvadd (list-ref pmp_bounds 0) (list-ref pmp_bounds 1)))
 
-  (set-pmpaddr-start_addr! (vector-ref (pmp-pmpaddrs (csrs-pmp (cpu-csrs (machine-cpu m)))) i) val)
-  (set-pmpaddr-end_addr! (vector-ref (pmp-pmpaddrs (csrs-pmp (cpu-csrs (machine-cpu m)))) i) val))
+  (set-pmpaddr-start_addr! (vector-ref (pmp-pmpaddrs (csrs-pmp (cpu-csrs (machine-cpu m)))) i) pmp_start)
+  (set-pmpaddr-end_addr! (vector-ref (pmp-pmpaddrs (csrs-pmp (cpu-csrs (machine-cpu m)))) i) pmp_end))
 (provide write-to-pmpaddr!)
 
 (define (write-to-pmpcfg! m i val)
@@ -175,6 +175,45 @@
   ; stop execution of instruction
   null)
 (provide illegal-instr)
+
+;; PMP Check
+
+; TODO: Check the assumption that if it doesn't match any PMPs then it FAILS #f
+; TODO: Check which form we are actually using NAPOT or TOR
+; PMP test address ranging from saddr to eaddr 
+(define (pmp-check m saddr eaddr)
+  (define pmpcfg0 (get-pmpcfg-from-machine m 0))
+  (define pmpcfg2 (get-pmpcfg-from-machine m 1))
+  ; Iterate through each pmpaddr and break at first matching
+  (let loop ([i 0])
+    (define pmpaddr (get-pmpaddr-from-machine m i))
+    (define pmp_start (pmpaddr-start_addr pmpaddr))
+    (define pmp_end (pmpaddr-end_addr pmpaddr))
+    (printf "start: ~a~n" pmp_start)
+    (printf "end: ~a~n" pmp_end)
+ 
+    (define settings 
+      (if (< i 8)
+        (get-setting-from-pmpcfg pmpcfg0 i)
+        (get-setting-from-pmpcfg pmpcfg2 (- i 8))))
+
+    ; (printf "setting: ~a~n" settings)
+    (define R (pmpcfg_setting-R settings))
+    (define W (pmpcfg_setting-W settings))
+    (define A (pmpcfg_setting-A settings))
+    (define X (pmpcfg_setting-X settings))
+
+    ; test the proper bounds
+    (define slegal (bv-between saddr pmp_start pmp_end))
+    (define elegal (bv-between eaddr pmp_start pmp_end))
+    (if (and slegal elegal)
+      ; if in range, check if access is allowed
+      (and (equal? R 1) (equal? W 1) (equal? X 1)) 
+      ; check if there are more pmpaddrs
+      (if (equal? i 15)
+        #f
+        (loop (add1 i))))))
+(provide pmp-check)
 
 ;; Memory Reads/Writes
 

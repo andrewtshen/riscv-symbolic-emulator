@@ -144,6 +144,7 @@
         (make-sym-vector (expt 2 (ramsize-log2)) 8 mem))
       0)) ; start in user mode
 
+  ; Write the PMP information
   (write-to-pmpcfg! m 0 (bv #x000000000000001f 64))
   (write-to-pmpcfg! m 1 (bv #x0000000000000018 64))
   (write-to-pmpaddr! m 0  (bv #x000000002000bfff 64))
@@ -169,8 +170,13 @@
 ;; Examples
 
 ; ; machine init example
-(define m (init-machine))
-(printf "~a~n" m)
+; (define m (init-machine))
+; (printf "~a~n" m)
+
+; ; machine init with program example
+; (define program (file->bytearray "kernel/kernel.bin"))
+; (define m (init-machine-with-prog program))
+; (printf "~a~n" m)
 
 ; ; example symbolic vector: 3 bitvectors size 32 named foo$0 foo$1 foo$2
 ; (make-sym-vector 3 32 foo) 

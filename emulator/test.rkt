@@ -450,7 +450,7 @@
 			(assert-mem-equal m m1 sym-idx)))
 			(check-true (unsat? model_noninterference))))
 
-; (define res-instruction-check (run-tests instruction-check))
+(define res-instruction-check (run-tests instruction-check))
 (define res-utils (run-tests utils))
 ; (define res-high-level-test (run-tests high-level-test))
 ; (define res-step-checks (run-tests step-checks))
