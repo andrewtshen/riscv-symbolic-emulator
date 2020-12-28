@@ -146,8 +146,8 @@
       0)) ; start in user mode
 
   ; Write the PMP information
-  (write-to-pmpcfg! m  0  (bv #x000000000000001f 64))
-  (write-to-pmpcfg! m  1  (bv #x0000000000000018 64))
+  (write-to-pmpcfg!  m 0  (bv #x000000000000001f 64))
+  (write-to-pmpcfg!  m 1  (bv #x0000000000000018 64))
   (write-to-pmpaddr! m 0  (bv #x000000002000bfff 64))
   (write-to-pmpaddr! m 1  (bv 0 64))
   (write-to-pmpaddr! m 2  (bv 0 64))

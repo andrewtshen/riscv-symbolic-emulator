@@ -179,6 +179,7 @@
 
 (define (get-pmp-num_implemented m)
   (pmp-num_implemented (csrs-pmp (cpu-csrs (machine-cpu m)))))
+(provide get-pmp-num_implemented)
 
 ; PMP test address ranging from saddr to eaddr 
 (define (pmp-check m saddr eaddr)
