@@ -58,7 +58,8 @@
   (define pmps
     (pmp
       (make-pmpcfgs 2)
-      (make-pmpaddrs 16)))
+      (make-pmpaddrs 16)
+      0))
 
   ; set all the initial csrs to 0 (TODO: change to actual values)
   (set! mtvec (bv 0 64))
@@ -117,7 +118,6 @@
   (write-to-pmpaddr! m 13 (bv 0 64))
   (write-to-pmpaddr! m 14 (bv 0 64))
   (write-to-pmpaddr! m 15 (bv 0 64))
-
   m)
 (provide init-machine-with-prog)
 
@@ -127,7 +127,8 @@
   (define pmps
     (pmp
       (make-pmpcfgs 2)
-      (make-pmpaddrs 16)))
+      (make-pmpaddrs 16)
+      0))
 
   (set! mtvec (bv #x0000000080000080 64))
 
@@ -145,8 +146,8 @@
       0)) ; start in user mode
 
   ; Write the PMP information
-  (write-to-pmpcfg! m 0 (bv #x000000000000001f 64))
-  (write-to-pmpcfg! m 1 (bv #x0000000000000018 64))
+  (write-to-pmpcfg! m  0  (bv #x000000000000001f 64))
+  (write-to-pmpcfg! m  1  (bv #x0000000000000018 64))
   (write-to-pmpaddr! m 0  (bv #x000000002000bfff 64))
   (write-to-pmpaddr! m 1  (bv 0 64))
   (write-to-pmpaddr! m 2  (bv 0 64))

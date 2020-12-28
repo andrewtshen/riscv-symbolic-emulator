@@ -37,7 +37,8 @@
         (define mstatus (get-csr m 'mstatus))
         (define MPP (extract 12 11 mstatus))
         ; this is always user mode
-        ; TODO: fix this and set mstatus to concrete value
+        ; TODO: fix this and set mstatus to its actual value of MPP, for now we are setting to 0
+        ; since we always but it to user mode
         ; (set-machine-mode! m (bitvector->natural MPP))
         (set-machine-mode! m 0)
         (set-pc! m (bvsub (get-csr m 'mepc) (base-address)))

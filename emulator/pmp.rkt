@@ -10,7 +10,7 @@
 ;; Structs to Build PMP
 
 (struct pmp
-  (pmpcfgs pmpaddrs)
+  (pmpcfgs pmpaddrs num_implemented)
   #:mutable #:transparent)
 (provide (struct-out pmp))
 
@@ -60,12 +60,11 @@
     (fresh-symbolic end_addr (bitvector 64))))
 (provide make-pmpaddr)
 
-;; Helper Functions to Access PMP Information
-(define (get-setting-from-pmpcfg pmpcfg i)
-  (vector-ref (pmpcfg-settings pmpcfg) i))
-(provide get-setting-from-pmpcfg)
+;; PMP utilities for decoding registers and checking
 
-; PMP utilities for decoding registers and checking
+(define (get-pmpcfg-setting pmpcfg i)
+  (vector-ref (pmpcfg-settings pmpcfg) i))
+(provide get-pmpcfg-setting)
 
 (define (ctz64 val)
   ; If bv with all zeros return 0, else ctz

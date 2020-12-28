@@ -285,19 +285,21 @@
 		(assert (check-equal? 63 (ctz64 (bv #x8000000000000000 64))))
 		(assert (check-equal? 0 (ctz64 (bv #xffffffffffffffff 64))))
 		(assert (check-equal? 0 (ctz64 (bv #x0000000000000000 64)))))
-	; (test-case "pmp check"
-	; 	(printf "* Running pmp.bin test ~n")
-	; 	(define program (file->bytearray "build/pmp.bin"))
-	; 	(define m (init-machine-with-prog program))
-	; 	(execute-until-mret m)
-	; 	(check-true (pmp-check m (bv #x80800000 64) (bv #x80800000 64)))
-	; 	(check-true (pmp-check m (bv #x80FFFFFF 64) (bv #x80FFFFFF 64)))
-	; 	(check-equal? (pmp-check m (bv #x80FFFFFF 64) (bv #x81000000 64)) #f)
-	; 	(check-equal? (pmp-check m (bv #x807FFFFF 64) (bv #x81000000 64)) #f)
-	; 	(check-equal? (not (pmp-check m (bv #x00700001 64) (bv #x007FFFFF 64))) #t) ; disabled uart
-	; 	(check-true (pmp-check m (bv #x10700001 64) (bv #x107FFFFF 64)))
-	; 	(check-equal? (pmp-check m (bv #x00700001 64) (bv #x107FFFFF 64)) #f)
-	; 	(check-true (equal? (machine-mode m) 0)))
+	(test-case "pmp check"
+		(printf "* Running pmp.bin test ~n")
+		(define program (file->bytearray "build/pmp.bin"))
+		(define m (init-machine-with-prog program))
+		(execute-until-mret m)
+		(printf "Mode: ~a~n" (machine-mode m))
+		(print-pmp m)
+		(check-true (pmp-check m (bv #x80800000 64) (bv #x80800000 64)))
+		(check-true (pmp-check m (bv #x80FFFFFF 64) (bv #x80FFFFFF 64)))
+		(check-equal? (pmp-check m (bv #x80FFFFFF 64) (bv #x81000000 64)) #f)
+		(check-equal? (pmp-check m (bv #x807FFFFF 64) (bv #x81000000 64)) #f)
+		(check-equal? (not (pmp-check m (bv #x00700001 64) (bv #x007FFFFF 64))) #t) ; disabled uart
+		(check-true (pmp-check m (bv #x10700001 64) (bv #x107FFFFF 64)))
+		(check-equal? (pmp-check m (bv #x00700001 64) (bv #x107FFFFF 64)) #f)
+		(check-true (equal? (machine-mode m) 0)))
 	(test-case "pmp-napot-settings"
 		; Test cases for decoding PMP configurations
 		(define setting1 (pmp-decode-cfg (bv #x0000000000001f1f 64) 1))

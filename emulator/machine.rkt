@@ -32,11 +32,11 @@
 
 ; Helpers for accessing csrs from the machine
 (define (get-pmpaddr-from-machine m i)
-  (vector-ref (pmp-pmpaddrs (csrs-pmp  (cpu-csrs (machine-cpu m)))) i))
+  (vector-ref (pmp-pmpaddrs (csrs-pmp (cpu-csrs (machine-cpu m)))) i))
 (provide get-pmpaddr-from-machine)
 
 (define (get-pmpcfg-from-machine m i)
-  (vector-ref (pmp-pmpcfgs (csrs-pmp  (cpu-csrs (machine-cpu m)))) i))
+  (vector-ref (pmp-pmpcfgs (csrs-pmp (cpu-csrs (machine-cpu m)))) i))
 (provide get-pmpcfg-from-machine)
 
 (define (get-csrs-from-machine m)
@@ -59,17 +59,14 @@
 (define (write-to-pmpcfg! m i val)
   (set-pmpcfg-value! (vector-ref (pmp-pmpcfgs (csrs-pmp (cpu-csrs (machine-cpu m)))) i) val)
   (for ([id (in-range 8)])
-    (define settings (pmp-decode-cfg val i))
-    (vector-set! (pmpcfg-settings (vector-ref (pmp-pmpcfgs (csrs-pmp (cpu-csrs (machine-cpu m)))) i)) id settings)
-    ; (define R (list-ref settings 0))
-    ; (define W (list-ref settings 1))
-    ; (define X (list-ref settings 2))
-    ; (define A (list-ref settings 3))
-    ; (set-pmpcfg_setting-R! (vector-ref (pmpcfg-settings (vector-ref (pmp-pmpcfgs (csrs-pmp (cpu-csrs (machine-cpu m)))) i)) id) R)
-    ; (set-pmpcfg_setting-W! (vector-ref (pmpcfg-settings (vector-ref (pmp-pmpcfgs (csrs-pmp (cpu-csrs (machine-cpu m)))) i)) id) W)
-    ; (set-pmpcfg_setting-X! (vector-ref (pmpcfg-settings (vector-ref (pmp-pmpcfgs (csrs-pmp (cpu-csrs (machine-cpu m)))) i)) id) X)
-    ; (set-pmpcfg_setting-A! (vector-ref (pmpcfg-settings (vector-ref (pmp-pmpcfgs (csrs-pmp (cpu-csrs (machine-cpu m)))) i)) id) A)
-    ))
+    (define settings (pmp-decode-cfg val id))
+    (define old_settings (get-pmpcfg-setting (vector-ref (pmp-pmpcfgs (csrs-pmp (cpu-csrs (machine-cpu m)))) i) id))
+    (when (and (bveq (pmpcfg_setting-A old_settings) (bv 0 2))
+               (not (bveq (pmpcfg_setting-A settings) (bv 0 2))))
+      (set-pmp-num_implemented!
+        (csrs-pmp (cpu-csrs (machine-cpu m)))
+        (add1 (get-pmp-num_implemented m))))
+    (vector-set! (pmpcfg-settings (vector-ref (pmp-pmpcfgs (csrs-pmp (cpu-csrs (machine-cpu m)))) i)) id settings)))
 (provide write-to-pmpcfg!)
 
 ; Get the value contained in a csr
@@ -180,40 +177,70 @@
 
 ;; PMP Check
 
-; TODO: Check the assumption that if it doesn't match any PMPs then it FAILS #f
-; TODO: Check which form we are actually using NAPOT or TOR
+(define (get-pmp-num_implemented m)
+  (pmp-num_implemented (csrs-pmp (cpu-csrs (machine-cpu m)))))
+
 ; PMP test address ranging from saddr to eaddr 
 (define (pmp-check m saddr eaddr)
   (define pmpcfg0 (get-pmpcfg-from-machine m 0))
   (define pmpcfg2 (get-pmpcfg-from-machine m 1))
   ; Iterate through each pmpaddr and break at first matching
   (let loop ([i 0])
-    (define pmpaddr (get-pmpaddr-from-machine m i))
-    (define pmp_start (pmpaddr-start_addr pmpaddr))
-    (define pmp_end (pmpaddr-end_addr pmpaddr))
-    (printf "start: ~a~n" pmp_start)
-    (printf "end: ~a~n" pmp_end)
- 
     (define settings 
       (if (< i 8)
-        (get-setting-from-pmpcfg pmpcfg0 i)
-        (get-setting-from-pmpcfg pmpcfg2 (- i 8))))
-
+        (get-pmpcfg-setting pmpcfg0 i)
+        (get-pmpcfg-setting pmpcfg2 (- i 8))))
     ; (printf "setting: ~a~n" settings)
+    ; (printf "saddr: ~a, eadder: ~a~n" saddr eaddr)
     (define R (pmpcfg_setting-R settings))
     (define W (pmpcfg_setting-W settings))
-    (define A (pmpcfg_setting-A settings))
     (define X (pmpcfg_setting-X settings))
+    (define A (pmpcfg_setting-A settings))
+    (define L (pmpcfg_setting-L settings))
 
-    ; test the proper bounds
-    (define slegal (bv-between saddr pmp_start pmp_end))
-    (define elegal (bv-between eaddr pmp_start pmp_end))
+    ; For now we only implement A = 3 (NAPOT)
+    (define bounds 
+      (cond
+        [(bveq A (bv 0 2))
+          ; Unimplemented, so just return no access
+          (list #f #f)]
+        [(bveq A (bv 3 2))
+          (define pmpaddr (get-pmpaddr-from-machine m i))
+          (define pmp_start (pmpaddr-start_addr pmpaddr))
+          (define pmp_end (pmpaddr-end_addr pmpaddr))
+          ; (printf "start: ~a~n" pmp_start)
+          ; (printf "end: ~a~n" pmp_end)
+
+          ; Test the proper bounds, #t means allow access, #f means disallow access
+          (define slegal (bv-between saddr pmp_start pmp_end))
+          (define elegal (bv-between eaddr pmp_start pmp_end))
+          (list slegal elegal)]
+        [else
+          (illegal-instr m)]))
+
+    (define slegal (list-ref bounds 0))    
+    (define elegal (list-ref bounds 1))
+    ; (printf "~a ~a ~a ~a ~a ~a~n" pmp_start pmp_end saddr eaddr slegal elegal)
+
+    ; Check saddr and eaddr match the pmpaddri range
     (if (and slegal elegal)
-      ; if in range, check if access is allowed
-      (and (equal? R (bv 3 2)) (equal? W (bv 1 1)) (equal? X (bv 1 1))) 
+      ; Check if pmpaddri is locked
+      ; TODO: Write an "pmpaddr-islocked" function for simplicity?
+      (if (equal? L (bv 0 1))
+        ; Check machine mode
+        (cond
+          [(equal? (machine-mode m) 1) #t]
+          [(equal? (machine-mode m) 0)
+            ; TODO: actually check what the access type is
+            (and (bveq R (bv 1 1)) (bveq W (bv 1 1)) (bveq X (bv 1 1)))]
+          [else
+            ; TODO: implement other mode support (probably as simple as letting S and U be the same, see Docs)
+            (illegal-instr m)])
+        ; TODO: Implement locked variant of access, for now just return false (no access)
+        #f)
       ; check if there are more pmpaddrs
       (if (equal? i 15)
-        #f
+        (equal? (get-pmp-num_implemented m) 0)
         (loop (add1 i))))))
 (provide pmp-check)
 
