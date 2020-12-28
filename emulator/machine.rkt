@@ -60,14 +60,16 @@
   (set-pmpcfg-value! (vector-ref (pmp-pmpcfgs (csrs-pmp (cpu-csrs (machine-cpu m)))) i) val)
   (for ([id (in-range 8)])
     (define settings (pmp-decode-cfg val i))
-    (define R (list-ref settings 0))
-    (define W (list-ref settings 1))
-    (define X (list-ref settings 2))
-    (define A (list-ref settings 3))
-    (set-pmpcfg_setting-R! (vector-ref (pmpcfg-settings (vector-ref (pmp-pmpcfgs (csrs-pmp (cpu-csrs (machine-cpu m)))) i)) id) R)
-    (set-pmpcfg_setting-W! (vector-ref (pmpcfg-settings (vector-ref (pmp-pmpcfgs (csrs-pmp (cpu-csrs (machine-cpu m)))) i)) id) W)
-    (set-pmpcfg_setting-X! (vector-ref (pmpcfg-settings (vector-ref (pmp-pmpcfgs (csrs-pmp (cpu-csrs (machine-cpu m)))) i)) id) X)
-    (set-pmpcfg_setting-A! (vector-ref (pmpcfg-settings (vector-ref (pmp-pmpcfgs (csrs-pmp (cpu-csrs (machine-cpu m)))) i)) id) A)))
+    (vector-set! (pmpcfg-settings (vector-ref (pmp-pmpcfgs (csrs-pmp (cpu-csrs (machine-cpu m)))) i)) id settings)
+    ; (define R (list-ref settings 0))
+    ; (define W (list-ref settings 1))
+    ; (define X (list-ref settings 2))
+    ; (define A (list-ref settings 3))
+    ; (set-pmpcfg_setting-R! (vector-ref (pmpcfg-settings (vector-ref (pmp-pmpcfgs (csrs-pmp (cpu-csrs (machine-cpu m)))) i)) id) R)
+    ; (set-pmpcfg_setting-W! (vector-ref (pmpcfg-settings (vector-ref (pmp-pmpcfgs (csrs-pmp (cpu-csrs (machine-cpu m)))) i)) id) W)
+    ; (set-pmpcfg_setting-X! (vector-ref (pmpcfg-settings (vector-ref (pmp-pmpcfgs (csrs-pmp (cpu-csrs (machine-cpu m)))) i)) id) X)
+    ; (set-pmpcfg_setting-A! (vector-ref (pmpcfg-settings (vector-ref (pmp-pmpcfgs (csrs-pmp (cpu-csrs (machine-cpu m)))) i)) id) A)
+    ))
 (provide write-to-pmpcfg!)
 
 ; Get the value contained in a csr
@@ -208,7 +210,7 @@
     (define elegal (bv-between eaddr pmp_start pmp_end))
     (if (and slegal elegal)
       ; if in range, check if access is allowed
-      (and (equal? R 1) (equal? W 1) (equal? X 1)) 
+      (and (equal? R (bv 3 2)) (equal? W (bv 1 1)) (equal? X (bv 1 1))) 
       ; check if there are more pmpaddrs
       (if (equal? i 15)
         #f

@@ -82,11 +82,12 @@
 ; Decode R W X A settings for cfg register
 (define (pmp-decode-cfg val idx)
 	(define base (* idx 8))
-	(define R (bitvector->natural (extract base base val)))
-	(define W (bitvector->natural (extract (+ base 1) (+ base 1) val)))
-	(define X (bitvector->natural (extract (+ base 2) (+ base 2) val)))
-	(define A (bitvector->natural (extract (+ base 3) (+ base 3) val)))
-	(list R W X A))
+	(define R (extract base base val))
+	(define W (extract (+ base 1) (+ base 1) val))
+	(define X (extract (+ base 2) (+ base 2) val))
+	(define A (extract (+ base 4) (+ base 3) val))
+  (define L (extract (+ base 7) (+ base 7) val))
+	(pmpcfg_setting R W X A L))
 (provide pmp-decode-cfg)
 
 ; Decode start addr and end addr for cfg register
