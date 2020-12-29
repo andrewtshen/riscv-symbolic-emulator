@@ -41,23 +41,23 @@
 ; Make 1 pmpcfg setting
 (define (make-pmpcfg_setting)
   (pmpcfg_setting
-    (fresh-symbolic R (bitvector 1))
-    (fresh-symbolic W (bitvector 1))
-    (fresh-symbolic X (bitvector 1))
-    (fresh-symbolic A (bitvector 2))
-    (fresh-symbolic L (bitvector 1))))
+    (bv 0 1)
+    (bv 0 1)
+    (bv 0 1)
+    (bv 0 2)
+    (bv 0 1)))
 
 (define (make-pmpcfg)
   (pmpcfg
-    (fresh-symbolic value (bitvector 64))
+    (bv 0 64)
     (make-pmpcfg_settings 8)))
 (provide make-pmpcfg)
 
 (define (make-pmpaddr)
   (pmpaddr
-    (fresh-symbolic value (bitvector 64))
-    (fresh-symbolic start_addr (bitvector 64))
-    (fresh-symbolic end_addr (bitvector 64))))
+    (bv 0 64)
+    (bv 0 64)
+    (bv 0 64)))
 (provide make-pmpaddr)
 
 ;; PMP utilities for decoding registers and checking

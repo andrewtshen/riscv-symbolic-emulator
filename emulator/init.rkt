@@ -102,22 +102,10 @@
   ; TODO: Check that these values are correct
   (write-to-pmpcfg! m 0 (bv 0 64))
   (write-to-pmpcfg! m 1 (bv 0 64))
-  (write-to-pmpaddr! m 0 (bv 0 64))
-  (write-to-pmpaddr! m 1 (bv 0 64))
-  (write-to-pmpaddr! m 2 (bv 0 64))
-  (write-to-pmpaddr! m 3 (bv 0 64))
-  (write-to-pmpaddr! m 4 (bv 0 64))
-  (write-to-pmpaddr! m 5 (bv 0 64))
-  (write-to-pmpaddr! m 6 (bv 0 64))
-  (write-to-pmpaddr! m 7 (bv 0 64))
-  (write-to-pmpaddr! m 8 (bv 0 64))
-  (write-to-pmpaddr! m 9 (bv 0 64))
-  (write-to-pmpaddr! m 10 (bv 0 64))
-  (write-to-pmpaddr! m 11 (bv 0 64))
-  (write-to-pmpaddr! m 12 (bv 0 64))
-  (write-to-pmpaddr! m 13 (bv 0 64))
-  (write-to-pmpaddr! m 14 (bv 0 64))
-  (write-to-pmpaddr! m 15 (bv 0 64))
+
+  ; Hardwire all pmpaddrs to 0
+  (for ([i (in-range 16)])
+    (write-to-pmpaddr! m i (bv 0 64)))
   m)
 (provide init-machine-with-prog)
 
@@ -145,25 +133,17 @@
         (make-sym-vector (expt 2 (ramsize-log2)) 8 mem))
       0)) ; start in user mode
 
-  ; Write the PMP information
-  (write-to-pmpcfg!  m 0  (bv #x000000000000001f 64))
-  (write-to-pmpcfg!  m 1  (bv #x0000000000000018 64))
-  (write-to-pmpaddr! m 0  (bv #x000000002000bfff 64))
-  (write-to-pmpaddr! m 1  (bv 0 64))
-  (write-to-pmpaddr! m 2  (bv 0 64))
-  (write-to-pmpaddr! m 3  (bv 0 64))
-  (write-to-pmpaddr! m 4  (bv 0 64))
-  (write-to-pmpaddr! m 5  (bv 0 64))
-  (write-to-pmpaddr! m 6  (bv 0 64))
-  (write-to-pmpaddr! m 7  (bv 0 64))
-  (write-to-pmpaddr! m 8  (bv #x7fffffffffffffff 64))
-  (write-to-pmpaddr! m 9  (bv 0 64))
-  (write-to-pmpaddr! m 10 (bv 0 64))
-  (write-to-pmpaddr! m 11 (bv 0 64))
-  (write-to-pmpaddr! m 12 (bv 0 64))
-  (write-to-pmpaddr! m 13 (bv 0 64))
-  (write-to-pmpaddr! m 14 (bv 0 64))
-  (write-to-pmpaddr! m 15 (bv 0 64))
+  ; Hardwire pmpaddrs to 0
+  (for ([i (in-range 16)])
+    (write-to-pmpaddr! m i (bv 0 64)))
+
+  ; Write the pmpaddr information
+  (write-to-pmpcfg! m 0 (bv #x000000000000001f 64))
+  (write-to-pmpcfg! m 1 (bv #x0000000000000018 64))
+
+  ; Write the pmpaddr information
+  (write-to-pmpaddr! m 0 (bv #x000000002000bfff 64))
+  (write-to-pmpaddr! m 8 (bv #x7fffffffffffffff 64))
 
   m)
 (provide init-machine)

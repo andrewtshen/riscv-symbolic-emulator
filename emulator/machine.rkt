@@ -30,7 +30,7 @@
 
 ;; Wrappers for Mutator and Accessor Functions
 
-; Helpers for accessing csrs from the machine
+; Helpers for getting pmp values from machine
 (define (get-pmpaddr-from-machine m i)
   (vector-ref (pmp-pmpaddrs (csrs-pmp (cpu-csrs (machine-cpu m)))) i))
 (provide get-pmpaddr-from-machine)
@@ -39,36 +39,54 @@
   (vector-ref (pmp-pmpcfgs (csrs-pmp (cpu-csrs (machine-cpu m)))) i))
 (provide get-pmpcfg-from-machine)
 
+(define (get-pmpcfgs-from-machine m)
+  (pmp-pmpcfgs (csrs-pmp (cpu-csrs (machine-cpu m)))))
+
+(define (get-pmpaddrs-from-machine m)
+  (pmp-pmpaddrs (csrs-pmp (cpu-csrs (machine-cpu m)))))
+
 (define (get-csrs-from-machine m)
   (cpu-csrs (machine-cpu m)))
 
 ; Helpers for writing to pmp registers
+
 (define (write-to-pmpaddr! m i val)
   ; Set the value for the pmp first
-  (set-pmpaddr-value! (vector-ref (pmp-pmpaddrs (csrs-pmp (cpu-csrs (machine-cpu m)))) i) val)
+  (set-pmpaddr-value! (vector-ref (get-pmpaddrs-from-machine m) i) val)
 
   ; decode the value
   (define pmp_bounds (pmp-decode-napot val))
   (define pmp_start (list-ref pmp_bounds 0))
   (define pmp_end (bvadd (list-ref pmp_bounds 0) (list-ref pmp_bounds 1)))
-
-  (set-pmpaddr-start_addr! (vector-ref (pmp-pmpaddrs (csrs-pmp (cpu-csrs (machine-cpu m)))) i) pmp_start)
-  (set-pmpaddr-end_addr! (vector-ref (pmp-pmpaddrs (csrs-pmp (cpu-csrs (machine-cpu m)))) i) pmp_end))
+  
+  (set-pmpaddr-start_addr! (get-pmpaddr-from-machine m i) pmp_start)
+  (set-pmpaddr-end_addr! (get-pmpaddr-from-machine m i) pmp_end))
 (provide write-to-pmpaddr!)
 
 (define (write-to-pmpcfg! m i val)
-  (set-pmpcfg-value! (vector-ref (pmp-pmpcfgs (csrs-pmp (cpu-csrs (machine-cpu m)))) i) val)
+  (set-pmpcfg-value! (vector-ref (get-pmpcfgs-from-machine m) i) val)
   (for ([id (in-range 8)])
     (define settings (pmp-decode-cfg val id))
-    (define old_settings (get-pmpcfg-setting (vector-ref (pmp-pmpcfgs (csrs-pmp (cpu-csrs (machine-cpu m)))) i) id))
+    (define old_settings (get-pmpcfg-setting (get-pmpcfg-from-machine m i) id))
+
+    ; (printf "settings: ~a~n" settings)
+    ; (printf "old settings: ~a~n" old_settings)
     (when (and (bveq (pmpcfg_setting-A old_settings) (bv 0 2))
                (not (bveq (pmpcfg_setting-A settings) (bv 0 2))))
       (set-pmp-num_implemented!
         (csrs-pmp (cpu-csrs (machine-cpu m)))
         (add1 (get-pmp-num_implemented m))))
-    (vector-set! (pmpcfg-settings (vector-ref (pmp-pmpcfgs (csrs-pmp (cpu-csrs (machine-cpu m)))) i)) id settings)))
+
+    (when (and (not (bveq (pmpcfg_setting-A old_settings) (bv 0 2))) 
+               (bveq (pmpcfg_setting-A settings) (bv 0 2)))
+      (set-pmp-num_implemented!
+        (csrs-pmp (cpu-csrs (machine-cpu m)))
+        (sub1 (get-pmp-num_implemented m))))
+
+    (vector-set! (pmpcfg-settings (get-pmpcfg-from-machine m i)) id settings)))
 (provide write-to-pmpcfg!)
 
+; Helpers for accessing csrs from the machine
 ; Get the value contained in a csr
 ; be careful to decrement by 1 to access right location for gprs
 (define (get-csr m csr)
@@ -191,8 +209,7 @@
       (if (< i 8)
         (get-pmpcfg-setting pmpcfg0 i)
         (get-pmpcfg-setting pmpcfg2 (- i 8))))
-    ; (printf "setting: ~a~n" settings)
-    ; (printf "saddr: ~a, eadder: ~a~n" saddr eaddr)
+
     (define R (pmpcfg_setting-R settings))
     (define W (pmpcfg_setting-W settings))
     (define X (pmpcfg_setting-X settings))
@@ -209,8 +226,6 @@
           (define pmpaddr (get-pmpaddr-from-machine m i))
           (define pmp_start (pmpaddr-start_addr pmpaddr))
           (define pmp_end (pmpaddr-end_addr pmpaddr))
-          ; (printf "start: ~a~n" pmp_start)
-          ; (printf "end: ~a~n" pmp_end)
 
           ; Test the proper bounds, #t means allow access, #f means disallow access
           (define slegal (bv-between saddr pmp_start pmp_end))
