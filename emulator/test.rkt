@@ -470,5 +470,5 @@
 
 ; (define res-boot-sequence (run-tests boot-sequence))
 ; (define res-inductive-step (run-tests inductive-step))
-; (define res-boot-sequence (time (run-tests boot-sequence)))
-; (define res-inductive-step (time (run-tests inductive-step)))
+(define res-boot-sequence (time (run-tests boot-sequence)))
+(define res-inductive-step (time (run-tests inductive-step)))

@@ -93,8 +93,7 @@ void main() {
 
 static void load_user(void) {
     // memcpy((void *) USER_BASE, _binary_kernel_user_bin_start, USER_SIZE);
-    // TODO: Using 2000 for faster build/test, change back to 0x20000L
-    memcpy((void *) USER_BASE, _binary_kernel_user_bin_start, 0x2000L);
+    memcpy((void *) USER_BASE, _binary_kernel_user_bin_start, 0x20000L);
 }
 
 static void run_user(void) {
