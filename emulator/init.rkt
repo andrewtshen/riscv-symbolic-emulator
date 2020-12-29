@@ -163,7 +163,7 @@
   (write-to-pmpaddr! m 12 (bv 0 64))
   (write-to-pmpaddr! m 13 (bv 0 64))
   (write-to-pmpaddr! m 14 (bv 0 64))
-  (write-to-pmpaddr! m 15 (bv 0 64))
+  ; (write-to-pmpaddr! m 15 (bv 0 64))
 
   m)
 (provide init-machine)

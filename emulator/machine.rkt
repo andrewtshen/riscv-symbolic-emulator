@@ -21,7 +21,7 @@
 (struct csrs
   (mtvec mepc mstatus pmp)
   #:mutable #:transparent)
-(provide csrs)
+(provide (struct-out csrs))
 
 ; cpu, ram, and mode (1 is machine, 0 is user)
 (struct machine
