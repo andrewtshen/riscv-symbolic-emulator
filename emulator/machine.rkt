@@ -39,6 +39,14 @@
   (vector-ref (pmp-pmpcfgs (csrs-pmp (cpu-csrs (machine-cpu m)))) i))
 (provide get-pmpcfg-from-machine)
 
+(define (get-pmpaddr-setting m i)
+  (define pmpcfg0 (get-pmpcfg-from-machine m 0))
+  (define pmpcfg2 (get-pmpcfg-from-machine m 1))
+  ; Iterate through each pmpaddr and break at first matching
+  (if (< i 8)
+    (get-pmpcfg-setting pmpcfg0 i)
+    (get-pmpcfg-setting pmpcfg2 (- i 8))))
+
 (define (get-pmp-from-machine m)
   (csrs-pmp (cpu-csrs (machine-cpu m))))
 
@@ -48,16 +56,19 @@
 ; Helpers for writing to pmp registers
 
 (define (write-to-pmpaddr! m i val)
-  ; Set the value for the pmp first
-  (set-pmpaddr-value! (get-pmpaddr-from-machine m i) val)
+  (define setting (get-pmpaddr-setting m i))
 
-  ; decode the value
-  (define pmp_bounds (pmp-decode-napot val))
-  (define pmp_start (list-ref pmp_bounds 0))
-  (define pmp_end (bvadd (list-ref pmp_bounds 0) (list-ref pmp_bounds 1)))
+  (when (not (pmp-is-locked? setting))
+    ; Set the value for the pmp first
+    (set-pmpaddr-value! (get-pmpaddr-from-machine m i) val)
 
-  (set-pmpaddr-start_addr! (get-pmpaddr-from-machine m i) pmp_start)
-  (set-pmpaddr-end_addr! (get-pmpaddr-from-machine m i) pmp_end))
+    ; decode the value
+    (define pmp_bounds (pmp-decode-napot val))
+    (define pmp_start (list-ref pmp_bounds 0))
+    (define pmp_end (bvadd (list-ref pmp_bounds 0) (list-ref pmp_bounds 1)))
+
+    (set-pmpaddr-start_addr! (get-pmpaddr-from-machine m i) pmp_start)
+    (set-pmpaddr-end_addr! (get-pmpaddr-from-machine m i) pmp_end)))
 (provide write-to-pmpaddr!)
 
 (define (write-to-pmpcfg! m i val)
