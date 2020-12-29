@@ -39,11 +39,8 @@
   (vector-ref (pmp-pmpcfgs (csrs-pmp (cpu-csrs (machine-cpu m)))) i))
 (provide get-pmpcfg-from-machine)
 
-(define (get-pmpcfgs-from-machine m)
-  (pmp-pmpcfgs (csrs-pmp (cpu-csrs (machine-cpu m)))))
-
-(define (get-pmpaddrs-from-machine m)
-  (pmp-pmpaddrs (csrs-pmp (cpu-csrs (machine-cpu m)))))
+(define (get-pmp-from-machine m)
+  (csrs-pmp (cpu-csrs (machine-cpu m))))
 
 (define (get-csrs-from-machine m)
   (cpu-csrs (machine-cpu m)))
@@ -52,38 +49,36 @@
 
 (define (write-to-pmpaddr! m i val)
   ; Set the value for the pmp first
-  (set-pmpaddr-value! (vector-ref (get-pmpaddrs-from-machine m) i) val)
+  (set-pmpaddr-value! (get-pmpaddr-from-machine m i) val)
 
   ; decode the value
   (define pmp_bounds (pmp-decode-napot val))
   (define pmp_start (list-ref pmp_bounds 0))
   (define pmp_end (bvadd (list-ref pmp_bounds 0) (list-ref pmp_bounds 1)))
-  
+
   (set-pmpaddr-start_addr! (get-pmpaddr-from-machine m i) pmp_start)
   (set-pmpaddr-end_addr! (get-pmpaddr-from-machine m i) pmp_end))
 (provide write-to-pmpaddr!)
 
 (define (write-to-pmpcfg! m i val)
-  (set-pmpcfg-value! (vector-ref (get-pmpcfgs-from-machine m) i) val)
+  (set-pmpcfg-value! (get-pmpcfg-from-machine m i) val)
   (for ([id (in-range 8)])
-    (define settings (pmp-decode-cfg val id))
+    (define new_settings (pmp-decode-cfg val id))
     (define old_settings (get-pmpcfg-setting (get-pmpcfg-from-machine m i) id))
 
-    ; (printf "settings: ~a~n" settings)
-    ; (printf "old settings: ~a~n" old_settings)
-    (when (and (bveq (pmpcfg_setting-A old_settings) (bv 0 2))
-               (not (bveq (pmpcfg_setting-A settings) (bv 0 2))))
+    (when (and (is-napot old_settings)
+               (not (is-napot new_settings))
       (set-pmp-num_implemented!
-        (csrs-pmp (cpu-csrs (machine-cpu m)))
+        (get-pmp-from-machine m)
         (add1 (get-pmp-num_implemented m))))
 
-    (when (and (not (bveq (pmpcfg_setting-A old_settings) (bv 0 2))) 
-               (bveq (pmpcfg_setting-A settings) (bv 0 2)))
+    (when (and (not (is-napot old_settings)) 
+               (bveq (pmpcfg_setting-A new_settings) (bv 0 2)))
       (set-pmp-num_implemented!
-        (csrs-pmp (cpu-csrs (machine-cpu m)))
+        (get-pmp-from-machine m)
         (sub1 (get-pmp-num_implemented m))))
 
-    (vector-set! (pmpcfg-settings (get-pmpcfg-from-machine m i)) id settings)))
+    (vector-set! (pmpcfg-settings (get-pmpcfg-from-machine m i)) id new_settings))))
 (provide write-to-pmpcfg!)
 
 ; Helpers for accessing csrs from the machine

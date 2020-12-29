@@ -89,6 +89,11 @@
 	(pmpcfg_setting R W X A L))
 (provide pmp-decode-cfg)
 
+; Check if pmp_setting is napot
+(define (is-napot pmp_setting)
+  (bveq (pmpcfg_setting-A pmp_setting) (bv 0 2)))
+(provide is-napot)
+
 ; Decode start addr and end addr for cfg register
 (define (pmp-decode-napot val)
 	(define t1 (ctz64 (bvnot val)))
