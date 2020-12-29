@@ -99,7 +99,6 @@
   (bveq (pmpcfg_setting-L pmp_setting) (bv 1 1)))
 (provide pmp-is-locked?)
 
-
 ; Decode start addr and end addr for cfg register
 (define (pmp-decode-napot val)
 	(define t1 (ctz64 (bvnot val)))

@@ -235,16 +235,16 @@
   (define pmpcfg2 (get-pmpcfg-from-machine m 1))
   ; Iterate through each pmpaddr and break at first matching
   (let loop ([i 0])
-    (define settings 
+    (define setting
       (if (< i 8)
         (get-pmpcfg-setting pmpcfg0 i)
         (get-pmpcfg-setting pmpcfg2 (- i 8))))
 
-    (define R (pmpcfg_setting-R settings))
-    (define W (pmpcfg_setting-W settings))
-    (define X (pmpcfg_setting-X settings))
-    (define A (pmpcfg_setting-A settings))
-    (define L (pmpcfg_setting-L settings))
+    (define R (pmpcfg_setting-R setting))
+    (define W (pmpcfg_setting-W setting))
+    (define X (pmpcfg_setting-X setting))
+    (define A (pmpcfg_setting-A setting))
+    (define L (pmpcfg_setting-L setting))
 
     ; For now we only implement A = 3 (NAPOT)
     (define bounds 
@@ -266,13 +266,12 @@
 
     (define slegal (list-ref bounds 0))    
     (define elegal (list-ref bounds 1))
-    ; (printf "~a ~a ~a ~a ~a ~a~n" pmp_start pmp_end saddr eaddr slegal elegal)
 
     ; Check saddr and eaddr match the pmpaddri range
     (if (and slegal elegal)
       ; Check if pmpaddri is locked
       ; TODO: Write an "pmpaddr-islocked" function for simplicity?
-      (if (equal? L (bv 0 1))
+      (if (not (pmp-is-locked? setting))
         ; Check machine mode
         (cond
           [(equal? (machine-mode m) 1) #t]
