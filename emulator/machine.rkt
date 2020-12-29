@@ -63,22 +63,46 @@
 (define (write-to-pmpcfg! m i val)
   (set-pmpcfg-value! (get-pmpcfg-from-machine m i) val)
   (for ([id (in-range 8)])
-    (define new_settings (pmp-decode-cfg val id))
     (define old_settings (get-pmpcfg-setting (get-pmpcfg-from-machine m i) id))
 
-    (when (and (is-napot old_settings)
-               (not (is-napot new_settings))
-      (set-pmp-num_implemented!
-        (get-pmp-from-machine m)
-        (add1 (get-pmp-num_implemented m))))
+    (when (not (pmp-is-locked? old_settings))
+      (define new_settings (pmp-decode-cfg val id))
 
-    (when (and (not (is-napot old_settings)) 
-               (bveq (pmpcfg_setting-A new_settings) (bv 0 2)))
-      (set-pmp-num_implemented!
-        (get-pmp-from-machine m)
-        (sub1 (get-pmp-num_implemented m))))
+      ; Adjust Number of Implemented PMPs
+      (when (and (pmp-is-implemented? old_settings)
+                 (not (pmp-is-implemented? new_settings)))
+        (set-pmp-num_implemented! (get-pmp-from-machine m) (add1 (get-pmp-num_implemented m))))
 
-    (vector-set! (pmpcfg-settings (get-pmpcfg-from-machine m i)) id new_settings))))
+      (when (and (not (pmp-is-implemented? old_settings))
+                 (pmp-is-implemented? new_settings))
+        (set-pmp-num_implemented! (get-pmp-from-machine m) (sub1 (get-pmp-num_implemented m))))
+
+      ; Update pmpcfg value for pmp(id)cfg(i)
+      (define start (* id 8))
+      (define end (* (add1 id) 8))
+      (define original_value (pmpcfg-value (get-pmpcfg-from-machine m i)))
+
+      (set-pmpcfg-value!
+        (get-pmpcfg-from-machine m i)
+        ; Determine new value based on which part of the bitvector we are modifying
+        ; since the extraction is a little bit weird (can't extract size 0)
+        (cond 
+          [(equal? start 0)
+            (concat
+              (extract 63 end original_value)
+              (extract (sub1 end) start val))]
+          [(equal? end 64)
+            (concat
+              (extract (sub1 end) start val)
+              (extract (sub1 start) 0 original_value))]
+          [else
+            (concat
+              (extract 63 end original_value)
+              (extract (sub1 end) start val)
+              (extract (sub1 start) 0 original_value))]))
+
+      ; Update settings
+      (vector-set! (pmpcfg-settings (get-pmpcfg-from-machine m i)) id new_settings))))
 (provide write-to-pmpcfg!)
 
 ; Helpers for accessing csrs from the machine
@@ -331,4 +355,3 @@
     (if (use-fnmem)
       (set-machine-ram! m (uf-memory-write (machine-ram m) adj_pos v))
       (vector-memory-write! m adj_pos v))))
-
