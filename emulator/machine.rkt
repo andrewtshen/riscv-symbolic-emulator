@@ -217,6 +217,7 @@
 
 ; Set up state for illegal instruction and return null to signal end of exec
 (define (illegal-instr m)
+  (printf "hereb!~n")
   (set-pc! m (bvsub (get-csr m 'mtvec) (base-address)))
   (set-machine-mode! m 1)
   ; stop execution of instruction

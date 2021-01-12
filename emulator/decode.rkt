@@ -272,10 +272,11 @@
 
 ; decode a 32 bit vector instruction
 (define (decode m b_instr)
-  (define instr null)
+  (printf "b_instr: ~a~n" b_instr)
   (define opcode (extract 6 0 b_instr))
+  (printf "opcode: ~a~n" opcode)
   (define fmt (get-fmt m opcode))
-  (when (use-debug-mode) (printf "FMT: ~a~n" fmt))
+  (printf "FMT: ~a~n" fmt)
   (cond
     [(eq? fmt 'R)
       (decode-R m b_instr)]
@@ -292,8 +293,7 @@
     [(eq? fmt 'SPECIAL)
       (decode-SPECIAL m b_instr)]
     [else
-      ; (printf "No such FMT~n")
-        (illegal-instr m)]))
+      null]))
 (provide decode)
 
 ; example: add x5, x6, x7

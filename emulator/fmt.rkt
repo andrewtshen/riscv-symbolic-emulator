@@ -1,8 +1,5 @@
 #lang rosette/safe
 
-(require
-	"machine.rkt")
-
 ; Return the instruction format for each of the opcodes.
 
 (define (get-fmt m opcode)
@@ -26,7 +23,7 @@
 		[(equal? opcode (bv #b0010011 7)) 'TODOFMT] ; SLLI_RV32 SRLI_RV32 SRAI_RV32
 		[(equal? opcode (bv #b1110011 7)) 'TODOFMT] ; RDCYCLE RDTIME RDINSTRET RDCYCLEH RDTIMEH RDINSTRETH
 		[else
-			(illegal-instr m)]))
+			null]))
 (provide get-fmt)
 
 ; Example get-fmt
