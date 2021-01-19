@@ -272,11 +272,8 @@
 
 ; decode a 32 bit vector instruction
 (define (decode m b_instr)
-  (printf "b_instr: ~a~n" b_instr)
   (define opcode (extract 6 0 b_instr))
-  (printf "opcode: ~a~n" opcode)
   (define fmt (get-fmt m opcode))
-  (printf "FMT: ~a~n" fmt)
   (cond
     [(eq? fmt 'R)
       (decode-R m b_instr)]
