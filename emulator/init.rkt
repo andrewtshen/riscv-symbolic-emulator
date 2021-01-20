@@ -6,7 +6,7 @@
   "parameters.rkt"
   "print_utils.rkt")
 (require (only-in racket/file file->bytes)
-     (only-in racket/base bytes-length for for/list in-range subbytes bytes-ref in-naturals))
+         (only-in racket/base bytes-length for for/list in-range subbytes bytes-ref in-naturals))
 (require syntax/parse/define)
 (require (only-in racket/base build-vector))
 
@@ -22,7 +22,7 @@
 ; Create a vector of symbolic variables
 (define-simple-macro (make-sym-vector n:expr size:expr m:id)
   (build-vector n (lambda (i) (define-symbolic* m (bitvector size)) m)))
-  ; (build-vector n (lambda (i) (bv 0 size)))) ; set mem to 0 for testing with qemu
+; (build-vector n (lambda (i) (bv 0 size)))) ; set mem to 0 for testing with qemu
 
 (define-simple-macro (fresh-symbolic name type)
   (let () (define-symbolic* name type) name))
@@ -42,8 +42,8 @@
   (unless (equal? (modulo length 4) 0)
     (printf "Cannot read incomplete files~n"))
   (list->vector
-  (for/list ([i (in-range 0 length)])
-    (bv (bytes-ref contents i) 8))))
+   (for/list ([i (in-range 0 length)])
+     (bv (bytes-ref contents i) 8))))
 (provide file->bytearray)
 
 ;; Different ways to set up machine
@@ -57,9 +57,9 @@
 
   (define pmps
     (pmp
-      (make-pmpcfgs 2)
-      (make-pmpaddrs 16)
-      0))
+     (make-pmpcfgs 2)
+     (make-pmpaddrs 16)
+     0))
 
   ; set all the initial csrs to 0 (TODO: change to actual values)
   (set! mtvec (bv 0 64))
@@ -79,17 +79,17 @@
 
   (define m
     (machine
-      (cpu 
-        (csrs
-          mtvec mepc mstatus pmps)
-        (make-sym-vector 31 64 gpr) ; be careful of -1 for offset
-        (bv 0 64)) ; set pc to 0 when loading with program
-      (if (use-fnmem)
-        fnmem
-        (vector-append
+     (cpu 
+      (csrs
+       mtvec mepc mstatus pmps)
+      (make-sym-vector 31 64 gpr) ; be careful of -1 for offset
+      (bv 0 64)) ; set pc to 0 when loading with program
+     (if (use-fnmem)
+         fnmem
+         (vector-append
           program
           (make-sym-vector (- (expt 2 (ramsize-log2)) proglength) 8 mem)))
-      1)) ; start in machine mode
+     1)) ; start in machine mode
   ; default all gprs to 0
   (for [(i (in-range 1 32))]
     (gprs-set-x! m i (bv 0 64)))
@@ -114,24 +114,24 @@
 
   (define pmps
     (pmp
-      (make-pmpcfgs 2)
-      (make-pmpaddrs 16)
-      0))
+     (make-pmpcfgs 2)
+     (make-pmpaddrs 16)
+     0))
 
   (set! mtvec (bv #x0000000080000080 64))
 
   (define fnmem (fresh-symbolic fnmem (~> (bitvector (ramsize-log2)) (bitvector 8))))
   (define m
     (machine
-      (cpu 
-        (csrs
-          mtvec mepc mstatus pmps)
-        (make-sym-vector 31 64 gpr) ; be careful of -1 for offset
-        pc) ; symbolic pc
-      (if (use-fnmem)
-        fnmem
-        (make-sym-vector (expt 2 (ramsize-log2)) 8 mem))
-      0)) ; start in user mode
+     (cpu 
+      (csrs
+       mtvec mepc mstatus pmps)
+      (make-sym-vector 31 64 gpr) ; be careful of -1 for offset
+      pc) ; symbolic pc
+     (if (use-fnmem)
+         fnmem
+         (make-sym-vector (expt 2 (ramsize-log2)) 8 mem))
+     0)) ; start in user mode
 
   ; Hardwire pmpaddrs to 0
   (for ([i (in-range 16)])

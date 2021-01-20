@@ -5,7 +5,7 @@
   "pmp.rkt")
 
 (require (only-in racket/base
-  for in-range))
+                  for in-range))
 
 (define (print-pmp m)
   (printf "pmpcfg0: ~a~n" (get-csr m 'pmpcfg0))
