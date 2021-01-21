@@ -352,8 +352,14 @@
           (set-pc! m (bvadd pc (bv 4 64)))
           instr]
         [(eq? opcode 'slt)
-            ; TODO: slt instruction not implemented yet
-            (illegal-instr m)]
+          (define rd (list-ref-nat instr 1))        
+          (define v_rs1 (gprs-get-x m (list-ref-nat instr 2)))
+          (define v_rs2 (gprs-get-x m (list-ref-nat instr 3)))
+          (if (bvslt v_rs1 v_rs2)
+            (gprs-set-x! m rd 1)
+            (gprs-set-x! m rd 0))
+          (set-pc! m (bvadd pc (bv 4 64)))
+          instr]
         [(eq? opcode 'sltu)
           ; TODO: sltu instruction not implemented yet
             (illegal-instr m)]
