@@ -149,11 +149,23 @@
           (set-pc! m (bvadd pc (bv 4 64)))
           instr]
         [(eq? opcode 'slti)
-          ; TODO: slti instruction not implemented yet
-          (illegal-instr m)]
+          (define rd (list-ref-nat instr 1))
+          (define v_rs1 (gprs-get-x m (list-ref-nat instr 2)))
+          (define imm (sign-extend (list-ref instr 3) (bitvector 64)))
+          (if (bvslt v_rs1 imm)
+            (gprs-set-x! m rd 1)
+            (gprs-set-x! m rd 0))
+          (set-pc! m (bvadd pc (bv 4 64)))
+          instr] 
         [(eq? opcode 'sltiu)
-          ; TODO: sltiu instruction not implemented yet
-          (illegal-instr m)]
+          (define rd (list-ref-nat instr 1))
+          (define v_rs1 (gprs-get-x m (list-ref-nat instr 2)))
+          (define imm (sign-extend (list-ref instr 3) (bitvector 64)))
+          (if (bvult v_rs1 imm)
+            (gprs-set-x! m rd 1)
+            (gprs-set-x! m rd 0))
+          (set-pc! m (bvadd pc (bv 4 64)))
+          instr] 
         [(eq? opcode 'xori)
           (define rd (list-ref-nat instr 1))
           (define v_rs1 (gprs-get-x m (list-ref-nat instr 2)))

@@ -6,3 +6,5 @@
 *.lst
 *.elf
 *.bak
+*.swo
+*.swp
