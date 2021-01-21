@@ -6,3 +6,6 @@
 *.lst
 *.elf
 *.bak
+*.zo
+*.dep
+
