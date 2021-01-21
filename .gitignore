@@ -6,6 +6,11 @@
 *.lst
 *.elf
 *.bak
+<<<<<<< HEAD
 *.zo
 *.dep
 
+=======
+*.swo
+*.swp
+>>>>>>> 6c0100bbf21022359f307374fa20528bf8f4ab83
