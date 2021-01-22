@@ -6,5 +6,7 @@
 *.lst
 *.elf
 *.bak
+*.zo
+*.dep
 *.swo
 *.swp
