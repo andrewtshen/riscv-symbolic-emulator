@@ -263,31 +263,33 @@
          (list slegal elegal)]
         [else
          (illegal-instr m)]))
+    (cond
+      [(not (equal? bounds null))
+       (define slegal (list-ref bounds 0))    
+       (define elegal (list-ref bounds 1))
 
-    (define slegal (list-ref bounds 0))    
-    (define elegal (list-ref bounds 1))
-
-    ; Check saddr and eaddr match the pmpaddri range
-    (if (and slegal elegal)
-        ; Check if pmpaddri is locked
-        ; TODO: Write an "pmpaddr-islocked" function for simplicity?
-        (if (not (pmp-is-locked? setting))
-            ; Check machine mode
-            (cond
-              [(equal? (machine-mode m) 1) #t]
-              [(equal? (machine-mode m) 0)
-               ; TODO: actually check what the access type is
-               (and (bveq R (bv 1 1)) (bveq W (bv 1 1)) (bveq X (bv 1 1)))]
-              [else
-               ; TODO: implement other mode support
-               ; (probably as simple as letting S and U be the same, see Docs)
-               (illegal-instr m)])
-            ; TODO: Implement locked variant of access, for now just return false (no access)
-            #f)
-        ; check if there are more pmpaddrs
-        (if (equal? i 15)
-            (equal? (get-pmp-num_implemented m) 0)
-            (loop (add1 i))))))
+       ; Check saddr and eaddr match the pmpaddri range
+       (if (and slegal elegal)
+           ; Check if pmpaddri is locked
+           ; TODO: Write an "pmpaddr-islocked" function for simplicity?
+           (if (not (pmp-is-locked? setting))
+               ; Check machine mode
+               (cond
+                 [(equal? (machine-mode m) 1) #t]
+                 [(equal? (machine-mode m) 0)
+                  ; TODO: actually check what the access type is
+                  (and (bveq R (bv 1 1)) (bveq W (bv 1 1)) (bveq X (bv 1 1)))]
+                 [else
+                  ; TODO: implement other mode support
+                  ; (probably as simple as letting S and U be the same, see Docs)
+                  (illegal-instr m)])
+               ; TODO: Implement locked variant of access, for now just return false (no access)
+               #f)
+           ; check if there are more pmpaddrs
+           (if (equal? i 15)
+               (equal? (get-pmp-num_implemented m) 0)
+               (loop (add1 i))))]
+      [else null])))
 (provide pmp-check)
 
 ;; Memory Reads/Writes

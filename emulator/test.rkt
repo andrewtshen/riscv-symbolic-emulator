@@ -10,7 +10,8 @@
   "parameters.rkt"
   "print_utils.rkt")
 (require (only-in racket/base 
-                  custodian-limit-memory current-custodian parameterize call-with-parameterization parameterize* for for/list for/vector in-range))
+                  custodian-limit-memory current-custodian parameterize call-with-parameterization
+                  parameterize* for for/list for/vector in-range))
 (require rackunit rackunit/text-ui)
 (require profile)
 
