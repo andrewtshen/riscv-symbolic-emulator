@@ -3,7 +3,7 @@
 (require
   "init.rkt"
   "machine.rkt"
-  "parameters.rkt")
+  "parameters.rkt") 
 
 ; Execute each individual instruction symbolically and update the program count to the proper place.
 ; Used rv8.io and https://content.riscv.org/wp-content/uploads/2017/05/riscv-spec-v2.2.pdf for implementing instructions
@@ -316,15 +316,15 @@
           (define rd (list-ref-nat instr 1))
           (define v_rs1 (gprs-get-x m (list-ref-nat instr 2)))
           (define imm (sign-extend (list-ref instr 3) (bitvector 64)))
-          ; addr is bitvector 64 correct address
+
+          ; remove least significant bit
           (define addr (bvand (bvadd v_rs1 imm) (bvnot (bv 1 64))))
-          ; adj_addr is adjusted for offset
+          ; adjust for address offset
           (define adj_addr (bvsub addr (base-address)))
 
           (define save (bvadd pc (bv 4 64)))
-          (cond
-            [(not (equal? rd 0))
-              (gprs-set-x! m rd save)])
+          (when (not (equal? rd 0))
+              (gprs-set-x! m rd save))
           (set-pc! m adj_addr)
           instr]
 
@@ -626,9 +626,8 @@
           (define save_addr (bvadd (bvadd pc (bv 4 64)) (base-address)))
           ; imm is the offset from pc, so we don't need to do anything with (base-address)
           (define jump_addr (bvadd imm pc))
-          (cond
-            [(not (equal? rd 0))
-              (gprs-set-x! m rd save_addr)])
+          (when (not (equal? rd 0))
+              (gprs-set-x! m rd save_addr))
           (set-pc! m jump_addr)
           instr]
 
