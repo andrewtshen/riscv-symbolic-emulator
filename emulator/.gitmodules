@@ -1,0 +1,2 @@
+[submodule "riscv-tests"]
+	ignore = untracked

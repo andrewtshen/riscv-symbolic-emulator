@@ -62,16 +62,13 @@
               (define rs1 (list-ref-nat instr 2))
               (define v_rs1 (gprs-get-x m rs1))
               (define csr (list-ref instr 3))
-              (define v_csr (get-csr m csr))
-              (cond
-                [(and (not (eq? v_rs1 null)) (not (eq? v_csr null)))
-                  (when (not (zero? rd))
-                    (gprs-set-x! m rd v_csr))
-                  (set-csr! m csr v_rs1)
-                  (set-pc! m (bvadd pc (bv 4 64)))
-                  instr]
-                [else
-                  (illegal-instr m)])]
+              (when (not (zero? rd))
+                (define v_csr (get-csr m csr))
+                (gprs-set-x! m rd (zero-extend v_csr (bitvector 64))))
+              ; TODO: Implement specific setting permissions for CSR bits
+              (set-csr! m csr v_rs1)
+              (set-pc! m (bvadd pc (bv 4 64)))
+              instr]
             [else
               (illegal-instr m)])]
         [(eq? opcode 'csrrs)
@@ -79,22 +76,20 @@
             [(equal? (machine-mode m) 1)
               (define rd (list-ref-nat instr 1))
               (define rs1 (list-ref-nat instr 2))
-              (define bitmask (gprs-get-x m rs1))
+              (define v_rs1 (gprs-get-x m rs1))
               (define csr (list-ref instr 3))
               (define v_csr (get-csr m csr))
-              (cond
-                [(and (not (eq? bitmask null)) (not (eq? v_csr null)))
-                  (gprs-set-x! m rd v_csr)
-                  (set-csr! m csr (bvor v_csr bitmask))
-                  (set! v_csr (zero-extend (get-csr m csr) (bitvector 64)))
-                  (set-pc! m (bvadd pc (bv 4 64)))
-                  instr]
-                [else
-                  (illegal-instr m)])]
+              (gprs-set-x! m rd (zero-extend v_csr (bitvector 64)))
+
+              ; TODO: Implement specific setting permissions for CSR bits
+              (when (not (zero? rs1))
+                (set-csr! m csr (bvor v_csr v_rs1)))
+              (set-pc! m (bvadd pc (bv 4 64)))
+              instr]
             [else
               (illegal-instr m)])]
         [(eq? opcode 'csrrc)
-          ; TODO: csrrc instruction not implemented yet
+
           (illegal-instr m)]
         [(eq? opcode 'csrrwi)
           ; TODO: csrrwi instruction not implemented yet
