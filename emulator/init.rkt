@@ -21,8 +21,10 @@
 
 ; Create a vector of symbolic variables
 (define-simple-macro (make-sym-vector n:expr size:expr m:id)
-  (build-vector n (lambda (i) (define-symbolic* m (bitvector size)) m)))
-; (build-vector n (lambda (i) (bv 0 size)))) ; set mem to 0 for testing with qemu
+  (if (use-concrete-mem)
+    (build-vector n (lambda (i) (bv 0 size)))
+    (build-vector n (lambda (i) (define-symbolic* m (bitvector size)) m))))
+; set mem to 0 for testing with qemu
 
 (define-simple-macro (fresh-symbolic name type)
   (let () (define-symbolic* name type) name))
@@ -77,6 +79,7 @@
           [i (in-naturals)])
       (set! fnmem (uf-memory-write fnmem (bv i (ramsize-log2)) byte))))
 
+  (printf "Concrete Mem: ~a~n" (use-concrete-mem))
   (define m
     (machine
      (cpu 

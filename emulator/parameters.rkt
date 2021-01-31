@@ -19,6 +19,9 @@
 (define use-fnmem (make-parameter #t))
 (provide use-fnmem)
 
+(define use-concrete-mem (make-parameter #f))
+(provide use-concrete-mem)
+
 ; Base address
 ; (base address is in 64 because though the pointer to memory is 32
 ; we are using RISC-V 64)

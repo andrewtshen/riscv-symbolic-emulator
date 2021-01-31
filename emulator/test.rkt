@@ -429,13 +429,17 @@
                (parameterize
                    ([use-sym-optimizations #f]
                     [use-debug-mode #f]
-                    [use-fnmem #f])
+                    [use-fnmem #f]
+                    [use-concrete-mem #t])
                  (init-machine-with-prog program)))
              (parameterize
                  ([use-sym-optimizations #f]
                   [use-debug-mode #f]
-                  [use-fnmem #f])
+                  [use-fnmem #f]
+                  [use-concrete-mem #t])
                (execute-until-mret m))
+
+             (printf "~a~n" (symbolics m))
 
              ; Check that after boot sequence machine mode is user mode (0) and in OK state
              (print-pmp m)
@@ -451,6 +455,8 @@
                (parameterize
                    ([ramsize-log2 20])
                  (init-machine)))
+
+             (printf "~a~n" (symbolics m))
              (define m1 (deep-copy-machine m))
 
              (define next_instr (parameterize
@@ -485,14 +491,14 @@
                 (assert-mem-equal m m1 sym-idx)))
              (check-true (unsat? model_noninterference))))
 
-(define res-instruction-check (run-tests instruction-check))
-(define res-utils (run-tests utils))
-(define res-high-level-test (run-tests high-level-test))
-(define res-step-checks (run-tests step-checks))
+; (define res-instruction-check (run-tests instruction-check))
+; (define res-utils (run-tests utils))
+; (define res-high-level-test (run-tests high-level-test))
+; (define res-step-checks (run-tests step-checks))
 
 ;; Testing the base case and inductive step
 
-;(define res-boot-sequence (run-tests boot-sequence))
-;(define res-inductive-step (run-tests inductive-step))
+; (define res-boot-sequence (run-tests boot-sequence))
+; (define res-inductive-step (run-tests inductive-step))
 (define res-boot-sequence (time (run-tests boot-sequence)))
 (define res-inductive-step (time (run-tests inductive-step)))
