@@ -424,22 +424,20 @@
 (define-test-suite boot-sequence
   (test-case "boot sequence test"
              (printf "* Running boot sequence test ~n")
-             (define program (file->bytearray "kernel/kernel.bin"))
+             (define program (file->bytearray "kernel/ci/kernel.bin"))
              (define m
                (parameterize
                    ([use-sym-optimizations #f]
                     [use-debug-mode #f]
                     [use-fnmem #f]
-                    [use-concrete-mem #t])
+                    [use-concrete-mem #f])
                  (init-machine-with-prog program)))
              (parameterize
                  ([use-sym-optimizations #f]
                   [use-debug-mode #f]
                   [use-fnmem #f]
-                  [use-concrete-mem #t])
+                  [use-concrete-mem #f])
                (execute-until-mret m))
-
-             (printf "~a~n" (symbolics m))
 
              ; Check that after boot sequence machine mode is user mode (0) and in OK state
              (print-pmp m)
@@ -451,14 +449,14 @@
 (define-test-suite inductive-step
   (test-case "inductive step test"
              (printf "* Running inductive step test ~n")
+             ; Create machine in the OK state
              (define m
                (parameterize
                    ([ramsize-log2 20])
                  (init-machine)))
 
-             (printf "~a~n" (symbolics m))
+             ; Create a copy of the machine and take arbitrary step
              (define m1 (deep-copy-machine m))
-
              (define next_instr (parameterize
                                     ([use-sym-optimizations #f]
                                      [use-debug-mode #f]
@@ -498,7 +496,6 @@
 
 ;; Testing the base case and inductive step
 
-;(define res-boot-sequence (run-tests boot-sequence))
-;(define res-inductive-step (run-tests inductive-step))
-; (define res-boot-sequence (time (run-tests boot-sequence)))
-; (define res-inductive-step (time (run-tests inductive-step)))
+(define res-boot-sequence (run-tests boot-sequence))
+(define res-inductive-step (run-tests inductive-step))
+

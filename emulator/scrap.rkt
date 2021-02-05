@@ -14,48 +14,46 @@
                   parameterize* for for/list for/vector in-range for*))
 (require profile)
 
-; ; (define (test m size)
-; ;   ; (printf "* Running boot sequence test ~n")
-; ;   ; (parameterize
-; ;   ;    ([use-sym-optimizations #f]
-; ;   ;     [use-debug-mode #f]
-; ;   ;     [use-fnmem #f]
-; ;   ;     [use-concrete-mem #t])
-; ;   ;  (execute-until-mret m))
+(define (test m size)
+  (for ([i (in-range size)])
+    (parameterize
+      ([use-fnmem #f])
+    ; (machine-ram-read m (bv #x0 64) 4)
+    (pmp-check m (bv #x80000000 64) (bv #x80000020 64))
+    ))
+  (printf "Size: ~a~n" size)
+  null)
 
-; ;   ; (printf "Symbolics: ~a~n" (symbolics m))
-; ;   ; (printf "Asserts: ~a~n" (symbolics m))
-; ;   (for ([i (in-range size)])
-; ;     (parameterize
-; ;       ([use-fnmem #f])
-; ;     ; (machine-ram-read m (bv #x0 64) 4)
-; ;     (pmp-check m (bv #x80000000 64) (bv #x80000020 64))
-; ;     ))
-; ;   (printf "Size: ~a~n" size)
-; ;   null)
+(define program (file->bytearray "kernel/kernel.bin"))
+(define m
+ (time (parameterize
+          ([use-sym-optimizations #f]
+           [use-debug-mode #f]
+           [use-fnmem #f]
+           [use-concrete-mem #t])
+        (init-machine-with-prog program))))
 
-; ; (define program (file->bytearray "kernel/kernel.bin"))
-; ; (define m
-; ;  (time (parameterize
-; ;           ([use-sym-optimizations #f]
-; ;            [use-debug-mode #f]
-; ;            [use-fnmem #f]
-; ;            [use-concrete-mem #t])
-; ;         (init-machine-with-prog program))))
+(time (parameterize
+        ([use-sym-optimizations #f]
+         [use-debug-mode #f]
+         [use-fnmem #f]
+         [use-concrete-mem #t])
+        (execute-until-mret m)))
 
-; ; (profile-thunk (lambda () (test m #x20000)))
-; ; (time (test m #x20000))
-; ; (define res (time (test m #x20000)))
+(profile-thunk (lambda () (test m #x20000)))
+(time (test m #x20000))
+(print-pmp m)
+; (define res (time (test m #x20000)))
 
 
-; ; (define val
-; ;   (parameterize
-; ;     ([use-fnmem #f])
-; ;   (machine-ram-read m (bv #x0 64) 4)))
+; (define val
+;   (parameterize
+;     ([use-fnmem #f])
+;   (machine-ram-read m (bv #x0 64) 4)))
 
-; ; (printf "val: ~a~n" val)
+; (printf "val: ~a~n" val)
 
-; ; 00074683
+; 00074683
 
 ; (define (test-loop1 size)
 ;   (define total 0)
@@ -135,25 +133,3 @@
 ; (printf "~a~n" (test-loop4 #x200000))
 ; (printf "~a~n" (test-loop5 #x200000))
 ; (printf "~a~n" (test-loop6 #x20000))
-(printf "* Running boot sequence test ~n")
-(define program (file->bytearray "kernel/kernel.bin"))
-(define m
- (parameterize
-     ([use-sym-optimizations #f]
-      [use-debug-mode #f]
-      [use-fnmem #f]
-      [use-concrete-mem #t])
-   (init-machine-with-prog program)))
-(parameterize
-   ([use-sym-optimizations #f]
-    [use-debug-mode #f]
-    [use-fnmem #f]
-    [use-concrete-mem #t])
- (execute-until-mret m))
-
-(printf "~a~n" (symbolics m))
-
- ; Check that after boot sequence machine mode is user mode (0) and in OK state
- (print-pmp m)
- ; (check-true (equal? (machine-mode m) 0))
- ; (assert-OK m)

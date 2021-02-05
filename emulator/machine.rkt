@@ -3,7 +3,8 @@
 (require
   "pmp.rkt"
   "parameters.rkt")
-(require (only-in racket/base for for/list in-range))
+(require (only-in racket/base
+  for for/list in-range values))
 (require syntax/parse/define)
 
 (define-simple-macro (fresh-symbolic name type)
@@ -237,10 +238,10 @@
 (define (pmp-check m saddr eaddr)
   (define legal #t)
   (if (pmp-none-implemented? m) legal
-    (begin
-      (set! legal null)
-      (define pmpcfg0 (get-pmpcfg-from-machine m 0))
-      (define pmpcfg2 (get-pmpcfg-from-machine m 1))
+    (let
+      ([legal null]
+       [pmpcfg0 (get-pmpcfg-from-machine m 0)]
+       [pmpcfg2 (get-pmpcfg-from-machine m 1)])
       ; Iterate through each pmpaddr and break at first matching
       (for ([i (in-range 16)])
         #:break (not (equal? legal null))
@@ -275,7 +276,7 @@
         (cond
           [(not (equal? bounds null))
            (define slegal (list-ref bounds 0))    
-           (define elegal (list-ref bounds 1))    
+           (define elegal (list-ref bounds 1)) 
            ; Check saddr and eaddr match the pmpaddri range
            (if (and slegal elegal)
                ; Check if pmpaddri is locked
