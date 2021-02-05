@@ -491,14 +491,14 @@
                 (assert-mem-equal m m1 sym-idx)))
              (check-true (unsat? model_noninterference))))
 
-; (define res-instruction-check (run-tests instruction-check))
-; (define res-utils (run-tests utils))
-; (define res-high-level-test (run-tests high-level-test))
-; (define res-step-checks (run-tests step-checks))
+(define res-instruction-check (run-tests instruction-check))
+(define res-utils (run-tests utils))
+(define res-high-level-test (run-tests high-level-test))
+(define res-step-checks (run-tests step-checks))
 
 ;; Testing the base case and inductive step
 
-; (define res-boot-sequence (run-tests boot-sequence))
-; (define res-inductive-step (run-tests inductive-step))
-(define res-boot-sequence (time (run-tests boot-sequence)))
-(define res-inductive-step (time (run-tests inductive-step)))
+(define res-boot-sequence (run-tests boot-sequence))
+(define res-inductive-step (run-tests inductive-step))
+; (define res-boot-sequence (time (run-tests boot-sequence)))
+; (define res-inductive-step (time (run-tests inductive-step)))

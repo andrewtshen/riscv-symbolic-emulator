@@ -79,7 +79,6 @@
           [i (in-naturals)])
       (set! fnmem (uf-memory-write fnmem (bv i (ramsize-log2)) byte))))
 
-  (printf "Concrete Mem: ~a~n" (use-concrete-mem))
   (define m
     (machine
      (cpu 
