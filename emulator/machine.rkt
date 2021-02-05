@@ -235,7 +235,6 @@
 
 ; PMP test address ranging from saddr to eaddr 
 (define (pmp-check m saddr eaddr)
-  (printf "~a~a~n" saddr eaddr)
   (define legal #t)
   (if (pmp-none-implemented? m) legal
     (begin
@@ -276,8 +275,7 @@
         (cond
           [(not (equal? bounds null))
            (define slegal (list-ref bounds 0))    
-           (define elegal (list-ref bounds 1))
-
+           (define elegal (list-ref bounds 1))    
            ; Check saddr and eaddr match the pmpaddri range
            (if (and slegal elegal)
                ; Check if pmpaddri is locked
@@ -287,7 +285,7 @@
                      [(equal? (machine-mode m) 1) (set! legal #t)]
                      [(equal? (machine-mode m) 0)
                       ; TODO: actually check what the access type is
-                      (and (bveq R (bv 1 1)) (bveq W (bv 1 1)) (bveq X (bv 1 1)))]
+                      (set! legal (and (bveq R (bv 1 1)) (bveq W (bv 1 1)) (bveq X (bv 1 1))))]
                      [else
                       ; TODO: implement other mode support
                       ; (probably as simple as letting S and U be the same, see Docs)
