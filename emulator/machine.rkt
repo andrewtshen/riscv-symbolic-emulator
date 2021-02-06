@@ -40,13 +40,15 @@
   (vector-ref (pmp-pmpcfgs (csrs-pmp (cpu-csrs (machine-cpu m)))) i))
 (provide get-pmpcfg-from-machine)
 
+
+
 (define (get-pmpaddr-setting m i)
   (define pmpcfg0 (get-pmpcfg-from-machine m 0))
   (define pmpcfg2 (get-pmpcfg-from-machine m 1))
   ; Iterate through each pmpaddr and break at first matching
   (if (< i 8)
-      (get-pmpcfg-setting pmpcfg0 i)
-      (get-pmpcfg-setting pmpcfg2 (- i 8))))
+      (get-pmpicfg-setting pmpcfg0 i)
+      (get-pmpicfg-setting pmpcfg2 (- i 8))))
 
 (define (get-pmp-from-machine m)
   (csrs-pmp (cpu-csrs (machine-cpu m))))
@@ -73,9 +75,8 @@
 (provide write-to-pmpaddr!)
 
 (define (write-to-pmpcfg! m i val)
-  (set-pmpcfg-value! (get-pmpcfg-from-machine m i) val)
   (for ([id (in-range 8)])
-    (define old_settings (get-pmpcfg-setting (get-pmpcfg-from-machine m i) id))
+    (define old_settings (get-pmpicfg-setting (get-pmpcfg-from-machine m i) id))
 
     (when (not (pmp-is-locked? old_settings))
       (define new_settings (pmp-decode-cfg val id))
@@ -234,73 +235,6 @@
   (equal? (get-pmp-num_implemented m) 0))
 (provide pmp-none-implemented?)
 
-; PMP test address ranging from saddr to eaddr 
-(define (pmp-check m saddr eaddr)
-  (define legal #t)
-  (if (pmp-none-implemented? m) legal
-    (let
-      ([legal null]
-       [pmpcfg0 (get-pmpcfg-from-machine m 0)]
-       [pmpcfg2 (get-pmpcfg-from-machine m 1)])
-      ; Iterate through each pmpaddr and break at first matching
-      (for ([i (in-range 16)])
-        #:break (not (equal? legal null))
-        (define setting
-          (if (< i 8)
-              (get-pmpcfg-setting pmpcfg0 i)
-              (get-pmpcfg-setting pmpcfg2 (- i 8))))
-
-        (define R (pmpcfg_setting-R setting))
-        (define W (pmpcfg_setting-W setting))
-        (define X (pmpcfg_setting-X setting))
-        (define A (pmpcfg_setting-A setting))
-        (define L (pmpcfg_setting-L setting))
-
-        ; For now we only implement A = 3 (NAPOT)
-        (define bounds 
-          (cond
-            [(bveq A (bv 0 2))
-               ; Unimplemented, so just return no access
-               (list #f #f)]
-            [(bveq A (bv 3 2))
-               (define pmpaddr (get-pmpaddr-from-machine m i))
-               (define pmp_start (pmpaddr-start_addr pmpaddr))
-               (define pmp_end (pmpaddr-end_addr pmpaddr))
-
-               ; Test the proper bounds, #t means allow access, #f means disallow access
-               (define slegal (bv-between saddr pmp_start pmp_end))
-               (define elegal (bv-between eaddr pmp_start pmp_end))
-               (list slegal elegal)]
-            [else
-              (illegal-instr m)]))
-        (cond
-          [(not (equal? bounds null))
-           (define slegal (list-ref bounds 0))    
-           (define elegal (list-ref bounds 1)) 
-           ; Check saddr and eaddr match the pmpaddri range
-           (if (and slegal elegal)
-               ; Check if pmpaddri is locked
-               (if (not (pmp-is-locked? setting))
-                   ; Check machine mode
-                   (cond
-                     [(equal? (machine-mode m) 1) (set! legal #t)]
-                     [(equal? (machine-mode m) 0)
-                      ; TODO: actually check what the access type is
-                      (set! legal (and (bveq R (bv 1 1)) (bveq W (bv 1 1)) (bveq X (bv 1 1))))]
-                     [else
-                      ; TODO: implement other mode support
-                      ; (probably as simple as letting S and U be the same, see Docs)
-                      (illegal-instr m)])
-                   ; TODO: Implement locked variant of access, for now just return false (no access)
-                   (set! legal #f))
-               ; from earlier checks there must have been at least 1 pmpaddr active
-               (when (equal? i 15) (set! legal #f)))] 
-          [else null]))
-      (if (equal? legal null)
-        #f
-        legal))))
-(provide pmp-check)
-
 ;; Memory Reads/Writes
 
 ; mem: uf, addr: bitvector ramsize-log2, value: bitvector 8
@@ -352,7 +286,8 @@
   (define saddr (bvadd addr (base-address)))
   ; adjust to include the endpoint
   (define eaddr (bvadd addr (bv (sub1 (/ nbits 8)) 64) (base-address)))
-  (define legal (pmp-check m saddr eaddr))
+  ; (define legal (pmp-check m saddr eaddr))
+  (define legal (test-pmp-check (get-pmp-from-machine m) (machine-mode m) saddr eaddr))
 
   ; machine mode (1) or legal, we can read the memory
   (when (or (equal? (machine-mode m) 1) legal)
