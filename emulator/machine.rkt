@@ -52,6 +52,7 @@
 
 (define (get-pmp-from-machine m)
   (csrs-pmp (cpu-csrs (machine-cpu m))))
+(provide get-pmp-from-machine)
 
 (define (get-csrs-from-machine m)
   (cpu-csrs (machine-cpu m)))

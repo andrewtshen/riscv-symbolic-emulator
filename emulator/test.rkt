@@ -281,7 +281,8 @@
              (parameterize
                  ([use-debug-mode #f])
                (execute-until-mret m))
-             (pmp-check m (bv #x00700001 64) (bv #x007FFFFF 64))))
+             (test-pmp-check (get-pmp-from-machine m) (machine-mode m)
+                                    (bv #x00700001 64) (bv #x007FFFFF 64))))
 
 ;; Sanity Checks for Misc. Utilities
 
@@ -300,14 +301,21 @@
              (execute-until-mret m)
              ; (print-pmp m)
              (check-equal? (machine-mode m) 0)
-             (check-true (pmp-check m (bv #x80800000 64) (bv #x80800000 64)))
-             (check-true (pmp-check m (bv #x80FFFFFF 64) (bv #x80FFFFFF 64)))
-             (check-equal? (pmp-check m (bv #x80FFFFFF 64) (bv #x81000000 64)) #f)
-             (check-equal? (pmp-check m (bv #x807FFFFF 64) (bv #x81000000 64)) #f)
+             (check-true (test-pmp-check (get-pmp-from-machine m) (machine-mode m)
+                                    (bv #x80800000 64) (bv #x80800000 64)))
+             (check-true (test-pmp-check (get-pmp-from-machine m) (machine-mode m)
+                                    (bv #x80FFFFFF 64) (bv #x80FFFFFF 64)))
+             (check-equal? (test-pmp-check (get-pmp-from-machine m) (machine-mode m)
+                                    (bv #x80FFFFFF 64) (bv #x81000000 64)) #f)
+             (check-equal? (test-pmp-check (get-pmp-from-machine m) (machine-mode m)
+                                    (bv #x807FFFFF 64) (bv #x81000000 64)) #f)
              ; disabled uart
-             (check-equal? (not (pmp-check m (bv #x00700001 64) (bv #x007FFFFF 64))) #t) 
-             (check-true (pmp-check m (bv #x10700001 64) (bv #x107FFFFF 64)))
-             (check-equal? (pmp-check m (bv #x00700001 64) (bv #x107FFFFF 64)) #f)
+             (check-equal? (not (test-pmp-check (get-pmp-from-machine m) (machine-mode m)
+                                    (bv #x00700001 64) (bv #x007FFFFF 64))) #t) 
+             (check-true (test-pmp-check (get-pmp-from-machine m) (machine-mode m)
+                                    (bv #x10700001 64) (bv #x107FFFFF 64)))
+             (check-equal? (test-pmp-check (get-pmp-from-machine m) (machine-mode m)
+                                    (bv #x00700001 64) (bv #x107FFFFF 64)) #f)
              (check-true (equal? (machine-mode m) 0))
              (check-equal? (get-pmp-num_implemented m) 3)
              (check-true (not (equal? (get-pmp-num_implemented m) 4)))
