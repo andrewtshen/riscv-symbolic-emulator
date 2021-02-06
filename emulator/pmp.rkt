@@ -112,6 +112,78 @@
   (define pmp_addr (bvlshr (bvadd base napot_size) (bv 2 64)))
   pmp_addr)
 
+(define (pmp-none-impl? pmp)
+  (equal? (pmp-num_implemented pmp) 0))
+(provide pmp-none-impl?)
+
+(define (pmp-pmpaddri pmp i)
+  (vector-ref (pmp-pmpaddrs pmp) i))
+(provide pmp-pmpaddri)
+
+(define (pmp-pmpcfgi pmp i)
+  (vector-ref (pmp-pmpcfgs pmp) i))
+(provide pmp-pmpcfgi)
+
+; REWRITE PMP test address ranging from saddr to eaddr 
+(define (test-pmp-check pmp mode saddr eaddr)
+  (define legal #t)
+  (if (pmp-none-impl? pmp) legal
+    (let
+      ([legal null]
+       [pmpcfg0 (pmp-pmpcfgi pmp 0)]
+       [pmpcfg2 (pmp-pmpcfgi pmp 1)])
+      ; Iterate through each pmpaddr and break at first matching
+      (for ([i (in-range 16)])
+        #:break (not (equal? legal null))
+        (let*
+          ([setting (if (< i 8)
+                      (get-pmpcfg-setting pmpcfg0 i)
+                      (get-pmpcfg-setting pmpcfg2 (- i 8)))]
+           [R (pmpcfg_setting-R setting)]
+           [W (pmpcfg_setting-W setting)]
+           [X (pmpcfg_setting-X setting)]
+           [A (pmpcfg_setting-A setting)]
+           [L (pmpcfg_setting-L setting)])
+          ; For now we only implement A = 3 (NAPOT)
+          (define bounds 
+            (cond
+              [(bveq A (bv 0 2))
+                 ; Unimplemented, so just return no access
+                 (list #f #f)]
+              [(bveq A (bv 3 2))
+                (let*
+                  ([pmpaddr (pmp-pmpaddri pmp i)]
+                   [pmp_start (pmpaddr-start_addr pmpaddr)]
+                   [pmp_end (pmpaddr-end_addr pmpaddr)]
+                   ; Test the proper bounds, #t means allow access, #f means disallow access
+                   [slegal (bv-between saddr pmp_start pmp_end)]
+                   [elegal (bv-between eaddr pmp_start pmp_end)])
+                  (list slegal elegal))]
+              [else
+                (list #f #f)]))
+
+         (define slegal (list-ref bounds 0))    
+         (define elegal (list-ref bounds 1)) 
+         ; Check saddr and eaddr match the pmpaddri range
+         (if (and slegal elegal)
+             ; Check if pmpaddri is locked
+             (if (not (pmp-is-locked? setting))
+                 ; Check machine mode
+                 (cond
+                   [(equal? mode 1) (set! legal #t)]
+                   [(equal? mode 0)
+                    ; TODO: actually check what the access type is
+                    (set! legal (and (bveq R (bv 1 1)) (bveq W (bv 1 1)) (bveq X (bv 1 1))))]
+                   [else
+                    ; TODO: implement other mode support
+                    (set! legal #f)])
+                 ; TODO: Implement locked variant of access, for now just return false (no access)
+                 (set! legal #f))
+             ; from earlier checks there must have been at least 1 pmpaddr active
+             (when (equal? i 15) (set! legal #f)))))
+      legal)))
+(provide test-pmp-check)
+
 ; Check if bv1 satisfies bv2 <= bv1 <= bv3
 (define (bv-between bv1 bv2 bv3)
   (and (bvule bv2 bv1) (bvule bv1 bv3)))

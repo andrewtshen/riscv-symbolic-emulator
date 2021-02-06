@@ -329,7 +329,8 @@
     (let ([saddr (bvadd addr (base-address))]
           [eaddr (bvadd addr (bv (* nbytes 8) 64) (base-address))])
       ; nbytes is always concrete so it is okay to use (bv x 64) here
-      (pmp-check m saddr eaddr)))
+      (test-pmp-check (get-pmp-from-machine m) (machine-mode m) saddr eaddr)))
+      ; (pmp-check m saddr eaddr)))
   ; (define legal #t)
   (if (or (equal? (machine-mode m) 1) legal)
       (if (use-sym-optimizations)
