@@ -8,8 +8,8 @@
                   for in-range))
 
 (define (print-pmp m)
-  (printf "pmpcfg0: ~a~n" (get-csr m 'pmpcfg0))
-  (printf "pmpcfg2: ~a~n" (get-csr m 'pmpcfg2))
+  (printf "pmpcfg0: ~a~n " (get-csr m 'pmpcfg0))
+  (printf "pmpcfg2: ~a~n " (get-csr m 'pmpcfg2))
   (printf "pmpaddr0: ~a~n" (get-csr m 'pmpaddr0))
   (printf "pmpaddr1: ~a~n" (get-csr m 'pmpaddr1))
   (printf "pmpaddr2: ~a~n" (get-csr m 'pmpaddr2))

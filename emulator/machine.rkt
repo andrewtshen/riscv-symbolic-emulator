@@ -103,21 +103,26 @@
   (cond
     [(and (< 0 idx) (< idx 32))
      (vector-ref (cpu-gprs (machine-cpu m)) (- idx 1))]
-    [(zero? idx)
-     (bv 0 64)]
-    [else
-     (illegal-instr m)]))
+    [(zero? idx) (bv 0 64)]
+    [else (illegal-instr m)]))
 (provide gprs-get-x)
 
-(define (gprs-set-x! m idx val)
+(define (gprs-set-x! m i val)
   (cond 
-    [(and (< 0 idx) (< idx 32))
-     (vector-set! (cpu-gprs (machine-cpu m)) (- idx 1) val)
-     #t]
-    [(zero? idx) #t]
-    [else
-     (illegal-instr m)]))
+    [(and (< 0 i) (< i 32))
+      (vector-set! (cpu-gprs (machine-cpu m)) (- i 1) val)
+      #t]
+    [(zero? i) #f]
+    [else (illegal-instr m)]))
 (provide gprs-set-x!)
+
+(define (set-gprs-i! gprs i val)
+  (cond 
+    [(and (< 0 i) (< i 32))
+      (vector-set! gprs (- i 1) val)]
+    [(zero? i) #f]
+    [else null]))
+(provide set-gprs-i!)
 
 ; Get program counter
 (define (get-pc m)

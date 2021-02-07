@@ -49,92 +49,83 @@
   (define ramsize (expt 2 (ramsize-log2)))
   (unless (>= ramsize proglength)
     (printf "Not enough RAM provided to run program~n"))
+
+  ; Make and set all the initial csrs to 0 (TODO: change to actual values)
   (define-symbolic* mtvec mepc mstatus (bitvector 64))
-
-  (define PMP (make-pmp))
-
-  ; set all the initial csrs to 0 (TODO: change to actual values)
   (set! mtvec (bv 0 64))
   (set! mepc (bv 0 64))
   (set! mstatus (bv 0 64))
+  (define pc (bv 0 64))
+  (define mode 1) ; start in machine mode
 
-  ; use this for undefined memory
+  ; Set up PMP and default configurations
+  (define pmp (make-pmp))
+  ; TODO: Check that these values are correct (zeroing all pmp regs)
+  (set-pmpcfgi! pmp 0 (bv 0 64))
+  (set-pmpcfgi! pmp 1 (bv 0 64))
+  (for ([i (in-range 16)])
+    (set-pmpaddri! pmp i (bv 0 64)))
+
+  ; Set up memory based on if using fnmem and load program
   (define fnmem (fresh-symbolic fnmem (~> (bitvector (ramsize-log2)) (bitvector 8))))
-  ; use this for defined memory but it's "fake" code in the sense that it maps everything to 0
-  ; (define fnmem (lambda (addr*) (bv 0 8)))
-
-  ; All concrete values here, so we can use (bv i 64) without issues
   (when (use-fnmem)
     (for ([byte program]
           [i (in-naturals)])
       (set! fnmem (uf-memory-write fnmem (bv i (ramsize-log2)) byte))))
+  (define mem
+    (if (use-fnmem)
+       fnmem
+       (vector-append program (make-sym-vector (- (expt 2 (ramsize-log2)) proglength) 8 mem))))
 
-  (define m
-    (machine
-     (cpu 
-      (csrs
-       mtvec mepc mstatus PMP)
-      (make-sym-vector 31 64 gpr) ; be careful of -1 for offset
-      (bv 0 64)) ; set pc to 0 when loading with program
-     (if (use-fnmem)
-         fnmem
-         (vector-append
-          program
-          (make-sym-vector (- (expt 2 (ramsize-log2)) proglength) 8 mem)))
-     1)) ; start in machine mode
-  ; default all gprs to 0
+  ; Make gprs, default to zero, and do some special virt machine setup
+  (define gprs (make-sym-vector 31 64 gpr))
   (for [(i (in-range 1 32))]
-    (gprs-set-x! m i (bv 0 64)))
+    (set-gprs-i! gprs i (bv 0 64)))
+  (set-gprs-i! gprs 5 (bv #x80000000 64))
+  (set-gprs-i! gprs 10 (bv 1020 64))
 
-  ; do some special virt machine set up
-  (gprs-set-x! m 5 (bv #x80000000 64))
-  (gprs-set-x! m 10 (bv 1020 64))
-
-  ; set up values for pmp
-  ; TODO: Check that these values are correct
-  (set-pmpcfgi! (get-pmp-from-machine m) 0 (bv 0 64))
-  (set-pmpcfgi! (get-pmp-from-machine m) 1 (bv 0 64))
-
-  ; Hardwire all pmpaddrs to 0
-  (for ([i (in-range 16)])
-    (set-pmpaddri! (get-pmp-from-machine m) i (bv 0 64)))
-  m)
+  (machine
+   (cpu 
+    (csrs
+     mtvec mepc mstatus pmp)
+    gprs
+    pc) ; set pc to 0 when loading with program
+   mem
+   mode))
 (provide init-machine-with-prog)
 
 (define (init-machine)
   (define-symbolic* mtvec mepc mstatus pc (bitvector 64))
-
-  (define pmp (make-pmp))
-
   (set! mtvec (bv #x0000000080000080 64))
+  (define mode 0) ; start in user mode
 
-  (define fnmem (fresh-symbolic fnmem (~> (bitvector (ramsize-log2)) (bitvector 8))))
-  (define m
-    (machine
-     (cpu 
-      (csrs
-       mtvec mepc mstatus pmp)
-      (make-sym-vector 31 64 gpr) ; be careful of -1 for offset
-      pc) ; symbolic pc
-     (if (use-fnmem)
-         fnmem
-         (make-sym-vector (expt 2 (ramsize-log2)) 8 mem))
-     0)) ; start in user mode
-
-  ; (define pmp (get-pmp-from-machine m))
-  ; Hardwire pmpaddrs to 0
+  ; Set up PMP and default configurations to enable ONLY #x0000000080020000 - #x000000000001ffff
+  (define pmp (make-pmp))
   (for ([i (in-range 16)])
     (set-pmpaddri! pmp i (bv 0 64)))
-
-  ; Write the pmpaddr information
   (set-pmpcfgi! pmp 0 (bv #x000000000000001f 64))
   (set-pmpcfgi! pmp 1 (bv #x0000000000000018 64))
-
-  ; Write the pmpaddr information
   (set-pmpaddri! pmp 0 (bv #x000000002000bfff 64))
   (set-pmpaddri! pmp 8 (bv #x7fffffffffffffff 64))
 
-  m)
+  ; Set up memory based on if using fnmem
+  (define fnmem (fresh-symbolic fnmem (~> (bitvector (ramsize-log2)) (bitvector 8))))
+  (define mem
+    (if (use-fnmem)
+         fnmem
+         (make-sym-vector (expt 2 (ramsize-log2)) 8 mem)))
+
+  ; Make gprs
+  (define gprs (make-sym-vector 31 64 gpr)) ; be careful of -1 for offset
+
+  (machine
+   (cpu 
+    (csrs
+     mtvec mepc mstatus pmp)
+    gprs
+    pc) ; symbolic pc
+   mem
+   mode))
 (provide init-machine)
 
 ;; Examples

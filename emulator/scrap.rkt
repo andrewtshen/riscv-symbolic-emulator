@@ -50,4 +50,4 @@
 ;    [use-concrete-mem #f])
 ; (execute-until-mret m))
 
-; (print-pmp m)
+(print-pmp m)
