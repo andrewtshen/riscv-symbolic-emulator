@@ -104,7 +104,7 @@
 (define (init-machine)
   (define-symbolic* mtvec mepc mstatus pc (bitvector 64))
 
-  (define PMP (make-pmp))
+  (define pmp (make-pmp))
 
   (set! mtvec (bv #x0000000080000080 64))
 
@@ -113,7 +113,7 @@
     (machine
      (cpu 
       (csrs
-       mtvec mepc mstatus PMP)
+       mtvec mepc mstatus pmp)
       (make-sym-vector 31 64 gpr) ; be careful of -1 for offset
       pc) ; symbolic pc
      (if (use-fnmem)
@@ -121,17 +121,18 @@
          (make-sym-vector (expt 2 (ramsize-log2)) 8 mem))
      0)) ; start in user mode
 
+  ; (define pmp (get-pmp-from-machine m))
   ; Hardwire pmpaddrs to 0
   (for ([i (in-range 16)])
-    (set-pmpaddri! m i (bv 0 64)))
+    (set-pmpaddri! pmp i (bv 0 64)))
 
   ; Write the pmpaddr information
-  (set-pmpcfgi! m 0 (bv #x000000000000001f 64))
-  (set-pmpcfgi! m 1 (bv #x0000000000000018 64))
+  (set-pmpcfgi! pmp 0 (bv #x000000000000001f 64))
+  (set-pmpcfgi! pmp 1 (bv #x0000000000000018 64))
 
   ; Write the pmpaddr information
-  (set-pmpaddri! m 0 (bv #x000000002000bfff 64))
-  (set-pmpaddri! m 8 (bv #x7fffffffffffffff 64))
+  (set-pmpaddri! pmp 0 (bv #x000000002000bfff 64))
+  (set-pmpaddri! pmp 8 (bv #x7fffffffffffffff 64))
 
   m)
 (provide init-machine)

@@ -18,7 +18,7 @@
 ;; Structs to Build PMP
 
 (struct pmp
-  (pmpcfgs pmpaddrs num_implemented)
+  (pmpcfgs pmpaddrs numimplemented)
   #:mutable #:transparent)
 (provide (struct-out pmp))
 
@@ -30,32 +30,32 @@
 
 ; pmpaddr struct
 (struct pmpaddr
-  (value start_addr end_addr)
+  (value startaddr endaddr)
   #:mutable #:transparent)
 (provide (struct-out pmpaddr))
 
 ; pmpcfg settings setting
-(struct pmpcfg_setting
+(struct pmpcfg-setting
   (R W X A L)
   #:mutable #:transparent)
-(provide (struct-out pmpcfg_setting))
+(provide (struct-out pmpcfg-setting))
 
 ;; Helper Functions to Build PMP Structs
 
 ; Make a vector of pmpcfg settings
-(define-simple-macro (make-pmpcfg_settings n:expr)
-  (build-vector n (lambda (i) (define p (make-pmpcfg_setting)) p)))
+(define-simple-macro (make-pmpcfg-settings n:expr)
+  (build-vector n (lambda (i) (define p (make-pmpcfg-setting)) p)))
 
 (define (make-pmp)
-  (define num_implemented 0)
+  (define numimplemented 0)
   (pmp
     (make-pmpcfgs 2)
     (make-pmpaddrs 16)
-    num_implemented))
+    numimplemented))
 (provide make-pmp)
 
-(define (make-pmpcfg_setting)
-  (pmpcfg_setting
+(define (make-pmpcfg-setting)
+  (pmpcfg-setting
    (bv 0 1)
    (bv 0 1)
    (bv 0 1)
@@ -65,7 +65,7 @@
 (define (make-pmpcfg)
   (pmpcfg
    (bv 0 64)
-   (make-pmpcfg_settings 8)))
+   (make-pmpcfg-settings 8)))
 ; (provide make-pmpcfg)
 
 (define (make-pmpaddr)
@@ -101,17 +101,17 @@
   (define X (extract (+ base 2) (+ base 2) val))
   (define A (extract (+ base 4) (+ base 3) val))
   (define L (extract (+ base 7) (+ base 7) val))
-  (pmpcfg_setting R W X A L))
+  (pmpcfg-setting R W X A L))
 (provide pmp-decode-cfg)
 
-; Check if pmp_setting is implemented
-(define (pmp-is-implemented? pmp_setting)
-  (bveq (pmpcfg_setting-A pmp_setting) (bv 0 2)))
+; Check if pmp-setting is implemented
+(define (pmp-is-implemented? pmp-setting)
+  (bveq (pmpcfg-setting-A pmp-setting) (bv 0 2)))
 (provide pmp-is-implemented?)
 
-; Check if pmp_setting is locked
-(define (pmp-is-locked? pmp_setting)
-  (bveq (pmpcfg_setting-L pmp_setting) (bv 1 1)))
+; Check if pmp-setting is locked
+(define (pmp-is-locked? pmp-setting)
+  (bveq (pmpcfg-setting-L pmp-setting) (bv 1 1)))
 (provide pmp-is-locked?)
 
 ; Decode start addr and end addr for cfg register
@@ -128,7 +128,7 @@
   pmp_addr)
 
 (define (pmp-none-impl? pmp)
-  (equal? (pmp-num_implemented pmp) 0))
+  (equal? (pmp-numimplemented pmp) 0))
 (provide pmp-none-impl?)
 
 (define (pmp-pmpaddri pmp i)
@@ -160,8 +160,8 @@
     (define pmp_start (list-ref pmp_bounds 0))
     (define pmp_end (bvadd (list-ref pmp_bounds 0) (list-ref pmp_bounds 1)))
 
-    (set-pmpaddr-start_addr! (pmp-pmpaddri pmp i) pmp_start)
-    (set-pmpaddr-end_addr! (pmp-pmpaddri pmp i) pmp_end)))
+    (set-pmpaddr-startaddr! (pmp-pmpaddri pmp i) pmp_start)
+    (set-pmpaddr-endaddr! (pmp-pmpaddri pmp i) pmp_end)))
 (provide set-pmpaddri!)
 
 (define (set-pmpcfgi! pmp i val)
@@ -176,11 +176,11 @@
       ; Adjust Number of Implemented PMPs
       (when (and (pmp-is-implemented? old_settings)
                  (not (pmp-is-implemented? new_settings)))
-        (set-pmp-num_implemented! pmp (add1 (pmp-num_implemented pmp))))
+        (set-pmp-numimplemented! pmp (add1 (pmp-numimplemented pmp))))
 
       (when (and (not (pmp-is-implemented? old_settings))
                  (pmp-is-implemented? new_settings))
-        (set-pmp-num_implemented! pmp (sub1 (pmp-num_implemented pmp))))
+        (set-pmp-numimplemented! pmp (sub1 (pmp-numimplemented pmp))))
 
       ; Update pmpcfg value for pmp(id)cfg(i)
       (define start (* id 8))
@@ -225,11 +225,11 @@
           ([setting (if (< i 8)
                       (get-pmpicfg-setting pmpcfg0 i)
                       (get-pmpicfg-setting pmpcfg2 (- i 8)))]
-           [R (pmpcfg_setting-R setting)]
-           [W (pmpcfg_setting-W setting)]
-           [X (pmpcfg_setting-X setting)]
-           [A (pmpcfg_setting-A setting)]
-           [L (pmpcfg_setting-L setting)])
+           [R (pmpcfg-setting-R setting)]
+           [W (pmpcfg-setting-W setting)]
+           [X (pmpcfg-setting-X setting)]
+           [A (pmpcfg-setting-A setting)]
+           [L (pmpcfg-setting-L setting)])
           ; For now we only implement A = 3 (NAPOT)
           (define bounds 
             (cond
@@ -239,8 +239,8 @@
               [(bveq A (bv 3 2))
                 (let*
                   ([pmpaddr (pmp-pmpaddri pmp i)]
-                   [pmp_start (pmpaddr-start_addr pmpaddr)]
-                   [pmp_end (pmpaddr-end_addr pmpaddr)]
+                   [pmp_start (pmpaddr-startaddr pmpaddr)]
+                   [pmp_end (pmpaddr-endaddr pmpaddr)]
                    ; Test the proper bounds, #t means allow access, #f means disallow access
                    [slegal (bv-between saddr pmp_start pmp_end)]
                    [elegal (bv-between eaddr pmp_start pmp_end)])
