@@ -114,7 +114,7 @@
                (execute-until-mret m))
              (define gprsx
                (for/list ([i (in-range 10 18)])
-                 (gprs-get-x m i)))
+                 (get-gprs-i (machine-gprs m) i)))
              (define model_add
                (verify (begin (assert
                                (bveq (bvadd (list-ref gprsx 5) (list-ref gprsx 7))
@@ -129,7 +129,7 @@
                (execute-until-mret m))
              (define gprsx
                (for/list ([i (in-range 10 18)])
-                 (gprs-get-x m i)))
+                 (get-gprs-i (machine-gprs m) i)))
              (define model_addi
                (verify (begin (assert
                                (bveq (list-ref gprsx 6)
@@ -144,7 +144,7 @@
                (execute-until-mret m))
              (define gprsx
                (for/list ([i (in-range 10 18)])
-                 (gprs-get-x m i)))
+                 (get-gprs-i (machine-gprs m) i)))
              (define model_addw
                (verify (begin (assert
                                (bveq (list-ref gprsx 6)
@@ -173,7 +173,7 @@
                (execute-until-mret m))
              (define gprsx
                (for/list ([i (in-range 10 18)])
-                 (gprs-get-x m i)))
+                 (get-gprs-i (machine-gprs m) i)))
              ; doubleword, use all bits
              (define model_sd_ld
                (verify (begin (assert
@@ -189,7 +189,7 @@
                (execute-until-mret m))
              (define gprsx
                (for/list ([i (in-range 10 18)])
-                 (gprs-get-x m i)))
+                 (get-gprs-i (machine-gprs m) i)))
              ; word, index into the 32 lower bits
              (define model_sw_lw
                (verify (begin (assert
@@ -205,7 +205,7 @@
                (execute-until-mret m))
              (define gprsx
                (for/list ([i (in-range 10 18)])
-                 (gprs-get-x m i)))
+                 (get-gprs-i (machine-gprs m) i)))
              ; half-word, index into the 15 lower bits
              (define model_sh_lh
                (verify (begin (assert
@@ -221,7 +221,7 @@
                (execute-until-mret m))
              (define gprsx
                (for/list ([i (in-range 10 18)])
-                 (gprs-get-x m i)))
+                 (get-gprs-i (machine-gprs m) i)))
              ; half-word, index into the 15 lower bits
              (define model_sb_lb
                (verify (begin (assert
@@ -237,7 +237,7 @@
                (execute-until-mret m))
              (define gprsx
                (for/list ([i (in-range 10 18)])
-                 (gprs-get-x m i)))
+                 (get-gprs-i (machine-gprs m) i)))
              (define model_srliw
                (verify (begin (assert
                                (and (bveq (list-ref gprsx 1) (bv #xffffffffffffffff 64))
@@ -255,7 +255,7 @@
                (execute-until-mret m))
              (define gprsx
                (for/list ([i (in-range 10 18)])
-                 (gprs-get-x m i)))
+                 (get-gprs-i (machine-gprs m) i)))
              (define model_addiw
                (verify (begin (assert (and (bveq (list-ref gprsx 1) (bv #x000000007fffffff 64))
                                            (bveq (list-ref gprsx 2) (bv #xffffffff800007fe 64))

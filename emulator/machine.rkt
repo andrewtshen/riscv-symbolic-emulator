@@ -35,6 +35,10 @@
   (csrs-pmp (cpu-csrs (machine-cpu m))))
 (provide get-pmp-from-machine)
 
+(define (machine-gprs m)
+  (cpu-gprs (machine-cpu m)))
+(provide machine-gprs)
+
 (define (get-csrs-from-machine m)
   (cpu-csrs (machine-cpu m)))
 
@@ -99,22 +103,13 @@
   v_csr)
 (provide set-csr!)
 
-(define (gprs-get-x m idx)
+(define (get-gprs-i gprs i)
   (cond
-    [(and (< 0 idx) (< idx 32))
-     (vector-ref (cpu-gprs (machine-cpu m)) (- idx 1))]
-    [(zero? idx) (bv 0 64)]
-    [else (illegal-instr m)]))
-(provide gprs-get-x)
-
-(define (gprs-set-x! m i val)
-  (cond 
     [(and (< 0 i) (< i 32))
-      (vector-set! (cpu-gprs (machine-cpu m)) (- i 1) val)
-      #t]
-    [(zero? i) #f]
-    [else (illegal-instr m)]))
-(provide gprs-set-x!)
+     (vector-ref gprs (- i 1))]
+    [(zero? i) (bv 0 64)]
+    [else null]))
+(provide get-gprs-i)
 
 (define (set-gprs-i! gprs i val)
   (cond 
