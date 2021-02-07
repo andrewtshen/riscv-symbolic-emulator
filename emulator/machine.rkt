@@ -29,27 +29,44 @@
   (cpu ram mode) #:mutable #:transparent)
 (provide (struct-out machine))
 
-;; Wrappers for Mutator and Accessor Functions
+;; General Accessors/Mutators
 
 (define (get-pmp-from-machine m)
   (csrs-pmp (cpu-csrs (machine-cpu m))))
 (provide get-pmp-from-machine)
 
+(define (machine-csrs m)
+  (cpu-csrs (machine-cpu m)))
+
 (define (machine-gprs m)
   (cpu-gprs (machine-cpu m)))
 (provide machine-gprs)
 
-(define (get-csrs-from-machine m)
-  (cpu-csrs (machine-cpu m)))
+;; gprs Accessors/Mutators
+
+(define (get-gprs-i gprs i)
+  (cond
+    [(and (< 0 i) (< i 32))
+     (vector-ref gprs (- i 1))]
+    [(zero? i) (bv 0 64)]
+    [else null]))
+(provide get-gprs-i)
+
+(define (set-gprs-i! gprs i val)
+  (cond 
+    [(and (< 0 i) (< i 32))
+      (vector-set! gprs (- i 1) val)]
+    [(zero? i) #f]
+    [else null]))
+(provide set-gprs-i!)
 
 ; Helpers for accessing csrs from the machine
-; Get the value contained in a csr
-; be careful to decrement by 1 to access right location for gprs
-(define (get-csr m csr)
+; Get csr value and be careful to decrement by 1 to access right location for gprs
+(define (machine-csr m csr)
   (cond
-    [(eq? csr 'mtvec)     (csrs-mtvec   (get-csrs-from-machine m))]
-    [(eq? csr 'mepc)      (csrs-mepc    (get-csrs-from-machine m))]
-    [(eq? csr 'mstatus)   (csrs-mstatus (get-csrs-from-machine m))]
+    [(eq? csr 'mtvec)     (csrs-mtvec   (machine-csrs m))]
+    [(eq? csr 'mepc)      (csrs-mepc    (machine-csrs m))]
+    [(eq? csr 'mstatus)   (csrs-mstatus (machine-csrs m))]
     [(eq? csr 'pmpcfg0)   (pmpcfg-value  (pmp-pmpcfgi (get-pmp-from-machine m) 0))]
     [(eq? csr 'pmpcfg2)   (pmpcfg-value  (pmp-pmpcfgi (get-pmp-from-machine m) 1))]
     [(eq? csr 'pmpaddr0)  (pmpaddr-value (pmp-pmpaddri (get-pmp-from-machine m) 0))]
@@ -71,9 +88,9 @@
     [else
      ; (printf "No such CSR: ~a~n" csr)
      (illegal-instr m)]))
-(provide get-csr)
+(provide machine-csr)
 
-(define (set-csr! m csr val)
+(define (set-machine-csr! m csr val)
   (define v_csr null)
   (cond 
     [(eq? csr 'mtvec)     (set-csrs-mtvec!   (cpu-csrs (machine-cpu m)) val)]
@@ -101,23 +118,7 @@
      ; (printf "No such CSR: ~a~n" csr)
      (illegal-instr m)])
   v_csr)
-(provide set-csr!)
-
-(define (get-gprs-i gprs i)
-  (cond
-    [(and (< 0 i) (< i 32))
-     (vector-ref gprs (- i 1))]
-    [(zero? i) (bv 0 64)]
-    [else null]))
-(provide get-gprs-i)
-
-(define (set-gprs-i! gprs i val)
-  (cond 
-    [(and (< 0 i) (< i 32))
-      (vector-set! gprs (- i 1) val)]
-    [(zero? i) #f]
-    [else null]))
-(provide set-gprs-i!)
+(provide set-machine-csr!)
 
 ; Get program counter
 (define (get-pc m)
@@ -139,7 +140,7 @@
 
 ; Set up state for illegal instruction and return null to signal end of exec
 (define (illegal-instr m)
-  (set-pc! m (bvsub (get-csr m 'mtvec) (base-address)))
+  (set-pc! m (bvsub (machine-csr m 'mtvec) (base-address)))
   (set-machine-mode! m 1)
   ; stop execution of instruction
   null)

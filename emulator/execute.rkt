@@ -37,14 +37,14 @@
           ; TODO: uret instruction not implemented yet
           (illegal-instr m)]
         [(eq? opcode 'mret)
-          (define mstatus (get-csr m 'mstatus))
+          (define mstatus (machine-csr m 'mstatus))
           (define MPP (extract 12 11 mstatus))
           ; this is always user mode
           ; TODO: fix this and set mstatus to its actual value of MPP, for now we are setting to 0
           ; since we always but it to user mode
           ; (set-machine-mode! m (bitvector->natural MPP))
           (set-machine-mode! m 0)
-          (set-pc! m (bvsub (get-csr m 'mepc) (base-address)))
+          (set-pc! m (bvsub (machine-csr m 'mepc) (base-address)))
           instr]
         [(eq? opcode 'dret)
           ; TODO: dret instruction not implemented yet
@@ -63,10 +63,10 @@
               (define v_rs1 (get-gprs-i (machine-gprs m) rs1))
               (define csr (list-ref instr 3))
               (when (not (zero? rd))
-                (define v_csr (get-csr m csr))
+                (define v_csr (machine-csr m csr))
                 (set-gprs-i! (machine-gprs m) rd (zero-extend v_csr (bitvector 64))))
               ; TODO: Implement specific setting permissions for CSR bits
-              (set-csr! m csr v_rs1)
+              (set-machine-csr! m csr v_rs1)
               (set-pc! m (bvadd pc (bv 4 64)))
               instr]
             [else
@@ -78,12 +78,12 @@
               (define rs1 (list-ref-nat instr 2))
               (define v_rs1 (get-gprs-i (machine-gprs m) rs1))
               (define csr (list-ref instr 3))
-              (define v_csr (get-csr m csr))
+              (define v_csr (machine-csr m csr))
               (set-gprs-i! (machine-gprs m) rd (zero-extend v_csr (bitvector 64)))
 
               ; TODO: Implement specific setting permissions for CSR bits
               (when (not (zero? rs1))
-                (set-csr! m csr (bvor v_csr v_rs1)))
+                (set-machine-csr! m csr (bvor v_csr v_rs1)))
               (set-pc! m (bvadd pc (bv 4 64)))
               instr]
             [else
