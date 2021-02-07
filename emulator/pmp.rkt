@@ -4,8 +4,16 @@
 (require syntax/parse/define)
 (require (only-in racket/base build-vector))
 
+;; Macros to Build PMP
+
 (define-simple-macro (fresh-symbolic name type)
   (let () (define-symbolic* name type) name))
+
+(define-simple-macro (make-pmpaddrs n:expr)
+  (build-vector n (lambda (i) (define p (make-pmpaddr)) p)))
+
+(define-simple-macro (make-pmpcfgs n:expr)
+  (build-vector n (lambda (i) (define p (make-pmpcfg)) p)))
 
 ;; Structs to Build PMP
 
@@ -38,7 +46,14 @@
 (define-simple-macro (make-pmpcfg_settings n:expr)
   (build-vector n (lambda (i) (define p (make-pmpcfg_setting)) p)))
 
-; Make 1 pmpcfg setting
+(define (make-pmp)
+  (define num_implemented 0)
+  (pmp
+    (make-pmpcfgs 2)
+    (make-pmpaddrs 16)
+    num_implemented))
+(provide make-pmp)
+
 (define (make-pmpcfg_setting)
   (pmpcfg_setting
    (bv 0 1)
@@ -51,14 +66,14 @@
   (pmpcfg
    (bv 0 64)
    (make-pmpcfg_settings 8)))
-(provide make-pmpcfg)
+; (provide make-pmpcfg)
 
 (define (make-pmpaddr)
   (pmpaddr
    (bv 0 64)
    (bv 0 64)
    (bv 0 64)))
-(provide make-pmpaddr)
+; (provide make-pmpaddr)
 
 ;; PMP utilities for decoding registers and checking
 
@@ -133,7 +148,7 @@
         (get-pmpicfg-setting pmpcfg0 i)
         (get-pmpicfg-setting pmpcfg2 (- i 8)))))
 
-(define (test-set-pmpaddri! pmp i val)
+(define (set-pmpaddri! pmp i val)
   (define setting (get-pmpaddri-setting pmp i))
 
   (when (not (pmp-is-locked? setting))
@@ -147,9 +162,9 @@
 
     (set-pmpaddr-start_addr! (pmp-pmpaddri pmp i) pmp_start)
     (set-pmpaddr-end_addr! (pmp-pmpaddri pmp i) pmp_end)))
-(provide test-set-pmpaddri!)
+(provide set-pmpaddri!)
 
-(define (test-set-pmpcfgi! pmp i val)
+(define (set-pmpcfgi! pmp i val)
   ; (set-pmpcfg-value! (pmp-pmpcfgi pmp i) val)
   (define pmpcfgi (pmp-pmpcfgi pmp i))
   (for ([id (in-range 8)])
@@ -193,7 +208,7 @@
 
       ; Update settings
       (vector-set! (pmpcfg-settings pmpcfgi) id new_settings))))
-(provide test-set-pmpcfgi!)
+(provide set-pmpcfgi!)
 
 ; REWRITE PMP test address ranging from saddr to eaddr 
 (define (test-pmp-check pmp mode saddr eaddr)

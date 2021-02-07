@@ -318,9 +318,9 @@
                                     (bv #x00700001 64) (bv #x107FFFFF 64)) #f)
              (check-true (equal? (machine-mode m) 0))
              (check-equal? (get-pmp-num_implemented m) 3)
-             (check-true (not (equal? (get-pmp-num_implemented m) 4)))
-             (check-true (not (equal? (get-pmp-num_implemented m) 5)))
-             (check-true (not (equal? (get-pmp-num_implemented m) 1))))
+             (check-true (not (equal? (pmp-num_implemented (get-pmp-from-machine m)) 4)))
+             (check-true (not (equal? (pmp-num_implemented (get-pmp-from-machine m)) 5)))
+             (check-true (not (equal? (pmp-num_implemented (get-pmp-from-machine m)) 1))))
   (test-case "pmp-napot-settings"
              ; Test cases for decoding PMP configurations
              (define setting1 (pmp-decode-cfg (bv #x0000000000001f1f 64) 1))
@@ -506,4 +506,3 @@
 
 (define res-boot-sequence (run-tests boot-sequence))
 (define res-inductive-step (run-tests inductive-step))
-

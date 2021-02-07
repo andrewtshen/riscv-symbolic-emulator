@@ -29,12 +29,6 @@
 (define-simple-macro (fresh-symbolic name type)
   (let () (define-symbolic* name type) name))
 
-(define-simple-macro (make-pmpaddrs n:expr)
-  (build-vector n (lambda (i) (define p (make-pmpaddr)) p)))
-
-(define-simple-macro (make-pmpcfgs n:expr)
-  (build-vector n (lambda (i) (define p (make-pmpcfg)) p)))
-
 ;; Helper Methods
 
 ; Convert a file to a bytearray
@@ -57,11 +51,7 @@
     (printf "Not enough RAM provided to run program~n"))
   (define-symbolic* mtvec mepc mstatus (bitvector 64))
 
-  (define pmps
-    (pmp
-     (make-pmpcfgs 2)
-     (make-pmpaddrs 16)
-     0))
+  (define PMP (make-pmp))
 
   ; set all the initial csrs to 0 (TODO: change to actual values)
   (set! mtvec (bv 0 64))
@@ -83,7 +73,7 @@
     (machine
      (cpu 
       (csrs
-       mtvec mepc mstatus pmps)
+       mtvec mepc mstatus PMP)
       (make-sym-vector 31 64 gpr) ; be careful of -1 for offset
       (bv 0 64)) ; set pc to 0 when loading with program
      (if (use-fnmem)
@@ -102,23 +92,19 @@
 
   ; set up values for pmp
   ; TODO: Check that these values are correct
-  (write-to-pmpcfg! m 0 (bv 0 64))
-  (write-to-pmpcfg! m 1 (bv 0 64))
+  (set-pmpcfgi! (get-pmp-from-machine m) 0 (bv 0 64))
+  (set-pmpcfgi! (get-pmp-from-machine m) 1 (bv 0 64))
 
   ; Hardwire all pmpaddrs to 0
   (for ([i (in-range 16)])
-    (write-to-pmpaddr! m i (bv 0 64)))
+    (set-pmpaddri! (get-pmp-from-machine m) i (bv 0 64)))
   m)
 (provide init-machine-with-prog)
 
 (define (init-machine)
   (define-symbolic* mtvec mepc mstatus pc (bitvector 64))
 
-  (define pmps
-    (pmp
-     (make-pmpcfgs 2)
-     (make-pmpaddrs 16)
-     0))
+  (define PMP (make-pmp))
 
   (set! mtvec (bv #x0000000080000080 64))
 
@@ -127,7 +113,7 @@
     (machine
      (cpu 
       (csrs
-       mtvec mepc mstatus pmps)
+       mtvec mepc mstatus PMP)
       (make-sym-vector 31 64 gpr) ; be careful of -1 for offset
       pc) ; symbolic pc
      (if (use-fnmem)
@@ -137,15 +123,15 @@
 
   ; Hardwire pmpaddrs to 0
   (for ([i (in-range 16)])
-    (write-to-pmpaddr! m i (bv 0 64)))
+    (set-pmpaddri! m i (bv 0 64)))
 
   ; Write the pmpaddr information
-  (write-to-pmpcfg! m 0 (bv #x000000000000001f 64))
-  (write-to-pmpcfg! m 1 (bv #x0000000000000018 64))
+  (set-pmpcfgi! m 0 (bv #x000000000000001f 64))
+  (set-pmpcfgi! m 1 (bv #x0000000000000018 64))
 
   ; Write the pmpaddr information
-  (write-to-pmpaddr! m 0 (bv #x000000002000bfff 64))
-  (write-to-pmpaddr! m 8 (bv #x7fffffffffffffff 64))
+  (set-pmpaddri! m 0 (bv #x000000002000bfff 64))
+  (set-pmpaddri! m 8 (bv #x7fffffffffffffff 64))
 
   m)
 (provide init-machine)
