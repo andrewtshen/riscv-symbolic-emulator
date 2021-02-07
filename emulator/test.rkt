@@ -89,7 +89,7 @@
       (pmp-numimplemented (csrs-pmp (cpu-csrs (machine-cpu m))))))
     (for/vector ([i (cpu-gprs (machine-cpu m))])
       i)
-    (get-pc m))
+    (machine-pc m))
    (machine-ram m)
    (machine-mode m)))
 (provide deep-copy-machine)
@@ -281,7 +281,7 @@
              (parameterize
                  ([use-debug-mode #f])
                (execute-until-mret m))
-             (test-pmp-check (get-pmp-from-machine m) (machine-mode m)
+             (test-pmp-check (machine-pmp m) (machine-mode m)
                                     (bv #x00700001 64) (bv #x007FFFFF 64))))
 
 ;; Sanity Checks for Misc. Utilities
@@ -301,26 +301,26 @@
              (execute-until-mret m)
              ; (print-pmp m)
              (check-equal? (machine-mode m) 0)
-             (check-true (test-pmp-check (get-pmp-from-machine m) (machine-mode m)
+             (check-true (test-pmp-check (machine-pmp m) (machine-mode m)
                                     (bv #x80800000 64) (bv #x80800000 64)))
-             (check-true (test-pmp-check (get-pmp-from-machine m) (machine-mode m)
+             (check-true (test-pmp-check (machine-pmp m) (machine-mode m)
                                     (bv #x80FFFFFF 64) (bv #x80FFFFFF 64)))
-             (check-equal? (test-pmp-check (get-pmp-from-machine m) (machine-mode m)
+             (check-equal? (test-pmp-check (machine-pmp m) (machine-mode m)
                                     (bv #x80FFFFFF 64) (bv #x81000000 64)) #f)
-             (check-equal? (test-pmp-check (get-pmp-from-machine m) (machine-mode m)
+             (check-equal? (test-pmp-check (machine-pmp m) (machine-mode m)
                                     (bv #x807FFFFF 64) (bv #x81000000 64)) #f)
              ; disabled uart
-             (check-equal? (not (test-pmp-check (get-pmp-from-machine m) (machine-mode m)
+             (check-equal? (not (test-pmp-check (machine-pmp m) (machine-mode m)
                                     (bv #x00700001 64) (bv #x007FFFFF 64))) #t) 
-             (check-true (test-pmp-check (get-pmp-from-machine m) (machine-mode m)
+             (check-true (test-pmp-check (machine-pmp m) (machine-mode m)
                                     (bv #x10700001 64) (bv #x107FFFFF 64)))
-             (check-equal? (test-pmp-check (get-pmp-from-machine m) (machine-mode m)
+             (check-equal? (test-pmp-check (machine-pmp m) (machine-mode m)
                                     (bv #x00700001 64) (bv #x107FFFFF 64)) #f)
              (check-true (equal? (machine-mode m) 0))
-             (check-equal? (pmp-numimplemented (get-pmp-from-machine m)) 3)
-             (check-true (not (equal? (pmp-numimplemented (get-pmp-from-machine m)) 4)))
-             (check-true (not (equal? (pmp-numimplemented (get-pmp-from-machine m)) 5)))
-             (check-true (not (equal? (pmp-numimplemented (get-pmp-from-machine m)) 1))))
+             (check-equal? (pmp-numimplemented (machine-pmp m)) 3)
+             (check-true (not (equal? (pmp-numimplemented (machine-pmp m)) 4)))
+             (check-true (not (equal? (pmp-numimplemented (machine-pmp m)) 5)))
+             (check-true (not (equal? (pmp-numimplemented (machine-pmp m)) 1))))
   (test-case "pmp-napot-settings"
              ; Test cases for decoding PMP configurations
              (define setting1 (pmp-decode-cfg (bv #x0000000000001f1f 64) 1))
@@ -421,7 +421,7 @@
              (define model_mode
                (verify (assert
                         (or (equal? (machine-mode m) (machine-mode m1))
-                            (and (bveq (get-pc m)
+                            (and (bveq (machine-pc m)
                                        (bvsub (machine-csr m 'mtvec) (base-address)))
                                  (equal? (machine-mode m) 1))))))
              (check-true (unsat? model_mode))))
@@ -474,7 +474,7 @@
              (define model_mode
                (verify (assert
                         (or (equal? (machine-mode m) (machine-mode m1))
-                            (and (bveq (get-pc m)
+                            (and (bveq (machine-pc m)
                                        (bvsub (machine-csr m 'mtvec) (base-address)))
                                  (equal? (machine-mode m) 1))))))
              (check-true (unsat? model_mode))

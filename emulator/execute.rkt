@@ -24,7 +24,7 @@
       (illegal-instr m)]
     [else
       (define opcode (list-ref instr 0))
-      (define pc (get-pc m))
+      (define pc (machine-pc m))
       (cond
         ; SPECIAL Format
         [(eq? opcode 'ecall)
@@ -44,7 +44,7 @@
           ; since we always but it to user mode
           ; (set-machine-mode! m (bitvector->natural MPP))
           (set-machine-mode! m 0)
-          (set-pc! m (bvsub (machine-csr m 'mepc) (base-address)))
+          (set-machine-pc! m (bvsub (machine-csr m 'mepc) (base-address)))
           instr]
         [(eq? opcode 'dret)
           ; TODO: dret instruction not implemented yet
@@ -67,7 +67,7 @@
                 (set-gprs-i! (machine-gprs m) rd (zero-extend v_csr (bitvector 64))))
               ; TODO: Implement specific setting permissions for CSR bits
               (set-machine-csr! m csr v_rs1)
-              (set-pc! m (bvadd pc (bv 4 64)))
+              (set-machine-pc! m (bvadd pc (bv 4 64)))
               instr]
             [else
               (illegal-instr m)])]
@@ -84,7 +84,7 @@
               ; TODO: Implement specific setting permissions for CSR bits
               (when (not (zero? rs1))
                 (set-machine-csr! m csr (bvor v_csr v_rs1)))
-              (set-pc! m (bvadd pc (bv 4 64)))
+              (set-machine-pc! m (bvadd pc (bv 4 64)))
               instr]
             [else
               (illegal-instr m)])]
@@ -112,12 +112,12 @@
               (define v_rs1 (get-gprs-i (machine-gprs m) rs1))
               (cond
                 [(not (eq? v_rs1 null))
-                  (set-pc! m (bvadd pc (bv 4 64)))
+                  (set-machine-pc! m (bvadd pc (bv 4 64)))
                   (set-gprs-i! (machine-gprs m) rd (bvadd v_rs1 imm))
                   instr]
                 [else null])]
             [else
-              (set-pc! m (bvadd pc (bv 4 64)))
+              (set-machine-pc! m (bvadd pc (bv 4 64)))
               instr])]
         [(eq? opcode 'slli)
           (define rd (list-ref-nat instr 1))
@@ -125,7 +125,7 @@
           (define imm (zero-extend (list-ref instr 3) (bitvector 64)))
           (define shifted (bvshl v_rs1 imm))
           (set-gprs-i! (machine-gprs m) rd shifted)
-          (set-pc! m (bvadd pc (bv 4 64)))
+          (set-machine-pc! m (bvadd pc (bv 4 64)))
           instr]
         [(eq? opcode 'srli)
           (define rd (list-ref-nat instr 1))
@@ -133,7 +133,7 @@
           (define imm (zero-extend (list-ref instr 3) (bitvector 64)))
           (define shifted (bvlshr v_rs1 imm))
           (set-gprs-i! (machine-gprs m) rd shifted)
-          (set-pc! m (bvadd pc (bv 4 64)))
+          (set-machine-pc! m (bvadd pc (bv 4 64)))
           instr]
         [(eq? opcode 'srai)
           (define rd (list-ref-nat instr 1))
@@ -141,7 +141,7 @@
           (define imm (zero-extend (list-ref instr 3) (bitvector 64)))
           (define shifted (bvashr v_rs1 imm))
           (set-gprs-i! (machine-gprs m) rd shifted)
-          (set-pc! m (bvadd pc (bv 4 64)))
+          (set-machine-pc! m (bvadd pc (bv 4 64)))
           instr]
         [(eq? opcode 'slti)
           (define rd (list-ref-nat instr 1))
@@ -150,7 +150,7 @@
           (if (bvslt v_rs1 imm)
             (set-gprs-i! (machine-gprs m) rd 1)
             (set-gprs-i! (machine-gprs m) rd 0))
-          (set-pc! m (bvadd pc (bv 4 64)))
+          (set-machine-pc! m (bvadd pc (bv 4 64)))
           instr] 
         [(eq? opcode 'sltiu)
           (define rd (list-ref-nat instr 1))
@@ -159,28 +159,28 @@
           (if (bvult v_rs1 imm)
             (set-gprs-i! (machine-gprs m) rd 1)
             (set-gprs-i! (machine-gprs m) rd 0))
-          (set-pc! m (bvadd pc (bv 4 64)))
+          (set-machine-pc! m (bvadd pc (bv 4 64)))
           instr] 
         [(eq? opcode 'xori)
           (define rd (list-ref-nat instr 1))
           (define v_rs1 (get-gprs-i (machine-gprs m) (list-ref-nat instr 2)))
           (define imm (sign-extend (list-ref instr 3) (bitvector 64)))
           (set-gprs-i! (machine-gprs m) rd (bvxor v_rs1 imm))
-          (set-pc! m (bvadd pc (bv 4 64)))
+          (set-machine-pc! m (bvadd pc (bv 4 64)))
           instr]
         [(eq? opcode 'ori)
           (define rd (list-ref-nat instr 1))
           (define v_rs1 (get-gprs-i (machine-gprs m) (list-ref-nat instr 2)))
           (define imm (sign-extend (list-ref instr 3) (bitvector 64)))
           (set-gprs-i! (machine-gprs m) rd (bvor v_rs1 imm))
-          (set-pc! m (bvadd pc (bv 4 64)))
+          (set-machine-pc! m (bvadd pc (bv 4 64)))
           instr]
         [(eq? opcode 'andi)
           (define rd (list-ref-nat instr 1))
           (define v_rs1 (get-gprs-i (machine-gprs m) (list-ref-nat instr 2)))
           (define imm (sign-extend (list-ref instr 3) (bitvector 64)))
           (set-gprs-i! (machine-gprs m) rd (bvand v_rs1 imm))
-          (set-pc! m (bvadd pc (bv 4 64)))
+          (set-machine-pc! m (bvadd pc (bv 4 64)))
           instr]
         [(eq? opcode 'addiw)
           (define rd (list-ref-nat instr 1))
@@ -188,7 +188,7 @@
           (define imm (sign-extend (list-ref instr 3) (bitvector 64)))
           (define 32bit_sum (extract 31 0 (bvadd v_rs1 imm)))
           (set-gprs-i! (machine-gprs m) rd (sign-extend 32bit_sum (bitvector 64)))
-          (set-pc! m (bvadd pc (bv 4 64)))
+          (set-machine-pc! m (bvadd pc (bv 4 64)))
           instr]
         [(eq? opcode 'slliw)
           (define rd (list-ref-nat instr 1))
@@ -199,7 +199,7 @@
           (if (not (bveq (extract 5 5 imm) (bv 0 1)))
             (illegal-instr m)
             (begin
-              (set-pc! m (bvadd pc (bv 4 64)))
+              (set-machine-pc! m (bvadd pc (bv 4 64)))
               instr))]
         [(eq? opcode 'srliw)
           (define rd (list-ref-nat instr 1))
@@ -210,7 +210,7 @@
           (if (not (bveq (extract 5 5 imm) (bv 0 1)))
             (illegal-instr m)
             (begin 
-              (set-pc! m (bvadd pc (bv 4 64)))
+              (set-machine-pc! m (bvadd pc (bv 4 64)))
               instr))]
         [(eq? opcode 'sraiw)
           (define rd (list-ref-nat instr 1))
@@ -221,7 +221,7 @@
           (if (not (bveq (extract 5 5 imm) (bv 0 1)))
             (illegal-instr m)
             (begin 
-              (set-pc! m (bvadd pc (bv 4 64)))
+              (set-machine-pc! m (bvadd pc (bv 4 64)))
               instr))]
         [(eq? opcode 'lb)
           (define rd (list-ref-nat instr 1))
@@ -233,7 +233,7 @@
           ; stronger case that covers all possible values that val can take
           (define val (sign-extend (machine-ram-read m adj_addr nbytes) (bitvector 64)))
           (set-gprs-i! (machine-gprs m) rd val)
-          (set-pc! m (bvadd pc (bv 4 64)))
+          (set-machine-pc! m (bvadd pc (bv 4 64)))
           instr]
         [(eq? opcode 'lh)
           (define rd (list-ref-nat instr 1))
@@ -245,7 +245,7 @@
           ; stronger case that covers all possible values that val can take
           (define val (sign-extend (machine-ram-read m adj_addr nbytes) (bitvector 64)))
           (set-gprs-i! (machine-gprs m) rd val)
-          (set-pc! m (bvadd pc (bv 4 64)))
+          (set-machine-pc! m (bvadd pc (bv 4 64)))
           instr]
         [(eq? opcode 'lw)
           (define rd (list-ref-nat instr 1))
@@ -257,7 +257,7 @@
           ; stronger case that covers all possible values that val can take
           (define val (sign-extend (machine-ram-read m adj_addr nbytes) (bitvector 64)))
           (set-gprs-i! (machine-gprs m) rd val)
-          (set-pc! m (bvadd pc (bv 4 64)))
+          (set-machine-pc! m (bvadd pc (bv 4 64)))
           instr]
         [(eq? opcode 'ld)
           (define rd (list-ref-nat instr 1))
@@ -269,7 +269,7 @@
           ; stronger case that covers all possible values that val can take
           (define val (sign-extend (machine-ram-read m adj_addr nbytes) (bitvector 64)))
           (set-gprs-i! (machine-gprs m) rd val)
-          (set-pc! m (bvadd pc (bv 4 64)))
+          (set-machine-pc! m (bvadd pc (bv 4 64)))
           instr]
         [(eq? opcode 'lbu)
           (define rd (list-ref-nat instr 1))
@@ -281,7 +281,7 @@
           ; stronger case that covers all possible values that val can take
           (define val (sign-extend (machine-ram-read m adj_addr nbytes) (bitvector 64)))
           (set-gprs-i! (machine-gprs m) rd val)
-          (set-pc! m (bvadd pc (bv 4 64)))
+          (set-machine-pc! m (bvadd pc (bv 4 64)))
           instr]
         [(eq? opcode 'lhu)
           (define rd (list-ref-nat instr 1))
@@ -293,7 +293,7 @@
           ; stronger case that covers all possible values that val can take
           (define val (sign-extend (machine-ram-read m adj_addr nbytes) (bitvector 64)))
           (set-gprs-i! (machine-gprs m) rd val)
-          (set-pc! m (bvadd pc (bv 4 64)))
+          (set-machine-pc! m (bvadd pc (bv 4 64)))
           instr]
         [(eq? opcode 'lwu)
           (define rd (list-ref-nat instr 1))
@@ -305,7 +305,7 @@
           ; stronger case that covers all possible values that val can take
           (define val (sign-extend (machine-ram-read m adj_addr nbytes) (bitvector 64)))
           (set-gprs-i! (machine-gprs m) rd val)
-            (set-pc! m (bvadd pc (bv 4 64)))
+            (set-machine-pc! m (bvadd pc (bv 4 64)))
             instr]
         [(eq? opcode 'jalr)
           (define rd (list-ref-nat instr 1))
@@ -320,7 +320,7 @@
           (define save (bvadd pc (bv 4 64)))
           (when (not (equal? rd 0))
               (set-gprs-i! (machine-gprs m) rd save))
-          (set-pc! m adj_addr)
+          (set-machine-pc! m adj_addr)
           instr]
 
         ; R Format
@@ -329,14 +329,14 @@
           (define v_rs1 (get-gprs-i (machine-gprs m) (list-ref-nat instr 2)))
           (define v_rs2 (get-gprs-i (machine-gprs m) (list-ref-nat instr 3)))
           (set-gprs-i! (machine-gprs m) rd (bvadd v_rs1 v_rs2))
-          (set-pc! m (bvadd pc (bv 4 64)))
+          (set-machine-pc! m (bvadd pc (bv 4 64)))
           instr]
         [(eq? opcode 'sub)
           (define rd (list-ref-nat instr 1))
           (define v_rs1 (get-gprs-i (machine-gprs m) (list-ref-nat instr 2)))
           (define v_rs2 (get-gprs-i (machine-gprs m) (list-ref-nat instr 3)))
           (set-gprs-i! (machine-gprs m) rd (bvsub v_rs1 v_rs2))
-          (set-pc! m (bvadd pc (bv 4 64)))
+          (set-machine-pc! m (bvadd pc (bv 4 64)))
           instr]
         [(eq? opcode 'sll)
           (define rd (list-ref-nat instr 1))
@@ -344,7 +344,7 @@
           (define v_rs2 (get-gprs-i (machine-gprs m) (list-ref-nat instr 3)))
           (define shifted (bvshl v_rs1 v_rs2))
           (set-gprs-i! (machine-gprs m) rd shifted)
-          (set-pc! m (bvadd pc (bv 4 64)))
+          (set-machine-pc! m (bvadd pc (bv 4 64)))
           instr]
         [(eq? opcode 'slt)
           (define rd (list-ref-nat instr 1))        
@@ -353,7 +353,7 @@
           (if (bvslt v_rs1 v_rs2)
             (set-gprs-i! (machine-gprs m) rd 1)
             (set-gprs-i! (machine-gprs m) rd 0))
-          (set-pc! m (bvadd pc (bv 4 64)))
+          (set-machine-pc! m (bvadd pc (bv 4 64)))
           instr]
         [(eq? opcode 'sltu)
           (define rd (list-ref-nat instr 1))        
@@ -362,14 +362,14 @@
           (if (bvult v_rs1 v_rs2)
             (set-gprs-i! (machine-gprs m) rd 1)
             (set-gprs-i! (machine-gprs m) rd 0))
-          (set-pc! m (bvadd pc (bv 4 64)))
+          (set-machine-pc! m (bvadd pc (bv 4 64)))
           instr]
         [(eq? opcode 'xor)
           (define rd (list-ref-nat instr 1))
           (define v_rs1 (get-gprs-i (machine-gprs m) (list-ref-nat instr 2)))
           (define v_rs2 (get-gprs-i (machine-gprs m) (list-ref-nat instr 3)))
           (set-gprs-i! (machine-gprs m) rd (bvxor v_rs1 v_rs2))
-          (set-pc! m (bvadd pc (bv 4 64)))
+          (set-machine-pc! m (bvadd pc (bv 4 64)))
           instr]
         [(eq? opcode 'srl)
           (define rd (list-ref-nat instr 1))
@@ -377,7 +377,7 @@
           (define v_rs2 (get-gprs-i (machine-gprs m) (list-ref-nat instr 3)))
           (define shifted (bvlshr v_rs1 v_rs2))
           (set-gprs-i! (machine-gprs m) rd shifted)
-          (set-pc! m (bvadd pc (bv 4 64)))
+          (set-machine-pc! m (bvadd pc (bv 4 64)))
           instr]
         [(eq? opcode 'sra)
           (define rd (list-ref-nat instr 1))
@@ -385,21 +385,21 @@
           (define v_rs2 (get-gprs-i (machine-gprs m) (list-ref-nat instr 3)))
           (define shifted (bvashr v_rs1 v_rs2))
           (set-gprs-i! (machine-gprs m) rd shifted)
-          (set-pc! m (bvadd pc (bv 4 64)))
+          (set-machine-pc! m (bvadd pc (bv 4 64)))
           instr]
         [(eq? opcode 'or)
           (define rd (list-ref-nat instr 1))
           (define v_rs1 (get-gprs-i (machine-gprs m) (list-ref-nat instr 2)))
           (define v_rs2 (get-gprs-i (machine-gprs m) (list-ref-nat instr 3)))
           (set-gprs-i! (machine-gprs m) rd (bvor v_rs1 v_rs2))
-          (set-pc! m (bvadd pc (bv 4 64)))
+          (set-machine-pc! m (bvadd pc (bv 4 64)))
           instr]
         [(eq? opcode 'and)
           (define rd (list-ref-nat instr 1))
           (define v_rs1 (get-gprs-i (machine-gprs m) (list-ref-nat instr 2)))
           (define v_rs2 (get-gprs-i (machine-gprs m) (list-ref-nat instr 3)))
           (set-gprs-i! (machine-gprs m) rd (bvand v_rs1 v_rs2))
-          (set-pc! m (bvadd pc (bv 4 64)))
+          (set-machine-pc! m (bvadd pc (bv 4 64)))
           instr]
         [(eq? opcode 'andw)
           ; TODO: andw instruction not implemented yet
@@ -462,40 +462,40 @@
           (define v_rs2 (get-gprs-i (machine-gprs m) (list-ref-nat instr 2)))
           (define imm (list-ref instr 3))
           (if (equal? v_rs1 v_rs2)
-            (set-pc! m (bvadd pc (bvmul (sign-extend imm (bitvector 64)) (bv 2 64))))
-            (set-pc! m (bvadd pc (bv 4 64))))
+            (set-machine-pc! m (bvadd pc (bvmul (sign-extend imm (bitvector 64)) (bv 2 64))))
+            (set-machine-pc! m (bvadd pc (bv 4 64))))
           instr]
         [(eq? opcode 'bne)
           (define v_rs1 (get-gprs-i (machine-gprs m) (list-ref-nat instr 1)))
           (define v_rs2 (get-gprs-i (machine-gprs m) (list-ref-nat instr 2)))
           (define imm (list-ref instr 3))
           (if (not (equal? v_rs1 v_rs2))
-            (set-pc! m (bvadd pc (bvmul (sign-extend imm (bitvector 64)) (bv 2 64))))
-            (set-pc! m (bvadd pc (bv 4 64))))
+            (set-machine-pc! m (bvadd pc (bvmul (sign-extend imm (bitvector 64)) (bv 2 64))))
+            (set-machine-pc! m (bvadd pc (bv 4 64))))
           instr]
         [(eq? opcode 'blt)
           (define v_rs1 (get-gprs-i (machine-gprs m) (list-ref-nat instr 1)))
           (define v_rs2 (get-gprs-i (machine-gprs m) (list-ref-nat instr 2)))
           (define imm (list-ref instr 3))
           (if (bvslt v_rs1 v_rs2)
-            (set-pc! m (bvadd pc (bvmul (sign-extend imm (bitvector 64)) (bv 2 64))))
-            (set-pc! m (bvadd pc (bv 4 64))))
+            (set-machine-pc! m (bvadd pc (bvmul (sign-extend imm (bitvector 64)) (bv 2 64))))
+            (set-machine-pc! m (bvadd pc (bv 4 64))))
           instr]
         [(eq? opcode 'bge)
           (define v_rs1 (get-gprs-i (machine-gprs m) (list-ref-nat instr 1)))
           (define v_rs2 (get-gprs-i (machine-gprs m) (list-ref-nat instr 2)))
           (define imm (list-ref instr 3))
           (if (bvsge v_rs1 v_rs2)
-            (set-pc! m (bvadd pc (bvmul (sign-extend imm (bitvector 64)) (bv 2 64))))
-            (set-pc! m (bvadd pc (bv 4 64))))
+            (set-machine-pc! m (bvadd pc (bvmul (sign-extend imm (bitvector 64)) (bv 2 64))))
+            (set-machine-pc! m (bvadd pc (bv 4 64))))
           instr]
         [(eq? opcode 'bltu)
           (define v_rs1 (get-gprs-i (machine-gprs m) (list-ref-nat instr 1)))
           (define v_rs2 (get-gprs-i (machine-gprs m) (list-ref-nat instr 2)))
           (define imm (list-ref instr 3))
           (if (bvult v_rs1 v_rs2)
-            (set-pc! m (bvadd pc (bvmul (sign-extend imm (bitvector 64)) (bv 2 64))))
-            (set-pc! m (bvadd pc (bv 4 64))))
+            (set-machine-pc! m (bvadd pc (bvmul (sign-extend imm (bitvector 64)) (bv 2 64))))
+            (set-machine-pc! m (bvadd pc (bv 4 64))))
           instr]
         [(eq? opcode 'bgeu)
           (define v_rs1 (get-gprs-i (machine-gprs m) (list-ref-nat instr 1)))
@@ -504,8 +504,8 @@
           (cond
             [(and (not (eq? v_rs1 null) (not (eq? v_rs2 null))))
               (if (bvuge v_rs1 v_rs2)
-                (set-pc! m (bvadd pc (bvmul (sign-extend imm (bitvector 64)) (bv 2 64))))
-                (set-pc! m (bvadd pc (bv 4 64))))
+                (set-machine-pc! m (bvadd pc (bvmul (sign-extend imm (bitvector 64)) (bv 2 64))))
+                (set-machine-pc! m (bvadd pc (bv 4 64))))
               instr]
             [else null])]
 
@@ -515,14 +515,14 @@
           ; extend immediate by 12 bits
           (define imm (zero-extend (concat (list-ref instr 2) (bv 0 12)) (bitvector 64)))
           (set-gprs-i! (machine-gprs m) rd imm)
-          (set-pc! m (bvadd pc (bv 4 64)))
+          (set-machine-pc! m (bvadd pc (bv 4 64)))
           instr]
         [(eq? opcode 'auipc)
           (define rd (list-ref-nat instr 1))
           ; extend immediate by 12 bits, then zero-extend to 64 bits
           (define imm (zero-extend (concat (list-ref instr 2) (bv 0 12)) (bitvector 64)))
           (set-gprs-i! (machine-gprs m) rd (bvadd pc (base-address) imm))
-          (set-pc! m (bvadd pc (bv 4 64)))
+          (set-machine-pc! m (bvadd pc (bv 4 64)))
           instr]
 
         ; S Format
@@ -547,7 +547,7 @@
             [(not success)
               (illegal-instr m)]
             [else
-              (set-pc! m (bvadd pc (bv 4 64)))
+              (set-machine-pc! m (bvadd pc (bv 4 64)))
               instr])]
         [(eq? opcode 'sh)
           (define nbits 16)
@@ -568,7 +568,7 @@
             [(not success)
               (illegal-instr m)]
             [else
-              (set-pc! m (bvadd pc (bv 4 64)))
+              (set-machine-pc! m (bvadd pc (bv 4 64)))
               instr])]
         [(eq? opcode 'sw)
           (define nbits 32)
@@ -589,7 +589,7 @@
             [(not success)
               (illegal-instr m)]
             [else
-              (set-pc! m (bvadd pc (bv 4 64)))
+              (set-machine-pc! m (bvadd pc (bv 4 64)))
               instr])]
         [(eq? opcode 'sd)
           (define nbits 64)
@@ -610,7 +610,7 @@
             [(not success)
               (illegal-instr m)]
             [else
-              (set-pc! m (bvadd pc (bv 4 64)))
+              (set-machine-pc! m (bvadd pc (bv 4 64)))
               instr])]
 
         ; J Format
@@ -623,7 +623,7 @@
           (define jump_addr (bvadd imm pc))
           (when (not (equal? rd 0))
               (set-gprs-i! (machine-gprs m) rd save_addr))
-          (set-pc! m jump_addr)
+          (set-machine-pc! m jump_addr)
           instr]
 
         ; FENCE Format

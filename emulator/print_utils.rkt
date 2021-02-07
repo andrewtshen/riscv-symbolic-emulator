@@ -36,7 +36,7 @@
 ; (provide print-memory)
 
 (define (print-csr m)
-  (printf "pc: ~a~n" (get-pc m))
+  (printf "pc: ~a~n" (machine-pc m))
   (printf "mode: ~a~n" (machine-mode m))
   (printf "mtvec: ~a~n" (machine-csr m 'mtvec))
   (printf "mepc: ~a~n" (machine-csr m 'mepc))

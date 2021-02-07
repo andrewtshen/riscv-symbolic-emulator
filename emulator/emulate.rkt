@@ -31,7 +31,7 @@
 ; get instructions until reach mret
 (define (execute-until-mret m)
   (let loop ([decoded_instr (step m)])
-    ; (printf "PC: ~x INS: ~a~n" (bitvector->natural (get-pc m)) decoded_instr)
+    ; (printf "PC: ~x INS: ~a~n" (bitvector->natural (machine-pc m)) decoded_instr)
     (unless (or (equal? decoded_instr '(mret)) (equal? decoded_instr null))
       (loop (step m)))))
 (provide execute-until-mret)
