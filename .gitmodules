@@ -22,6 +22,3 @@
 [submodule "xv6-riscv-fall19"]
 	path = related_works/xv6-riscv-fall19
 	url = https://github.com/mit-pdos/xv6-riscv-fall19
-[submodule "emulator/riscv-tests"]
-	path = emulator/riscv-tests
-	url = https://github.com/riscv/riscv-tests.git
