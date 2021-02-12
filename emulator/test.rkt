@@ -437,13 +437,13 @@
                    ([use-sym-optimizations #f]
                     [use-debug-mode #f]
                     [use-fnmem #f]
-                    [use-concrete-optimizations #f])
+                    [use-concrete-optimizations #t])
                  (init-machine-with-prog program)))
              (parameterize
                  ([use-sym-optimizations #f]
                   [use-debug-mode #f]
                   [use-fnmem #f]
-                  [use-concrete-optimizations #f])
+                  [use-concrete-optimizations #t])
                (execute-until-mret m))
 
              ; Check that after boot sequence machine mode is user mode (0) and in OK state
@@ -503,5 +503,5 @@
 
 ;; Testing the base case and inductive step
 
-(define res-boot-sequence (run-tests boot-sequence))
-(define res-inductive-step (run-tests inductive-step))
+(define res-boot-sequence (time (run-tests boot-sequence)))
+(define res-inductive-step (time (run-tests inductive-step)))
