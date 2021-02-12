@@ -22,6 +22,9 @@
 (define use-concrete-mem (make-parameter #f))
 (provide use-concrete-mem)
 
+(define use-concrete-optimizations (make-parameter #f))
+(provide use-concrete-optimizations)
+
 ; Base address
 ; (base address is in 64 because though the pointer to memory is 32
 ; we are using RISC-V 64)

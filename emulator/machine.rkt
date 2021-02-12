@@ -2,7 +2,8 @@
 
 (require
   "pmp.rkt"
-  "parameters.rkt")
+  "parameters.rkt"
+  "concrete-optimizations.rkt")
 (require (only-in racket/base
   for for/list in-range values))
 (require syntax/parse/define)
@@ -170,18 +171,20 @@
 
 ; Read an nbytes from a machine-ram ba starting at address addr
 (define (machine-ram-read m addr nbytes)
+  (define saddr (bvadd addr (base-address)))
+  ; nbytes is always concrete so it is okay to use (bv x 64) here
+  (define eaddr (bvadd addr (bv (* nbytes 8) 64) (base-address)))
   (define legal
-    (let ([saddr (bvadd addr (base-address))]
-          [eaddr (bvadd addr (bv (* nbytes 8) 64) (base-address))])
-      ; nbytes is always concrete so it is okay to use (bv x 64) here
-      (test-pmp-check (machine-pmp m) (machine-mode m) saddr eaddr)))
-      ; (pmp-check m saddr eaddr)))
-  ; (define legal #t)
+      (if (use-concrete-optimizations)
+        (concrete-pmp-check (machine-pmp m) (machine-mode m) saddr eaddr)
+        (pmp-check (machine-pmp m) (machine-mode m) saddr eaddr)))
+
   (if (or (equal? (machine-mode m) 1) legal)
-      (if (use-sym-optimizations)
-          (fresh-symbolic val (bitvector (* nbytes 8)))
-          (bytearray-read (machine-ram m) addr nbytes))
-      null))
+    (cond
+      [(use-sym-optimizations) (fresh-symbolic val (bitvector (* nbytes 8)))]
+      [(use-concrete-optimizations) (concrete-bytearray-read (machine-ram m) addr nbytes)]
+      [else (bytearray-read (machine-ram m) addr nbytes)])
+    null))
 (provide machine-ram-read)
 
 (define (bytearray-read ba addr nbytes)
@@ -197,8 +200,10 @@
   (define saddr (bvadd addr (base-address)))
   ; adjust to include the endpoint
   (define eaddr (bvadd addr (bv (sub1 (/ nbits 8)) 64) (base-address)))
-  ; (define legal (pmp-check m saddr eaddr))
-  (define legal (test-pmp-check (machine-pmp m) (machine-mode m) saddr eaddr))
+  (define legal
+    (if (use-concrete-optimizations)
+      (concrete-pmp-check (machine-pmp m) (machine-mode m) saddr eaddr)
+      (pmp-check (machine-pmp m) (machine-mode m) saddr eaddr)))
 
   ; machine mode (1) or legal, we can read the memory
   (when (or (equal? (machine-mode m) 1) legal)

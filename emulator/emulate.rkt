@@ -7,7 +7,8 @@
   "machine.rkt"
   "pmp.rkt"
   "parameters.rkt"
-  "print_utils.rkt")
+  "print_utils.rkt"
+  "concrete-optimizations.rkt")
 (require (only-in racket/base parameter? for in-range))
 
 ; Set up the machine and execute each instruction.
@@ -23,7 +24,10 @@
         (get-next-instr m))) ; fetch actual instruction
   ; (define next_instr (bv #x80f10023 32)) ; use a concrete instruction
   ; (printf "next_instr: ~a~n" next_instr)
-  (define decoded_instr (decode m next_instr))
+  (define decoded_instr
+    (if (use-concrete-optimizations)
+      (concrete-decode next_instr)
+      (decode next_instr)))
   ; (printf "decoded_instr: ~a~n" decoded_instr)
   (execute m decoded_instr))
 (provide step)

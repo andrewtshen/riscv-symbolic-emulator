@@ -281,7 +281,7 @@
              (parameterize
                  ([use-debug-mode #f])
                (execute-until-mret m))
-             (test-pmp-check (machine-pmp m) (machine-mode m)
+             (pmp-check (machine-pmp m) (machine-mode m)
                                     (bv #x00700001 64) (bv #x007FFFFF 64))))
 
 ;; Sanity Checks for Misc. Utilities
@@ -301,20 +301,20 @@
              (execute-until-mret m)
              ; (print-pmp m)
              (check-equal? (machine-mode m) 0)
-             (check-true (test-pmp-check (machine-pmp m) (machine-mode m)
+             (check-true (pmp-check (machine-pmp m) (machine-mode m)
                                     (bv #x80800000 64) (bv #x80800000 64)))
-             (check-true (test-pmp-check (machine-pmp m) (machine-mode m)
+             (check-true (pmp-check (machine-pmp m) (machine-mode m)
                                     (bv #x80FFFFFF 64) (bv #x80FFFFFF 64)))
-             (check-equal? (test-pmp-check (machine-pmp m) (machine-mode m)
+             (check-equal? (pmp-check (machine-pmp m) (machine-mode m)
                                     (bv #x80FFFFFF 64) (bv #x81000000 64)) #f)
-             (check-equal? (test-pmp-check (machine-pmp m) (machine-mode m)
+             (check-equal? (pmp-check (machine-pmp m) (machine-mode m)
                                     (bv #x807FFFFF 64) (bv #x81000000 64)) #f)
              ; disabled uart
-             (check-equal? (not (test-pmp-check (machine-pmp m) (machine-mode m)
+             (check-equal? (not (pmp-check (machine-pmp m) (machine-mode m)
                                     (bv #x00700001 64) (bv #x007FFFFF 64))) #t) 
-             (check-true (test-pmp-check (machine-pmp m) (machine-mode m)
+             (check-true (pmp-check (machine-pmp m) (machine-mode m)
                                     (bv #x10700001 64) (bv #x107FFFFF 64)))
-             (check-equal? (test-pmp-check (machine-pmp m) (machine-mode m)
+             (check-equal? (pmp-check (machine-pmp m) (machine-mode m)
                                     (bv #x00700001 64) (bv #x107FFFFF 64)) #f)
              (check-true (equal? (machine-mode m) 0))
              (check-equal? (pmp-numimplemented (machine-pmp m)) 3)
@@ -344,12 +344,12 @@
   (test-case "decoding-instr-edge cases"
              (printf "* decoding-instr-edge cases ~n")
              (define m (init-machine))
-             (check-equal? (decode m (bv #xffffffff 32)) null)
-             (check-equal? (list-ref (decode m (bv #x0107c663 32)) 0) 'blt)
+             (check-equal? (decode (bv #xffffffff 32)) null)
+             (check-equal? (list-ref (decode (bv #x0107c663 32)) 0) 'blt)
              ; check decoding
-             (check-equal? (list-ref (decode m (bv #x00000117 32)) 0) 'auipc)
+             (check-equal? (list-ref (decode (bv #x00000117 32)) 0) 'auipc)
              ; check that produces null op if not applicable opcode
-             (check-equal? (decode m (bv #b11111111111111111111111110110011 32)) null))
+             (check-equal? (decode (bv #b11111111111111111111111110110011 32)) null))
   (test-case "decoding-uncoded-instrs"
              (printf "* decoding-uncoded-instrs ~n")
              (define program (file->bytearray "build/dret.bin"))
@@ -437,13 +437,13 @@
                    ([use-sym-optimizations #f]
                     [use-debug-mode #f]
                     [use-fnmem #f]
-                    [use-concrete-mem #f])
+                    [use-concrete-optimizations #f])
                  (init-machine-with-prog program)))
              (parameterize
                  ([use-sym-optimizations #f]
                   [use-debug-mode #f]
                   [use-fnmem #f]
-                  [use-concrete-mem #f])
+                  [use-concrete-optimizations #f])
                (execute-until-mret m))
 
              ; Check that after boot sequence machine mode is user mode (0) and in OK state

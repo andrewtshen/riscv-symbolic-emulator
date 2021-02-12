@@ -210,8 +210,8 @@
       (vector-set! (pmpcfg-settings pmpcfgi) id new_settings))))
 (provide set-pmpcfgi!)
 
-; REWRITE PMP test address ranging from saddr to eaddr 
-(define (test-pmp-check pmp mode saddr eaddr)
+; PMP test address ranging from saddr to eaddr 
+(define (pmp-check pmp mode saddr eaddr)
   (define legal #t)
   (if (pmp-none-impl? pmp) legal
     (let
@@ -268,7 +268,7 @@
              ; from earlier checks there must have been at least 1 pmpaddr active
              (when (equal? i 15) (set! legal #f)))))
       legal)))
-(provide test-pmp-check)
+(provide pmp-check)
 
 ; Check if bv1 satisfies bv2 <= bv1 <= bv3
 (define (bv-between bv1 bv2 bv3)

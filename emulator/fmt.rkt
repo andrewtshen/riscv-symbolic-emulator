@@ -2,7 +2,7 @@
 
 ; Return the instruction format for each of the opcodes.
 
-(define (get-fmt m opcode)
+(define (get-fmt opcode)
   (cond
     [(equal? opcode (bv #b1100011 7)) 'B] 	; BEQ BNE BLT BGE BLTU BGEU
     [(equal? opcode (bv #b1100111 7)) 'I] 	; JALR
@@ -22,10 +22,9 @@
     [(equal? opcode (bv #b1110011 7)) 'SPECIAL] ; ECALL EBREAK URET MRET DRET SFENCE_VMA WFI CSRRW CSRRS CSRRC CSRRWI CSRRSI CSRRCI
     [(equal? opcode (bv #b0010011 7)) 'TODOFMT] ; SLLI_RV32 SRLI_RV32 SRAI_RV32
     [(equal? opcode (bv #b1110011 7)) 'TODOFMT] ; RDCYCLE RDTIME RDINSTRET RDCYCLEH RDTIMEH RDINSTRETH
-    [else
-     null]))
+    [else null]))
 (provide get-fmt)
 
 ; Example get-fmt
-; (define fmt (get-fmt m (bv #b1111011 7)))
+; (define fmt (get-fmt (bv #b1111011 7)))
 ; (printf ~a~n 'fmt)
