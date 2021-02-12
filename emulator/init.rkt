@@ -4,7 +4,7 @@
   "pmp.rkt"
   "machine.rkt"
   "parameters.rkt"
-  "print_utils.rkt")
+  "print-utils.rkt")
 (require (only-in racket/file file->bytes)
          (only-in racket/base bytes-length for for/list in-range subbytes bytes-ref in-naturals))
 (require syntax/parse/define)

@@ -7,7 +7,7 @@
   "machine.rkt"
   "pmp.rkt"
   "parameters.rkt"
-  "print_utils.rkt"
+  "print-utils.rkt"
   "concrete-optimizations.rkt")
 (require (only-in racket/base parameter? for in-range))
 
