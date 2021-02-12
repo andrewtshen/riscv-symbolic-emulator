@@ -25,11 +25,18 @@
   ; (define next_instr (bv #x80f10023 32)) ; use a concrete instruction
   ; (printf "next_instr: ~a~n" next_instr)
   (define decoded_instr
-    (if (use-concrete-optimizations)
-      (concrete-decode next_instr)
-      (decode next_instr)))
+    (cond
+      [(null? next_instr) null]
+      [(use-concrete-optimizations)
+        (concrete-decode next_instr)]
+      [else
+        (decode next_instr)]))
   ; (printf "decoded_instr: ~a~n" decoded_instr)
-  (execute m decoded_instr))
+  (cond
+    [(not (null? next_instr))
+      (execute m decoded_instr)]
+    [else
+      (illegal-instr m)]))
 (provide step)
 
 ; get instructions until reach mret
