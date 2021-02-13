@@ -282,46 +282,7 @@
                  ([use-debug-mode #f])
                (execute-until-mret m))
              (pmp-check (machine-pmp m) (machine-mode m)
-                                    (bv #x00700001 64) (bv #x007FFFFF 64)))
-  ; (test-case "kernel test (no concrete optimizations)"
-  ;             ; Test smaller version of kernel with no concrete optimizations
-  ;             (printf "* Running kernel test (no concrete optimizations) ~n")
-  ;             (define program (file->bytearray "kernel/kernel.bin"))
-  ;             (define m
-  ;              (parameterize
-  ;                 ([use-sym-optimizations #f]
-  ;                  [use-debug-mode #f]
-  ;                  [use-fnmem #f]
-  ;                  [use-concrete-optimizations #f])
-  ;               (init-machine-with-prog program)))
-  ;             (parameterize
-  ;              ([use-sym-optimizations #f]
-  ;               [use-debug-mode #f]
-  ;               [use-fnmem #f]
-  ;               [use-concrete-optimizations #f])
-  ;             (execute-until-mret m))
-  ;             (check-true (equal? (machine-mode m) 0))
-  ;            (assert-OK m))
-  ; (test-case "kernel test (concrete optimizations)"
-  ;             ; Test smaller version of kernel with concrete optimizations
-  ;             (printf "* Running kernel test (concrete optimizations) ~n")
-  ;             (define program (file->bytearray "kernel/kernel.bin"))
-  ;             (define m
-  ;              (parameterize
-  ;                 ([use-sym-optimizations #f]
-  ;                  [use-debug-mode #f]
-  ;                  [use-fnmem #f]
-  ;                  [use-concrete-optimizations #t])
-  ;               (init-machine-with-prog program)))
-  ;             (parameterize
-  ;              ([use-sym-optimizations #f]
-  ;               [use-debug-mode #f]
-  ;               [use-fnmem #f]
-  ;               [use-concrete-optimizations #t])
-  ;             (execute-until-mret m))
-  ;             (check-true (equal? (machine-mode m) 0))
-  ;            (assert-OK m))
-  )
+                                    (bv #x00700001 64) (bv #x007FFFFF 64))))
 
 ;; Sanity Checks for Misc. Utilities
 
@@ -469,7 +430,6 @@
 
 (define-test-suite boot-sequence
   (test-case "boot sequence test"
-             (clear-terms!)
              (printf "* Running boot sequence test ~n")
              (define program (file->bytearray "kernel/ci/kernel.bin"))
              (define m
@@ -495,7 +455,6 @@
 
 (define-test-suite inductive-step
   (test-case "inductive step test"
-             (clear-terms!)
              (printf "* Running inductive step test ~n")
              ; Create machine in the OK state
              (define m
