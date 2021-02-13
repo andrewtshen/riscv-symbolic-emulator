@@ -20,7 +20,8 @@
 ; execute symbolic instruction
 (define (execute m instr)
   (cond
-    [(null? instr) null]
+    [(equal? instr null)
+      (illegal-instr m)]
     [else
       (define opcode (list-ref instr 0))
       (define pc (machine-pc m))
@@ -28,13 +29,13 @@
         ; SPECIAL Format
         [(eq? opcode 'ecall)
           ; TODO: real ecall implementation
-          null]
+          (illegal-instr m)]
         [(eq? opcode 'ebreak)
           ; TODO: ebreak instruction not implemented yet
-          null]
+          (illegal-instr m)]
         [(eq? opcode 'uret)
           ; TODO: uret instruction not implemented yet
-          null]
+          (illegal-instr m)]
         [(eq? opcode 'mret)
           (define mstatus (machine-csr m 'mstatus))
           (define MPP (extract 12 11 mstatus))
@@ -47,13 +48,13 @@
           instr]
         [(eq? opcode 'dret)
           ; TODO: dret instruction not implemented yet
-          null]
+          (illegal-instr m)]
         [(eq? opcode 'sfence_vma)
           ; TODO: sfence_vma instruction not implemented yet
-          null]
+          (illegal-instr m)]
         [(eq? opcode 'wfi)
           ; TODO: wfi instruction not implemented yet
-          null]
+          (illegal-instr m)]
         [(eq? opcode 'csrrw)
           (cond
             [(equal? (machine-mode m) 1)
@@ -69,7 +70,7 @@
               (set-machine-pc! m (bvadd pc (bv 4 64)))
               instr]
             [else
-              null])]
+              (illegal-instr m)])]
         [(eq? opcode 'csrrs)
           (cond
             [(equal? (machine-mode m) 1)
@@ -86,19 +87,19 @@
               (set-machine-pc! m (bvadd pc (bv 4 64)))
               instr]
             [else
-              null])]
+              (illegal-instr m)])]
         [(eq? opcode 'csrrc)
 
-          null]
+          (illegal-instr m)]
         [(eq? opcode 'csrrwi)
           ; TODO: csrrwi instruction not implemented yet
-          null]
+          (illegal-instr m)]
         [(eq? opcode 'csrrsi)
           ; TODO: csrrsi instruction not implemented yet
-          null]
+          (illegal-instr m)]
         [(eq? opcode 'csrrci)
           ; TODO: csrrci instruction not implemented yet
-          null]
+          (illegal-instr m)]
 
         ; I Format
         [(eq? opcode 'addi)
@@ -196,7 +197,7 @@
           (define shifted (sign-extend (bvshl v_rs1 imm) (bitvector 64)))
           (set-gprs-i! (machine-gprs m) rd shifted)
           (if (not (bveq (extract 5 5 imm) (bv 0 1)))
-            null
+            (illegal-instr m)
             (begin
               (set-machine-pc! m (bvadd pc (bv 4 64)))
               instr))]
@@ -207,7 +208,7 @@
           (define shifted (sign-extend (bvlshr v_rs1 imm) (bitvector 64)))
           (set-gprs-i! (machine-gprs m) rd shifted)
           (if (not (bveq (extract 5 5 imm) (bv 0 1)))
-            null
+            (illegal-instr m)
             (begin 
               (set-machine-pc! m (bvadd pc (bv 4 64)))
               instr))]
@@ -218,7 +219,7 @@
           (define shifted (sign-extend (bvashr v_rs1 imm) (bitvector 64)))
           (set-gprs-i! (machine-gprs m) rd shifted)
           (if (not (bveq (extract 5 5 imm) (bv 0 1)))
-            null
+            (illegal-instr m)
             (begin 
               (set-machine-pc! m (bvadd pc (bv 4 64)))
               instr))]
@@ -402,58 +403,58 @@
           instr]
         [(eq? opcode 'andw)
           ; TODO: andw instruction not implemented yet
-          null]
+          (illegal-instr m)]
         [(eq? opcode 'subw)
           ; TODO: subw instruction not implemented yet
-          null]
+          (illegal-instr m)]
         [(eq? opcode 'sllw)
           ; TODO: sllw instruction not implemented yet
-          null]
+          (illegal-instr m)]
         [(eq? opcode 'srlw)
           ; TODO: srlw instruction not implemented yet
-          null]
+          (illegal-instr m)]
         [(eq? opcode 'sraw)
           ; TODO: sraw instruction not implemented yet
-          null]
+          (illegal-instr m)]
         [(eq? opcode 'mul)
           ; TODO: mul instruction not implemented yet
-          null]
+          (illegal-instr m)]
         [(eq? opcode 'mulh)
           ; TODO: mulh instruction not implemented yet
-          null]
+          (illegal-instr m)]
         [(eq? opcode 'mulhsu)
           ; TODO: mulhsu instruction not implemented yet
-          null]
+          (illegal-instr m)]
         [(eq? opcode 'mulhu)
           ; TODO: mulhu instruction not implemented yet
-          null]
+          (illegal-instr m)]
         [(eq? opcode 'div)
           ; TODO: div instruction not implemented yet
-          null]
+          (illegal-instr m)]
         [(eq? opcode 'divu)
           ; TODO: divu instruction not implemented yet
-          null]
+          (illegal-instr m)]
         [(eq? opcode 'rem)
           ; TODO: rem instruction not implemented yet
-          null]
+          (illegal-instr m)]
         [(eq? opcode 'remu)
           ; TODO: remu instruction not implemented yet
-          null]
+          (illegal-instr m)]
         [(eq? opcode 'mulw)
           ; TODO: mulw instruction not implemented yet
-          null]
+          (illegal-instr m)]
         [(eq? opcode 'divw)
           ; TODO: divw instruction not implemented yet
-          null]
+          (illegal-instr m)]
         [(eq? opcode 'divuw)
           ; TODO: divuw instruction not implemented yet
-          null]
+          (illegal-instr m)]
         [(eq? opcode 'remw)
           ; TODO: remw instruction not implemented yet
-          null]
+          (illegal-instr m)]
         [(eq? opcode 'remuw)
           ; TODO: remuw instruction not implemented yet
-          null]
+          (illegal-instr m)]
 
         ; B Format
         [(eq? opcode 'beq)
@@ -544,7 +545,7 @@
                 (machine-ram-write! m adj_addr v_rs2 nbits))))
           (cond
             [(not success)
-              null]
+              (illegal-instr m)]
             [else
               (set-machine-pc! m (bvadd pc (bv 4 64)))
               instr])]
@@ -565,7 +566,7 @@
                 (machine-ram-write! m adj_addr v_rs2 nbits))))
           (cond
             [(not success)
-              null]
+              (illegal-instr m)]
             [else
               (set-machine-pc! m (bvadd pc (bv 4 64)))
               instr])]
@@ -586,7 +587,7 @@
                 (machine-ram-write! m adj_addr v_rs2 nbits))))
           (cond
             [(not success)
-              null]
+              (illegal-instr m)]
             [else
               (set-machine-pc! m (bvadd pc (bv 4 64)))
               instr])]
@@ -607,7 +608,7 @@
                 (machine-ram-write! m adj_addr v_rs2 nbits))))
           (cond
             [(not success)
-              null]
+              (illegal-instr m)]
             [else
               (set-machine-pc! m (bvadd pc (bv 4 64)))
               instr])]
@@ -628,10 +629,10 @@
         ; FENCE Format
         [(eq? opcode 'FENCE)
           ; TODO: FENCE instruction not implemented yet
-          null]
+          (illegal-instr m)]
         [(eq? opcode 'FENCE_I)
           ; TODO: FENCE_I instruction not implemented yet
-          null]
+          (illegal-instr m)]
         [else
-            null])]))
+            (illegal-instr m)])]))
 (provide execute)
