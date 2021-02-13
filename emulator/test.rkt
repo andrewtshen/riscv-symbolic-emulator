@@ -103,6 +103,7 @@
 
 (define-test-suite instruction-check
   (test-case "add test"
+             (clear-terms!)
              (define program (file->bytearray "build/add.bin"))
              (printf "* Running add.bin test ~n")
              (define m
@@ -121,6 +122,7 @@
                                      (list-ref gprsx 6))))))
              (check-true (unsat? model_add)))
   (test-case "addi test"
+             (clear-terms!)
              (define program (file->bytearray "build/addi.bin"))
              (printf "* Running addi.bin test ~n")
              (define m (init-machine-with-prog program))
@@ -136,6 +138,7 @@
                                      (bvadd (list-ref gprsx 5) (bv 32 64)))))))
              (check-true (unsat? model_addi)))
   (test-case "addw test"
+             (clear-terms!)
              (define program (file->bytearray "build/addw.bin"))
              (printf "* Running addw.bin test ~n")
              (define m (init-machine-with-prog program))
@@ -151,6 +154,7 @@
                                      (bvadd (list-ref gprsx 5) (list-ref gprsx 3)))))))
              (check-true (unsat? model_addw)))
   (test-case "sub test"
+             (clear-terms!)
              (define program (file->bytearray "build/sub.bin"))
              (printf "* Running sub.bin test ~n")
              (define m (init-machine-with-prog program))
@@ -158,6 +162,7 @@
                  ([use-debug-mode #f])
                (execute-until-mret m)))
   (test-case "jal test"
+             (clear-terms!)
              (define program (file->bytearray "build/jal.bin"))
              (printf "* Running jal.bin test ~n")
              (define m (init-machine-with-prog program))
@@ -165,6 +170,7 @@
                  ([use-debug-mode #f])
                (execute-until-mret m)))
   (test-case "sd/ld test"
+             (clear-terms!)
              (define program (file->bytearray "build/sd_ld.bin"))
              (printf "* Running sd_ld.bin test ~n")
              (define m (init-machine-with-prog program))
@@ -181,6 +187,7 @@
 
              (check-true (unsat? model_sd_ld)))
   (test-case "sw/lw test"
+             (clear-terms!)
              (define program (file->bytearray "build/sw_lw.bin"))
              (printf "* Running sw_lw.bin test ~n")
              (define m (init-machine-with-prog program))
@@ -197,6 +204,7 @@
                                      (extract 31 0 (list-ref gprsx 3)))))))
              (check-true (unsat? model_sw_lw)))
   (test-case "sh/lh test"
+             (clear-terms!)
              (define program (file->bytearray "build/sh_lh.bin"))
              (printf "* Running sh_lh.bin test ~n")
              (define m (init-machine-with-prog program))
@@ -213,6 +221,7 @@
                                      (extract 15 0 (list-ref gprsx 3)))))))
              (check-true (unsat? model_sh_lh)))
   (test-case "sb/lb test"
+             (clear-terms!)
              (define program (file->bytearray "build/sb_lb.bin"))
              (printf "* Running sb_lb.bin test ~n")
              (define m (init-machine-with-prog program))
@@ -229,6 +238,7 @@
                                      (extract 7 0 (list-ref gprsx 3)))))))
              (check-true (unsat? model_sb_lb)))
   (test-case "srliw test"
+             (clear-terms!)
              (define program (file->bytearray "build/srliw.bin"))
              (printf "* Running srliw.bin test ~n" )
              (define m (init-machine-with-prog program))
@@ -247,6 +257,7 @@
                                     (bveq (list-ref gprsx 5) (bv #x0000000000000001 64)))))))
              (check-true (unsat? model_srliw)))
   (test-case "addiw test"
+             (clear-terms!)
              (define program (file->bytearray "build/addiw.bin"))
              (printf "* Running addiw.bin test ~n")
              (define m (init-machine-with-prog program))
@@ -268,12 +279,14 @@
 
 (define-test-suite high-level-test
   (test-case "stack test"
+             (clear-terms!)
              ; Run code that sets up a stack
              (printf "* Running stack.bin test ~n" )
              (define program (file->bytearray "build/stack.bin"))
              (define m (init-machine-with-prog program))
              (execute-until-mret m))
   (test-case "pmp test"
+             (clear-terms!)
              ; Test PMP Set up
              (define program (file->bytearray "build/pmp.bin"))
              (printf "* Running pmp.bin test ~n")
@@ -288,6 +301,7 @@
 
 (define-test-suite utils
   (test-case "ctz64"
+             (clear-terms!)
              (assert (check-equal? 8  (ctz64 (bv #xffffffffffffff00 64))))
              (assert (check-equal? 7  (ctz64 (bv #xffffffffffffff80 64))))
              (assert (check-equal? 2  (ctz64 (bv #xfffffffffffffff4 64))))
@@ -295,6 +309,7 @@
              (assert (check-equal? 0  (ctz64 (bv #xffffffffffffffff 64))))
              (assert (check-equal? 0  (ctz64 (bv #x0000000000000000 64)))))
   (test-case "pmp check"
+             (clear-terms!)
              (printf "* Running pmp.bin test ~n")
              (define program (file->bytearray "build/pmp.bin"))
              (define m (init-machine-with-prog program))
@@ -322,6 +337,7 @@
              (check-true (not (equal? (pmp-numimplemented (machine-pmp m)) 5)))
              (check-true (not (equal? (pmp-numimplemented (machine-pmp m)) 1))))
   (test-case "pmp-napot-settings"
+             (clear-terms!)
              ; Test cases for decoding PMP configurations
              (define setting1 (pmp-decode-cfg (bv #x0000000000001f1f 64) 1))
              (check-equal? (pmpcfg-setting-R setting1) (bv 1 1))
@@ -342,6 +358,7 @@
              (check-equal? (pmpcfg-setting-X setting5) (bv 0 1))
              (check-equal? (pmpcfg-setting-L setting5) (bv 0 1)))
   (test-case "decoding-instr-edge cases"
+             (clear-terms!)
              (printf "* decoding-instr-edge cases ~n")
              (define m (init-machine))
              (check-equal? (decode (bv #xffffffff 32)) null)
@@ -351,6 +368,7 @@
              ; check that produces null op if not applicable opcode
              (check-equal? (decode (bv #b11111111111111111111111110110011 32)) null))
   (test-case "decoding-uncoded-instrs"
+             (clear-terms!)
              (printf "* decoding-uncoded-instrs ~n")
              (define program (file->bytearray "build/dret.bin"))
              (define m (init-machine-with-prog program))
@@ -360,6 +378,7 @@
 
 (define-test-suite step-checks
   (test-case "memory tests"
+             (clear-terms!)
              (printf "* Running memory tests ~n")
              (define m (parameterize
                            ([ramsize-log2 32])
@@ -403,6 +422,7 @@
                 (assert-mem-equal m m1 sym-idx)))
              (check-true (not (unsat? model_lbound))))
   (test-case "mode test"
+             (clear-terms!)
              (printf "* Running mode tests ~n")
              (define m
                (parameterize
@@ -430,6 +450,7 @@
 
 (define-test-suite boot-sequence
   (test-case "boot sequence test"
+             (clear-terms!)
              (printf "* Running boot sequence test ~n")
              (define program (file->bytearray "kernel/ci/kernel.bin"))
              (define m
@@ -455,6 +476,7 @@
 
 (define-test-suite inductive-step
   (test-case "inductive step test"
+             (clear-terms!)
              (printf "* Running inductive step test ~n")
              ; Create machine in the OK state
              (define m
