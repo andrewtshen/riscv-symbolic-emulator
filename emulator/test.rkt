@@ -468,6 +468,7 @@
 
 (define-test-suite boot-sequence
   (test-case "boot sequence test"
+             (clear-terms!)
              (printf "* Running boot sequence test ~n")
              (define program (file->bytearray "kernel/ci/kernel.bin"))
              (define m
@@ -493,6 +494,7 @@
 
 (define-test-suite inductive-step
   (test-case "inductive step test"
+             (clear-terms!)
              (printf "* Running inductive step test ~n")
              ; Create machine in the OK state
              (define m
