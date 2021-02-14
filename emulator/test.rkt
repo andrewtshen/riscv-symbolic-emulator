@@ -295,7 +295,49 @@
                  ([use-debug-mode #f])
                (execute-until-mret m))
              (pmp-check (machine-pmp m) (machine-mode m)
-                                    (bv #x00700001 64) (bv #x007FFFFF 64))))
+                                    (bv #x00700001 64) (bv #x007FFFFF 64)))
+  (test-case "kernel test (with concrete optimizations)"
+             (clear-terms!)
+             (printf "* Running kernel test (with concrete optimizations) ~n")
+             (define program (file->bytearray "kernel/kernel.bin"))
+             (define m
+               (parameterize
+                   ([use-sym-optimizations #f]
+                    [use-debug-mode #f]
+                    [use-fnmem #f]
+                    [use-concrete-optimizations #t])
+                 (init-machine-with-prog program)))
+             (parameterize
+                 ([use-sym-optimizations #f]
+                  [use-debug-mode #f]
+                  [use-fnmem #f]
+                  [use-concrete-optimizations #t])
+               (execute-until-mret m))
+
+             ; Check that after boot sequence machine mode is user mode (0) and in OK state
+             (check-true (equal? (machine-mode m) 0))
+             (assert-OK m))
+  (test-case "kernel test (no concrete optimizations)"
+             (clear-terms!)
+             (printf "* Running kernel test (no concrete optimizations) ~n")
+             (define program (file->bytearray "kernel/kernel.bin"))
+             (define m
+               (parameterize
+                   ([use-sym-optimizations #f]
+                    [use-debug-mode #f]
+                    [use-fnmem #f]
+                    [use-concrete-optimizations #f])
+                 (init-machine-with-prog program)))
+             (parameterize
+                 ([use-sym-optimizations #f]
+                  [use-debug-mode #f]
+                  [use-fnmem #f]
+                  [use-concrete-optimizations #f])
+               (execute-until-mret m))
+
+             ; Check that after boot sequence machine mode is user mode (0) and in OK state
+             (check-true (equal? (machine-mode m) 0))
+             (assert-OK m)))
 
 ;; Sanity Checks for Misc. Utilities
 
