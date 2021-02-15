@@ -7,15 +7,16 @@ RISCV_TESTS_BUILDS = $(patsubst riscv-tests/isa/%.dump, %.bin, $(wildcard riscv-
 .SECONDARY:
 
 .PHONY: all-riscv-tests
-all-riscv-tests: $(RISCV_TESTS) $(RISCV_TESTS)/Makefile
-# 	$(addprefix $(RISCV_TESTS_ISA)/, $(RISCV_TESTS_BUILDS))
+all-riscv-tests: riscv-tests-dir $(RISCV_TESTS)/Makefile
+	@make $(addprefix $(RISCV_TESTS_ISA)/, $(RISCV_TESTS_BUILDS))
 
-$(RISCV_TESTS_ISA)/%.bin: $(RISCV_TESTS_ISA)/%
+$(RISCV_TESTS_ISA)/%.bin: $(RISCV_TESTS_ISA)/% $(RISCV_TESTS)/Makefile
 	$(OBJCOPY) -O binary $< $@
 
-$(RISCV_TESTS):
+.PHONY: riscv-tests-dir
+riscv-tests-dir:
 	@mkdir -p riscv-tests
-	@git submodule update --init --recursive; 
+	@git submodule update --init --recursive 
 
 $(RISCV_TESTS)/Makefile:
 	@cd riscv-tests; \
