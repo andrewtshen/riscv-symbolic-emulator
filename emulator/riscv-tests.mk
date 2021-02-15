@@ -22,8 +22,7 @@ $(RISCV_TESTS)/Makefile:
 		git submodule update --init --recursive; \
 		autoconf; \
 		./configure --prefix=$$RISCV/target; \
-		make; \
-		make install
+		make
 	
 .PHONY: clean-riscv-tests
 clean-riscv-tests:
