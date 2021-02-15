@@ -28,7 +28,7 @@
   ;     ([use-debug-mode #f])
   ;     (execute-until-mret m)))
   (test-case "add test"
-             (define program (file->bytearray "riscv-tests-build/build/rv64ui-p-add.bin"))
+             (define program (file->bytearray "riscv-tests/isa/rv64ui-p-add.bin"))
              (printf "* Running add.bin test ~n")
              (define m (parameterize
                            ([use-debug-mode #f]

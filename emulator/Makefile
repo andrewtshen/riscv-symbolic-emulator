@@ -107,7 +107,7 @@ test: all
 	@echo "----------------------"
 
 .PHONY: clean
-clean:
+clean: clean-riscv-tests
 	rm -f *.elf *.o *.lst
 	rm -rf build
 	rm -f kernel/*.elf
@@ -127,5 +127,6 @@ qemu-gdb: kernel/kernel.elf
 gdb: kernel/kernel.elf
 	$(GDB) --data-directory=/usr/local/share/gdb kernel/kernel.elf
 
-
+include riscv-tests.mk
 include kernel.mk
+
