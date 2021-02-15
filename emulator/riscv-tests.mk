@@ -24,9 +24,7 @@ $(RISCV_TESTS)/Makefile:
 		./configure --prefix=$$RISCV/target; \
 		make; \
 		make install
-
 	
 .PHONY: clean-riscv-tests
 clean-riscv-tests:
 	rm -f $(RISCV_TESTS_ISA)/*.bin
-
