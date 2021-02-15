@@ -6,15 +6,18 @@ RISCV_TESTS_BUILDS = $(patsubst riscv-tests/isa/%.dump, %.bin, $(wildcard riscv-
 # keep all intermediate files
 .SECONDARY:
 
-.PHONY: riscv-tests
-riscv-tests: $(RISCV_TESTS)/Makefile
+.PHONY: all-riscv-tests
+all-riscv-tests: $(RISCV_TESTS) $(RISCV_TESTS)/Makefile
 # 	$(addprefix $(RISCV_TESTS_ISA)/, $(RISCV_TESTS_BUILDS))
 
 $(RISCV_TESTS_ISA)/%.bin: $(RISCV_TESTS_ISA)/%
 	$(OBJCOPY) -O binary $< $@
 
+$(RISCV_TESTS):
+	@mkdir -p riscv-tests
+	@git submodule update --init --recursive; 
+
 $(RISCV_TESTS)/Makefile:
-	@echo "HEREA"
 	@cd riscv-tests; \
 		git submodule update --init --recursive; \
 		autoconf; \
