@@ -50,7 +50,7 @@ BUILDS := \
 .SECONDARY:
 
 .PHONY: all
-all: dir $(addprefix $(BUILD)/, $(BUILDS)) $(CBUILD)/startup.o \
+all: dir riscv-tests $(addprefix $(BUILD)/, $(BUILDS)) $(CBUILD)/startup.o \
 	kernel/kernel.bin kernel/kernel.lst kernel/user.lst
 # 	$(info BUILDING: $(addprefix $(BUILD)/, $(BUILDS)))
 
@@ -114,6 +114,8 @@ clean: clean-riscv-tests
 	rm -f kernel/*.o
 	rm -f kernel/*.bin
 	rm -f kernel/*.lst
+	rm -f riscv-tests/isa/*.bin
+	rm -f riscv-tests/Makefile
 
 .PHONY: qemu
 qemu: kernel/kernel.elf
