@@ -7,7 +7,8 @@
   "machine.rkt"
   "pmp.rkt"
   "parameters.rkt"
-  "print_utils.rkt")
+  "print-utils.rkt"
+  "concrete-optimizations.rkt")
 (require (only-in racket/base parameter? for in-range))
 
 ; Set up the machine and execute each instruction.
@@ -19,18 +20,29 @@
 (define (step m)
   (define next_instr
     (if (use-sym-optimizations)
-      (fresh-symbolic next_instr (bitvector 32)) ; fetch arbitrary instruction
-      (get-next-instr m))) ; fetch actual instruction
+        (fresh-symbolic next_instr (bitvector 32)) ; fetch arbitrary instruction
+        (get-next-instr m))) ; fetch actual instruction
   ; (define next_instr (bv #x80f10023 32)) ; use a concrete instruction
-
-  (define decoded_instr (decode m next_instr))
-  (execute m decoded_instr))
+  ; (printf "next_instr: ~a~n" next_instr)
+  (define decoded_instr
+    (cond
+      [(null? next_instr) null]
+      [(use-concrete-optimizations)
+        (concrete-decode next_instr)]
+      [else
+        (decode next_instr)]))
+  ; (printf "decoded_instr: ~a~n" decoded_instr)
+  (cond
+    [(not (null? next_instr))
+      (execute m decoded_instr)]
+    [else
+      (illegal-instr m)]))
 (provide step)
 
 ; get instructions until reach mret
 (define (execute-until-mret m)
   (let loop ([decoded_instr (step m)])
-    ; (printf "PC: ~x INS: ~a~n" (bitvector->natural (get-pc m)) decoded_instr)
+    ; (printf "PC: ~x INS: ~a~n" (bitvector->natural (machine-pc m)) decoded_instr)
     (unless (or (equal? decoded_instr '(mret)) (equal? decoded_instr null))
       (loop (step m)))))
 (provide execute-until-mret)

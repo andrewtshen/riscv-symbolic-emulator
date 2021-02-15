@@ -93,7 +93,8 @@ void main() {
 
 static void load_user(void) {
     // memcpy((void *) USER_BASE, _binary_kernel_user_bin_start, USER_SIZE);
-    memcpy((void *) USER_BASE, _binary_kernel_user_bin_start, 0x20000L);
+    // TODO: change back to #x20000
+    memcpy((void *) USER_BASE, _binary_kernel_user_bin_start, 0x2000L);
 }
 
 static void run_user(void) {
