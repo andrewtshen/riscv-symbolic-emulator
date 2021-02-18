@@ -30,13 +30,14 @@
       [(use-concrete-optimizations)
         (concrete-decode next_instr)]
       [else
-        (decode next_instr)]))
+        (decode m next_instr)]))
   ; (printf "decoded_instr: ~a~n" decoded_instr)
-  (cond
-    [(not (null? next_instr))
-      (execute m decoded_instr)]
-    [else
-      (illegal-instr m)]))
+  ; (cond
+  ;   [(not (null? next_instr))
+  ;     (execute m decoded_instr)]
+  ;   [else
+  ;     (illegal-instr m)])
+  decoded_instr)
 (provide step)
 
 ; get instructions until reach mret

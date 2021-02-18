@@ -25,6 +25,9 @@
 (define use-concrete-optimizations (make-parameter #f))
 (provide use-concrete-optimizations)
 
+(define debug-instr (make-parameter #f))
+(provide debug-instr)
+
 ; Base address
 ; (base address is in 64 because though the pointer to memory is 32
 ; we are using RISC-V 64)

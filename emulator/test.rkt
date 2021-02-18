@@ -403,12 +403,12 @@
              (clear-terms!)
              (printf "* decoding-instr-edge cases ~n")
              (define m (init-machine))
-             (check-equal? (decode (bv #xffffffff 32)) null)
-             (check-equal? (list-ref (decode (bv #x0107c663 32)) 0) 'blt)
+             (check-equal? (decode m (bv #xffffffff 32)) null)
+             (check-equal? (list-ref (decode m (bv #x0107c663 32)) 0) 'blt)
              ; check decoding
-             (check-equal? (list-ref (decode (bv #x00000117 32)) 0) 'auipc)
+             (check-equal? (list-ref (decode m (bv #x00000117 32)) 0) 'auipc)
              ; check that produces null op if not applicable opcode
-             (check-equal? (decode (bv #b11111111111111111111111110110011 32)) null))
+             (check-equal? (decode m (bv #b11111111111111111111111110110011 32)) null))
   (test-case "decoding-uncoded-instrs"
              (clear-terms!)
              (printf "* decoding-uncoded-instrs ~n")
@@ -562,7 +562,7 @@
 
 (define res-instruction-check (run-tests instruction-check))
 (define res-utils (run-tests utils))
-(define res-high-level-test (run-tests high-level-test))
+; (define res-high-level-test (run-tests high-level-test))
 (define res-step-checks (run-tests step-checks))
 
 ;; Testing the base case and inductive step
