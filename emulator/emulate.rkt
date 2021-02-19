@@ -36,7 +36,7 @@
       [(use-concrete-optimizations)
         (concrete-decode next_instr)]
       [else
-        (decode next_instr)]))
+        (decode m next_instr)]))
   ; (printf "decoded_instr: ~a~n" decoded_instr)
   (cond
     [(not (null? decoded_instr))
