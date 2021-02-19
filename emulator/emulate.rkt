@@ -2,7 +2,7 @@
 
 (require
   "init.rkt"
-  "decode.rkt"
+  "execute.rkt"
   "machine.rkt"
   "pmp.rkt"
   "parameters.rkt"
@@ -32,7 +32,7 @@
   (define decoded_instr
     (cond
       [(null? next_instr) null]
-      [else (decode m next_instr)]))
+      [else (execute m next_instr)]))
   ; (printf "decoded_instr: ~a~n" decoded_instr)
   decoded_instr)
 (provide step)

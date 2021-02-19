@@ -6,10 +6,9 @@
   "parameters.rkt"
   "instr.rkt")
 
-; Decode all of the binary instructions to a list similar to 
-; objdump output so that it is easier to parse.
+; Decode and execute all of the binary instructions and instruction as list
 
-(define (decode-R m b_instr)
+(define (execute-R m b_instr)
   (define rd (bitvector->natural (extract 11 7 b_instr)))
   (define funct3 (extract 14 12 b_instr))
   (define rs1 (bitvector->natural (extract 19 15 b_instr)))
@@ -50,7 +49,7 @@
       ; (printf "No such R FMT ~n")
       'illegal-instruction]))
 
-(define (decode-I m b_instr)
+(define (execute-I m b_instr)
   ; TODO Could group by opcode first and then check for funct3
   (define opcode (extract 6 0 b_instr))
   (define rd (bitvector->natural (extract 11 7 b_instr)))
@@ -130,7 +129,7 @@
       ; (printf "No such I FMT ~n")
       'illegal-instruction]))
 
-(define (decode-B m b_instr)
+(define (execute-B m b_instr)
   (define funct3 (extract 14 12 b_instr))
   (define rs1 (bitvector->natural (extract 19 15 b_instr)))
   (define rs2 (bitvector->natural (extract 24 20 b_instr)))
@@ -163,7 +162,7 @@
       ; (printf "No such B FMT ~n")
       'illegal-instruction]))
 
-(define (decode-U m b_instr)
+(define (execute-U m b_instr)
   (define opcode (extract 6 0 b_instr))
   ; append upper imm and lower imm into imm
   (define rd (bitvector->natural (extract 11 7 b_instr)))
@@ -179,7 +178,7 @@
       ; (printf "No such U FMT ~n")
       'illegal-instruction]))
 
-(define (decode-S m b_instr)
+(define (execute-S m b_instr)
   (define opcode (extract 6 0 b_instr))
   (define funct3 (extract 14 12 b_instr))
   (define rs1 (bitvector->natural (extract 19 15 b_instr)))
@@ -204,7 +203,7 @@
       ; (printf "No such S FMT ~n")
       'illegal-instruction]))
 
-(define (decode-J m b_instr)
+(define (execute-J m b_instr)
   (define opcode (extract 6 0 b_instr))
   (define rd (bitvector->natural (extract 11 7 b_instr)))
   (define imm (concat
@@ -220,7 +219,7 @@
       ; (printf "No such J FMT ~n")
       'illegal-instruction]))
 
-(define (decode-SYSTEM m b_instr)
+(define (execute-SYSTEM m b_instr)
   (define opcode (extract 6 0 b_instr))
   (define rd (bitvector->natural (extract 11 7 b_instr)))
   (define funct3 (extract 14 12 b_instr))
@@ -271,22 +270,22 @@
         ; (printf "No such SYSTEM FMT ~n")
         'illegal-instruction])]))
 
-; decode a 32 bit vector instruction
-(define (decode m b_instr)
+; Execute a 32 bit instruction
+(define (execute m b_instr)
   (define opcode (extract 6 0 b_instr))
   (define fmt (get-fmt opcode))
   (cond
-    [(eq? fmt 'R) (decode-R m b_instr)]
-    [(eq? fmt 'I) (decode-I m b_instr)]
-    [(eq? fmt 'B) (decode-B m b_instr)]
-    [(eq? fmt 'U) (decode-U m b_instr)]
-    [(eq? fmt 'S) (decode-S m b_instr)]
-    [(eq? fmt 'J) (decode-J m b_instr)]
-    [(eq? fmt 'SYSTEM) (decode-SYSTEM m b_instr)]
+    [(eq? fmt 'R) (execute-R m b_instr)]
+    [(eq? fmt 'I) (execute-I m b_instr)]
+    [(eq? fmt 'B) (execute-B m b_instr)]
+    [(eq? fmt 'U) (execute-U m b_instr)]
+    [(eq? fmt 'S) (execute-S m b_instr)]
+    [(eq? fmt 'J) (execute-J m b_instr)]
+    [(eq? fmt 'SYSTEM) (execute-SYSTEM m b_instr)]
     [else
      ; (printf "No such FMT ~n")
      'illegal-instruction]))
-(provide decode)
+(provide execute)
 
 (define (decode-csr b_csr)
   (cond
@@ -337,5 +336,5 @@
 ; example: add x5, x6, x7
 ; (define b_instr (bv #b00000000011100110000001010110011 32))
 ; (define b_instr (bv #x11111111 32))
-; (define instr (decode b_instr))
+; (define instr (execute b_instr))
 ; (printf "~a~n" instr)

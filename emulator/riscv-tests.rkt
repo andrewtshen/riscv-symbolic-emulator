@@ -5,7 +5,7 @@
   "emulate.rkt"
   "machine.rkt"
   "pmp.rkt"
-  "decode.rkt"
+  "execute.rkt"
   "parameters.rkt"
   "print-utils.rkt")
 (require (only-in racket/base 
