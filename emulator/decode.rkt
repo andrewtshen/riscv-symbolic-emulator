@@ -16,28 +16,28 @@
   (define funct7 (extract 31 25 b_instr))
   (cond
     [(and (bveq funct3 (bv #b000 3)) (bveq funct7 (bv #b0000000 7)))
-      (list 'add rd rs1 rs2)]
+     (list 'add rd rs1 rs2)]
     [(and (bveq funct3 (bv #b000 3)) (bveq funct7 (bv #b0100000 7)))
-      (list 'sub rd rs1 rs2)]
+     (list 'sub rd rs1 rs2)]
     [(and (bveq funct3 (bv #b001 3)) (bveq funct7 (bv #b0000000 7)))
-      (list 'sll rd rs1 rs2)]
+     (list 'sll rd rs1 rs2)]
     [(and (bveq funct3 (bv #b010 3)) (bveq funct7 (bv #b0000000 7)))
-      (list 'slt rd rs1 rs2)]
+     (list 'slt rd rs1 rs2)]
     [(and (bveq funct3 (bv #b011 3)) (bveq funct7 (bv #b0000000 7)))
-      (list 'sltu rd rs1 rs2)]
+     (list 'sltu rd rs1 rs2)]
     [(and (bveq funct3 (bv #b100 3)) (bveq funct7 (bv #b0000000 7)))
-      (list 'xor rd rs1 rs2)]
+     (list 'xor rd rs1 rs2)]
     [(and (bveq funct3 (bv #b101 3)) (bveq funct7 (bv #b0000000 7)))
-      (list 'srl rd rs1 rs2)]
+     (list 'srl rd rs1 rs2)]
     [(and (bveq funct3 (bv #b101 3)) (bveq funct7 (bv #b0100000 7)))
-      (list 'sra rd rs1 rs2)]
+     (list 'sra rd rs1 rs2)]
     [(and (bveq funct3 (bv #b110 3)) (bveq funct7 (bv #b0000000 7)))
-      (list 'or rd rs1 rs2)]
+     (list 'or rd rs1 rs2)]
     [(and (bveq funct3 (bv #b111 3)) (bveq funct7 (bv #b0000000 7)))
-      (list 'and rd rs1 rs2)]
+     (list 'and rd rs1 rs2)]
     [else
-      ; (printf "No such R FMT ~n")
-      null]))
+     ; (printf "No such R FMT ~n")
+     null]))
 
 (define (decode-I b_instr)
   ; TODO Could group by opcode first and then check for funct3
@@ -50,53 +50,53 @@
   (cond
     ; Move some instructions to the top for potentially faster speed (less branches to check)
     [(and (bveq funct3 (bv #b000 3)) (bveq opcode (bv #b0000011 7)))
-      (list 'lb rd rs1 imm)]
+     (list 'lb rd rs1 imm)]
     [(and (bveq funct3 (bv #b001 3)) (bveq opcode (bv #b0000011 7)))
-      (list 'lh rd rs1 imm)]
+     (list 'lh rd rs1 imm)]
     [(and (bveq funct3 (bv #b010 3)) (bveq opcode (bv #b0000011 7)))
-      (list 'lw rd rs1 imm)]
+     (list 'lw rd rs1 imm)]
     [(and (bveq funct3 (bv #b011 3)) (bveq opcode (bv #b0000011 7)))
-      (list 'ld rd rs1 imm)]
+     (list 'ld rd rs1 imm)]
     [(and (bveq funct3 (bv #b100 3)) (bveq opcode (bv #b0000011 7)))
-      (list 'lbu rd rs1 imm)]
+     (list 'lbu rd rs1 imm)]
     [(and (bveq funct3 (bv #b101 3)) (bveq opcode (bv #b0000011 7)))
-      (list 'lhu rd rs1 imm)]
+     (list 'lhu rd rs1 imm)]
     [(and (bveq funct3 (bv #b110 3)) (bveq opcode (bv #b0000011 7)))
-      (list 'lwu rd rs1 imm)]
+     (list 'lwu rd rs1 imm)]
     [(and (bveq funct3 (bv #b000 3)) (bveq opcode (bv #b1100111 7)))
-      (list 'jalr rd rs1 imm)]
-
+     (list 'jalr rd rs1 imm)]
+    
     [(and (bveq funct3 (bv #b000 3)) (bveq opcode (bv #b0010011 7)))
-      (list 'addi rd rs1 imm)]
+     (list 'addi rd rs1 imm)]
     [(and (bveq funct3 (bv #b010 3)) (bveq opcode (bv #b0010011 7)))
-      (list 'slti rd rs1 imm)]
+     (list 'slti rd rs1 imm)]
     [(and (bveq funct3 (bv #b011 3)) (bveq opcode (bv #b0010011 7)))
-      (list 'sltiu rd rs1 imm)]
+     (list 'sltiu rd rs1 imm)]
     [(and (bveq funct3 (bv #b100 3)) (bveq opcode (bv #b0010011 7)))
-      (list 'xori rd rs1 imm)]
+     (list 'xori rd rs1 imm)]
     [(and (bveq funct3 (bv #b110 3)) (bveq opcode (bv #b0010011 7)))
-      (list 'ori rd rs1 imm)]
+     (list 'ori rd rs1 imm)]
     [(and (bveq funct3 (bv #b111 3)) (bveq opcode (bv #b0010011 7)))
-      (list 'andi rd rs1 imm)]
+     (list 'andi rd rs1 imm)]
     [(and (bveq funct3 (bv #b001 3)) (bveq opcode (bv #b0010011 7)))
-      ; TODO: Check if supposed to be 24?
-      (list 'slli rd rs1 (extract 24 20 b_instr))]
+     ; TODO: Check if supposed to be 24?
+     (list 'slli rd rs1 (extract 24 20 b_instr))]
     [(and (bveq funct3 (bv #b101 3)) (bveq opcode (bv #b0010011 7)) (bveq shift_type (bv #b0 1)))
-      (list 'srli rd rs1 (extract 25 20 b_instr))]
+     (list 'srli rd rs1 (extract 25 20 b_instr))]
     [(and (bveq funct3 (bv #b101 3)) (bveq opcode (bv #b0010011 7)) (bveq shift_type (bv #b1 1)))
-      (list 'srai rd rs1 (extract 25 20 b_instr))] 
+     (list 'srai rd rs1 (extract 25 20 b_instr))] 
     [(and (bveq funct3 (bv #b000 3)) (bveq opcode (bv #b0011011 7)))
-      ; TODO: Check if supposed to be normal imm
-      (list 'addiw rd rs1 imm)]
+     ; TODO: Check if supposed to be normal imm
+     (list 'addiw rd rs1 imm)]
     [(and (bveq funct3 (bv #b001 3)) (bveq opcode (bv #b0011011 7)))
-      (list 'slliw rd rs1 (extract 25 20 b_instr))]
+     (list 'slliw rd rs1 (extract 25 20 b_instr))]
     [(and (bveq funct3 (bv #b101 3)) (bveq opcode (bv #b0011011 7)) (bveq shift_type (bv #b0 1)))
-      (list 'srliw rd rs1 (extract 25 20 b_instr))]
+     (list 'srliw rd rs1 (extract 25 20 b_instr))]
     [(and (bveq funct3 (bv #b101 3)) (bveq opcode (bv #b0011011 7)) (bveq shift_type (bv #b1 1)))
-      (list 'sraiw rd rs1 (extract 25 20 b_instr))]
+     (list 'sraiw rd rs1 (extract 25 20 b_instr))]
     [else
-      ; (printf "No such I FMT ~n")
-      null]))
+     ; (printf "No such I FMT ~n")
+     null]))
 
 (define (decode-B b_instr)
   (define funct3 (extract 14 12 b_instr))
@@ -104,26 +104,26 @@
   (define rs2 (extract 24 20 b_instr))
   ; append upper imm and lower imm into imm
   (define imm (concat 
-    (extract 31 31 b_instr) 
-    (extract 7 7 b_instr)
-    (extract 30 25 b_instr)
-    (extract 11 8 b_instr)))
+                (extract 31 31 b_instr) 
+                (extract 7 7 b_instr)
+                (extract 30 25 b_instr)
+                (extract 11 8 b_instr)))
   (cond
     [(bveq funct3 (bv #b000 3))
-      (list 'beq rs1 rs2 imm)]
+     (list 'beq rs1 rs2 imm)]
     [(bveq funct3 (bv #b001 3))
-      (list 'bne rs1 rs2 imm)]
+     (list 'bne rs1 rs2 imm)]
     [(bveq funct3 (bv #b100 3))
-      (list 'blt rs1 rs2 imm)]
+     (list 'blt rs1 rs2 imm)]
     [(bveq funct3 (bv #b101 3))
-      (list 'bge rs1 rs2 imm)]
+     (list 'bge rs1 rs2 imm)]
     [(bveq funct3 (bv #b110 3))
-      (list 'bltu rs1 rs2 imm)]
+     (list 'bltu rs1 rs2 imm)]
     [(bveq funct3 (bv #b111 3))
-      (list 'bgeu rs1 rs2 imm)]
+     (list 'bgeu rs1 rs2 imm)]
     [else
-      ; (printf "No such B FMT ~n")
-      null]))
+     ; (printf "No such B FMT ~n")
+     null]))
 
 (define (decode-U b_instr)
   (define opcode (extract 6 0 b_instr))
@@ -132,12 +132,12 @@
   (define imm (extract 31 12 b_instr))
   (cond
     [(bveq opcode (bv #b0110111 7))
-      (list 'lui rd imm)]
+     (list 'lui rd imm)]
     [(bveq opcode (bv #b0010111 7))
-      (list 'auipc rd imm)]
+     (list 'auipc rd imm)]
     [else
-      ; (printf "No such U FMT ~n")
-      null]))
+     ; (printf "No such U FMT ~n")
+     null]))
 
 (define (decode-S b_instr)
   (define opcode (extract 6 0 b_instr))
@@ -145,35 +145,87 @@
   (define rs1 (extract 19 15 b_instr))
   (define rs2 (extract 24 20 b_instr))
   (define imm (concat
-    (extract 31 25 b_instr)
-    (extract 11 7 b_instr)))
+                (extract 31 25 b_instr)
+                (extract 11 7 b_instr)))
   (cond
     [(and (bveq funct3 (bv #b000 3)) (bveq opcode (bv #b0100011 7)))
-      (list 'sb rs1 rs2 imm)]
+     (list 'sb rs1 rs2 imm)]
     [(and (bveq funct3 (bv #b001 3)) (bveq opcode (bv #b0100011 7)))
-      (list 'sh rs1 rs2 imm)]
+     (list 'sh rs1 rs2 imm)]
     [(and (bveq funct3 (bv #b010 3)) (bveq opcode (bv #b0100011 7)))
-      (list 'sw rs1 rs2 imm)]
+     (list 'sw rs1 rs2 imm)]
     [(and (bveq funct3 (bv #b011 3)) (bveq opcode (bv #b0100011 7)))
-      (list 'sd rs1 rs2 imm)]
+     (list 'sd rs1 rs2 imm)]
     [else
-      ; (printf "No such S FMT ~n")
-      null]))
+     ; (printf "No such S FMT ~n")
+     null]))
 
 (define (decode-J b_instr)
   (define opcode (extract 6 0 b_instr))
   (define rd (extract 11 7 b_instr))
   (define imm (concat
-    (extract 31 31 b_instr)
-    (extract 19 12 b_instr)
-    (extract 20 20 b_instr)
-    (extract 30 21 b_instr)))
+                (extract 31 31 b_instr)
+                (extract 19 12 b_instr)
+                (extract 20 20 b_instr)
+                (extract 30 21 b_instr)))
   (cond
     [(bveq opcode (bv #b1101111 7))
-      (list 'jal rd imm)]
+     (list 'jal rd imm)]
     [else
-      ; (printf "No such J FMT ~n")
-      null]))
+     ; (printf "No such J FMT ~n")
+     null]))
+
+(define (decode-SYSTEM b_instr)
+  (define opcode (extract 6 0 b_instr))
+  (define rd (extract 11 7 b_instr))
+  (define funct3 (extract 14 12 b_instr))
+  (define rs1 (extract 19 15 b_instr))
+  (cond
+    [(bveq funct3 (bv #b000 3))
+     (define funct12 (extract 31 20 b_instr))
+     (cond
+       [(bveq funct12 (bv #b001100000010 12))
+        (list 'mret)]
+       [(bveq funct12 (bv #b000000000010 12))
+        (list 'uret)]
+       [(bveq funct12 (bv #b000000000000 12))
+        (list 'ecall)]
+       [(bveq funct12 (bv #b000000000001 12))
+        (list 'ebreak)]
+       [else null])]
+    [else
+     (define csr (extract 31 20 b_instr))
+     (define sym_csr (decode-csr csr))
+     (cond
+       [(null? sym_csr) null]
+       [(bveq funct3 (bv #b001 3))
+        (list 'csrrw rd rs1 sym_csr)]
+       [(bveq funct3 (bv #b010 3))
+        (list 'csrrs rd rs1 sym_csr)]
+       [(bveq funct3 (bv #b011 3))
+        (list 'csrrc rd rs1 sym_csr)]
+       [(bveq funct3 (bv #b101 3))
+        (list 'csrrwi rd rs1 sym_csr)]
+       [(bveq funct3 (bv #b110 3))
+        (list 'csrrsi rd rs1 sym_csr)]
+       [(bveq funct3 (bv #b111 3))
+        (list 'csrrci rd rs1 sym_csr)]
+       [else null])]))
+
+; decode a 32 bit vector instruction
+(define (decode b_instr)
+  (define opcode (extract 6 0 b_instr))
+  (define fmt (get-fmt opcode))
+  (cond
+    [(eq? fmt 'R) (decode-R b_instr)]
+    [(eq? fmt 'I) (decode-I b_instr)]
+    [(eq? fmt 'B) (decode-B b_instr)]
+    [(eq? fmt 'U) (decode-U b_instr)]
+    [(eq? fmt 'S) (decode-S b_instr)]
+    [(eq? fmt 'J) (decode-J b_instr)]
+    [(eq? fmt 'SYSTEM) (decode-SYSTEM b_instr)]
+    [else null]))
+(provide decode)
 
 (define (decode-csr b_csr)
   (cond
@@ -217,83 +269,11 @@
     [(bveq b_csr (bv #x3BE 12)) 'pmpaddr14]
     [(bveq b_csr (bv #x3BF 12)) 'pmpaddr15]
     [else
-      ; (printf "No such CSR FMT ~n")
-      null]))
-
-(define (decode-SPECIAL b_instr)
-  (define is_csr #f)
-  (define opcode (extract 6 0 b_instr))
-  (define rd (extract 11 7 b_instr))
-  (define funct3 (extract 14 12 b_instr))
-  (define rs1 (extract 19 15 b_instr))
-  (define csr (extract 31 20 b_instr))
-  (cond
-    [(bveq b_instr (bv #b00110000001000000000000001110011 32))
-      (list 'mret)]
-    [(bveq b_instr (bv #b00000000001000000000000001110011 32))
-      (list 'uret)]
-    [(bveq b_instr (bv #b00000000000000000000000001110011 32))
-      (list 'ecall)]
-    [(bveq b_instr (bv #b00000000000100000000000001110011 32))
-      (list 'ebreak)]
-    [(and (bveq funct3 (bv #b001 3)) (bveq opcode (bv #b1110011 7)))
-      (define sym_csr (decode-csr csr))
-      (if (eq? sym_csr null)
-        null
-        (list 'csrrw rd rs1 sym_csr))]
-    [(and (bveq funct3 (bv #b010 3)) (bveq opcode (bv #b1110011 7)))
-      (define sym_csr (decode-csr csr))
-      (if (eq? sym_csr null)
-        null
-        (list 'csrrs rd rs1 sym_csr))]
-    [(and (bveq funct3 (bv #b011 3)) (bveq opcode (bv #b1110011 7)))
-      (define sym_csr (decode-csr csr))
-      (if (eq? sym_csr null)
-        null
-        (list 'csrrc rd rs1 sym_csr))]
-    [(and (bveq funct3 (bv #b101 3)) (bveq opcode (bv #b1110011 7)))
-      (define sym_csr (decode-csr csr))
-      (if (eq? sym_csr null)
-        null
-        (list 'csrrwi rd rs1 sym_csr))]
-    [(and (bveq funct3 (bv #b110 3)) (bveq opcode (bv #b1110011 7)))
-      (define sym_csr (decode-csr csr))
-      (if (eq? sym_csr null)
-        null
-        (list 'csrrsi rd rs1 sym_csr))]
-    [(and (bveq funct3 (bv #b111 3)) (bveq opcode (bv #b1110011 7)))
-      (define sym_csr (decode-csr csr))
-      (if (eq? sym_csr null)
-        null
-        (list 'csrrci rd rs1 sym_csr))]
-    [else
-      ; (printf "No such SPECIAL FMT ~n")
-      null]))
-
-; decode a 32 bit vector instruction
-(define (decode b_instr)
-  (define opcode (extract 6 0 b_instr))
-  (define fmt (get-fmt opcode))
-  (cond
-    [(eq? fmt 'R)
-      (decode-R b_instr)]
-    [(eq? fmt 'I)
-      (decode-I b_instr)]
-    [(eq? fmt 'B)
-      (decode-B b_instr)]
-    [(eq? fmt 'U)
-      (decode-U b_instr)]
-    [(eq? fmt 'S)
-      (decode-S b_instr)]
-    [(eq? fmt 'J)
-      (decode-J b_instr)]
-    [(eq? fmt 'SPECIAL)
-      (decode-SPECIAL b_instr)]
-    [else
-      null]))
-(provide decode)
+     ; (printf "No such CSR FMT ~n")
+     null]))
 
 ; example: add x5, x6, x7
 ; (define b_instr (bv #b00000000011100110000001010110011 32))
+; (define b_instr (bv #x11111111 32))
 ; (define instr (decode b_instr))
-; ; (printf "~a~n" instr)
+; (printf "~a~n" instr)

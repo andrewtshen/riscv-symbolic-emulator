@@ -33,7 +33,7 @@
         (decode next_instr)]))
   ; (printf "decoded_instr: ~a~n" decoded_instr)
   (cond
-    [(not (null? next_instr))
+    [(not (null? decoded_instr))
       (execute m decoded_instr)]
     [else
       (illegal-instr m)]))

@@ -39,3 +39,8 @@
 
 ; Check that after boot sequence machine mode is user mode (0) and in OK state
 (print-pmp m)
+
+; (printf "* decoding-uncoded-instrs ~n")
+; (define program (file->bytearray "build/dret.bin"))
+; (define m (init-machine-with-prog program))
+; (step m)
