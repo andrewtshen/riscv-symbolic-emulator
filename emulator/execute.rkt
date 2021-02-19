@@ -14,9 +14,6 @@
 (define (list-ref-nat instr idx)
   (bitvector->natural (list-ref instr idx)))
 
-(define (list-ref-int instr idx)
-  (bitvector->integer (list-ref instr idx)))
-
 ; execute symbolic instruction
 (define (execute m instr)
   (define opcode (list-ref instr 0))

@@ -10,7 +10,7 @@
   "parameters.rkt"
   "print-utils.rkt")
 (require (only-in racket/base 
-  parameterize for in-range for*))
+  parameterize for in-range for* define-syntax-rule symbol?))
 (require profile)
 
 (printf "* Running boot sequence test ~n")
@@ -22,25 +22,12 @@
        [use-fnmem #f]
        [use-concrete-optimizations #t])
     (init-machine-with-prog program))))
-(profile-thunk
- (lambda ()
-    (parameterize
-     ([use-sym-optimizations #f]
-      [use-debug-mode #f]
-      [use-fnmem #f]
-      [use-concrete-optimizations #t])
-    (execute-until-mret m))))
-; (time (parameterize
-;        ([use-sym-optimizations #f]
-;         [use-debug-mode #f]
-;         [use-fnmem #f]
-;         [use-concrete-optimizations #t])
-;       (execute-until-mret m)))
+(time (parameterize
+       ([use-sym-optimizations #f]
+        [use-debug-mode #f]
+        [use-fnmem #f]
+        [use-concrete-optimizations #t])
+      (execute-until-mret m)))
 
 ; Check that after boot sequence machine mode is user mode (0) and in OK state
 (print-pmp m)
-
-; (printf "* decoding-uncoded-instrs ~n")
-; (define program (file->bytearray "build/dret.bin"))
-; (define m (init-machine-with-prog program))
-; (step m)

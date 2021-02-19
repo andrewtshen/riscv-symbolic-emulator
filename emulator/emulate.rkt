@@ -17,6 +17,12 @@
 (define-syntax-rule (while test body ...) ; while loop
   (let loop () (when test body ... (loop))))
 
+(define-syntax-rule (try! var val body ...) ; try!
+  (let ()
+    (define var val)
+    (if (symbol? var) var
+        (begin body ...))))
+
 (define (step m)
   (define next_instr
     (if (use-sym-optimizations)
