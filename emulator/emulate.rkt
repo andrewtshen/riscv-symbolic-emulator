@@ -3,7 +3,6 @@
 (require
   "init.rkt"
   "decode.rkt"
-  "execute.rkt"
   "machine.rkt"
   "pmp.rkt"
   "parameters.rkt"
@@ -33,16 +32,8 @@
   (define decoded_instr
     (cond
       [(null? next_instr) null]
-      [(use-concrete-optimizations)
-        (concrete-decode next_instr)]
-      [else
-        (decode m next_instr)]))
+      [else (decode m next_instr)]))
   ; (printf "decoded_instr: ~a~n" decoded_instr)
-  ; (cond
-  ;   [(not (null? decoded_instr))
-  ;     (execute m decoded_instr)]
-  ;   [else
-  ;     (illegal-instr m)])
   decoded_instr)
 (provide step)
 

@@ -3,7 +3,6 @@
 (require
   "init.rkt"
   "emulate.rkt"
-  "execute.rkt"
   "machine.rkt"
   "pmp.rkt"
   "decode.rkt"
@@ -18,15 +17,6 @@
 ;; RISC-V Tests for Individual Instructions
 
 (define-test-suite instruction-check
-  ; (test-case "own add test"
-  ;   (define program (file->bytearray "build/add.bin"))
-  ;   (printf "* Running add.bin test ~n")
-  ;   (define m (parameterize
-  ;     ([use-debug-mode #f])
-  ;     (init-machine-with-prog program)))
-  ;   (parameterize
-  ;     ([use-debug-mode #f])
-  ;     (execute-until-mret m)))
   (test-case "add test"
              (define program (file->bytearray "riscv-tests/isa/rv64ui-p-add.bin"))
              (printf "* Running add.bin test ~n")

@@ -48,7 +48,7 @@
       (list 'and rd rs1 rs2)]
     [else
       ; (printf "No such R FMT ~n")
-      (illegal-instr m)]))
+      'illegal-instruction]))
 
 (define (decode-I m b_instr)
   ; TODO Could group by opcode first and then check for funct3
@@ -128,7 +128,7 @@
       (list 'sraiw rd rs1 (extract 25 20 b_instr))]
     [else
       ; (printf "No such I FMT ~n")
-      (illegal-instr m)]))
+      'illegal-instruction]))
 
 (define (decode-B m b_instr)
   (define funct3 (extract 14 12 b_instr))
@@ -161,7 +161,7 @@
       (list 'bgeu rs1 rs2 imm)]
     [else
       ; (printf "No such B FMT ~n")
-      (illegal-instr m)]))
+      'illegal-instruction]))
 
 (define (decode-U m b_instr)
   (define opcode (extract 6 0 b_instr))
@@ -177,7 +177,7 @@
       (list 'auipc rd imm)]
     [else
       ; (printf "No such U FMT ~n")
-      (illegal-instr m)]))
+      'illegal-instruction]))
 
 (define (decode-S m b_instr)
   (define opcode (extract 6 0 b_instr))
@@ -202,7 +202,7 @@
       (list 'sd rs1 rs2 imm)]
     [else
       ; (printf "No such S FMT ~n")
-      (illegal-instr m)]))
+      'illegal-instruction]))
 
 (define (decode-J m b_instr)
   (define opcode (extract 6 0 b_instr))
@@ -218,7 +218,7 @@
       (list 'jal rd imm)]
     [else
       ; (printf "No such J FMT ~n")
-      (illegal-instr m)]))
+      'illegal-instruction]))
 
 (define (decode-SYSTEM m b_instr)
   (define opcode (extract 6 0 b_instr))
@@ -241,7 +241,9 @@
        [(bveq funct12 (bv #b000000000001 12))
         (ebreak-instr m)
         (list 'ebreak)]
-       [else null])]
+       [else 
+        ; (printf "No such SYSTEM FMT ~n")
+        'illegal-instruction])]
     [else
      (define csr (extract 31 20 b_instr))
      (define sym_csr (decode-csr csr))
@@ -265,7 +267,9 @@
        [(bveq funct3 (bv #b111 3))
         (csrrci-instr m rd rs1 sym_csr)
         (list 'csrrci rd rs1 sym_csr)]
-       [else null])]))
+       [else
+        ; (printf "No such SYSTEM FMT ~n")
+        'illegal-instruction])]))
 
 ; decode a 32 bit vector instruction
 (define (decode m b_instr)
@@ -279,7 +283,9 @@
     [(eq? fmt 'S) (decode-S m b_instr)]
     [(eq? fmt 'J) (decode-J m b_instr)]
     [(eq? fmt 'SYSTEM) (decode-SYSTEM m b_instr)]
-    [else null]))
+    [else
+     ; (printf "No such FMT ~n")
+     'illegal-instruction]))
 (provide decode)
 
 (define (decode-csr b_csr)
@@ -325,7 +331,7 @@
     [(bveq b_csr (bv #x3BF 12)) 'pmpaddr15]
     [else
      ; (printf "No such CSR FMT ~n")
-     null]))
+     'illegal-instruction]))
 
 
 ; example: add x5, x6, x7

@@ -3,7 +3,6 @@
 (require
   "init.rkt"
   "emulate.rkt"
-  "execute.rkt"
   "machine.rkt"
   "pmp.rkt"
   "decode.rkt"

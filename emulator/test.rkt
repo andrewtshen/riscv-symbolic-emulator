@@ -3,7 +3,6 @@
 (require
   "init.rkt"
   "emulate.rkt"
-  "execute.rkt"
   "machine.rkt"
   "pmp.rkt"
   "decode.rkt"
@@ -296,27 +295,27 @@
                (execute-until-mret m))
              (pmp-check (machine-pmp m) (machine-mode m)
                                     (bv #x00700001 64) (bv #x007FFFFF 64)))
-  ; (test-case "kernel test (with concrete optimizations)"
-  ;            (clear-terms!)
-  ;            (printf "* Running kernel test (with concrete optimizations) ~n")
-  ;            (define program (file->bytearray "kernel/kernel.bin"))
-  ;            (define m
-  ;              (parameterize
-  ;                  ([use-sym-optimizations #f]
-  ;                   [use-debug-mode #f]
-  ;                   [use-fnmem #f]
-  ;                   [use-concrete-optimizations #t])
-  ;                (init-machine-with-prog program)))
-  ;            (parameterize
-  ;                ([use-sym-optimizations #f]
-  ;                 [use-debug-mode #f]
-  ;                 [use-fnmem #f]
-  ;                 [use-concrete-optimizations #t])
-  ;              (execute-until-mret m))
+  (test-case "kernel test (with concrete optimizations)"
+             (clear-terms!)
+             (printf "* Running kernel test (with concrete optimizations) ~n")
+             (define program (file->bytearray "kernel/kernel.bin"))
+             (define m
+               (parameterize
+                   ([use-sym-optimizations #f]
+                    [use-debug-mode #f]
+                    [use-fnmem #f]
+                    [use-concrete-optimizations #t])
+                 (init-machine-with-prog program)))
+             (parameterize
+                 ([use-sym-optimizations #f]
+                  [use-debug-mode #f]
+                  [use-fnmem #f]
+                  [use-concrete-optimizations #t])
+               (execute-until-mret m))
 
-  ;            ; Check that after boot sequence machine mode is user mode (0) and in OK state
-  ;            (check-true (equal? (machine-mode m) 0))
-  ;            (assert-OK m))
+             ; Check that after boot sequence machine mode is user mode (0) and in OK state
+             (check-true (equal? (machine-mode m) 0))
+             (assert-OK m))
   (test-case "kernel test (no concrete optimizations)"
              (clear-terms!)
              (printf "* Running kernel test (no concrete optimizations) ~n")
@@ -403,12 +402,13 @@
              (clear-terms!)
              (printf "* decoding-instr-edge cases ~n")
              (define m (init-machine))
-             (check-equal? (decode m (bv #xffffffff 32)) null)
+             (check-equal? (decode m (bv #xffffffff 32)) 'illegal-instruction)
              (check-equal? (list-ref (decode m (bv #x0107c663 32)) 0) 'blt)
              ; check decoding
              (check-equal? (list-ref (decode m (bv #x00000117 32)) 0) 'auipc)
-             ; check that produces null op if not applicable opcode
-             (check-equal? (decode m (bv #b11111111111111111111111110110011 32)) null))
+             ; check that produces illegal instruction if cannot decode
+             (check-equal? (decode m (bv #b11111111111111111111111110110011 32)) 'illegal-instruction)
+             (check-equal? (decode m (bv #xffffffff 32)) 'illegal-instruction))
   (test-case "decoding-uncoded-instrs"
              (clear-terms!)
              (printf "* decoding-uncoded-instrs ~n")
@@ -562,7 +562,7 @@
 
 (define res-instruction-check (run-tests instruction-check))
 (define res-utils (run-tests utils))
-; (define res-high-level-test (run-tests high-level-test))
+(define res-high-level-test (run-tests high-level-test))
 (define res-step-checks (run-tests step-checks))
 
 ;; Testing the base case and inductive step
