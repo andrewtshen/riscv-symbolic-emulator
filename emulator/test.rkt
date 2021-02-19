@@ -489,7 +489,49 @@
                              (and (bveq (machine-pc m)
                                         (bvsub (machine-csr m 'mtvec) (base-address)))
                                   (equal? (machine-mode m) 1))))))
-             (check-true (unsat? model_mode))))
+             (check-true (unsat? model_mode)))
+  (test-case "only user mode test"
+             (clear-terms!)
+             (printf "* Running only user mode test ~n")
+             (define m
+               (parameterize
+                 ([ramsize-log2 32])
+                 (init-machine)))
+             (define m1 (deep-copy-machine m))
+             
+             (define next_instr
+               (parameterize
+                 ([use-sym-optimizations #f]
+                  [use-debug-mode #f]
+                  [ramsize-log2 32])
+                 (step m)))
+             
+             (clear-asserts!)
+             (define model_only_user_mode
+               (verify (assert (equal? (machine-mode m) 0))))
+             (check-true (unsat? model_only_user_mode)))
+  (test-case "cannot reach mtvec test"
+             (clear-terms!)
+             (printf "* Running cannot reach mtvec test ~n")
+             (define m
+               (parameterize
+                 ([ramsize-log2 32])
+                 (init-machine)))
+             (define m1 (deep-copy-machine m))
+             
+             (define next_instr
+               (parameterize
+                 ([use-sym-optimizations #f]
+                  [use-debug-mode #f]
+                  [ramsize-log2 32])
+                 (step m)))
+             
+             (clear-asserts!)
+             (define model_only_user_mode
+               (verify (assert
+                         (not (and (bveq (machine-pc m) (bvsub (machine-csr m 'mtvec) (base-address)))
+                                   (equal? (machine-mode m) 1))))))
+             (check-true (unsat? model_only_user_mode))))
 
 ;; Test Case for Base Case
 
