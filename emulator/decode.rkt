@@ -220,11 +220,11 @@
       ; (printf "No such J FMT ~n")
       (illegal-instr m)]))
 
-(define (decode-SYSTEM b_instr)
+(define (decode-SYSTEM m b_instr)
   (define opcode (extract 6 0 b_instr))
-  (define rd (extract 11 7 b_instr))
+  (define rd (bitvector->natural (extract 11 7 b_instr)))
   (define funct3 (extract 14 12 b_instr))
-  (define rs1 (extract 19 15 b_instr))
+  (define rs1 (bitvector->natural (extract 19 15 b_instr)))
   (cond
     [(bveq funct3 (bv #b000 3))
      (define funct12 (extract 31 20 b_instr))
@@ -248,22 +248,22 @@
      (cond
        [(null? sym_csr) null]
        [(bveq funct3 (bv #b001 3))
-        (csrrw-instr rd rs1 sym_csr)
+        (csrrw-instr m rd rs1 sym_csr)
         (list 'csrrw rd rs1 sym_csr)]
        [(bveq funct3 (bv #b010 3))
-        (csrrs-instr rd rs1 sym_csr)
+        (csrrs-instr m rd rs1 sym_csr)
         (list 'csrrs rd rs1 sym_csr)]
        [(bveq funct3 (bv #b011 3))
-        (csrrc-instr rd rs1 sym_csr)
+        (csrrc-instr m rd rs1 sym_csr)
         (list 'csrrc rd rs1 sym_csr)]
        [(bveq funct3 (bv #b101 3))
-        (csrrwi-instr rd rs1 sym_csr)
+        (csrrwi-instr m rd rs1 sym_csr)
         (list 'csrrwi rd rs1 sym_csr)]
        [(bveq funct3 (bv #b110 3))
-        (csrrsi-instr rd rs1 sym_csr)
+        (csrrsi-instr m rd rs1 sym_csr)
         (list 'csrrsi rd rs1 sym_csr)]
        [(bveq funct3 (bv #b111 3))
-        (csrrci-instr rd rs1 sym_csr)
+        (csrrci-instr m rd rs1 sym_csr)
         (list 'csrrci rd rs1 sym_csr)]
        [else null])]))
 
@@ -282,7 +282,7 @@
     [else null]))
 (provide decode)
 
-(define (decode-csr m b_csr)
+(define (decode-csr b_csr)
   (cond
     [(bveq b_csr (bv #x000 12)) 'ustatus]
     [(bveq b_csr (bv #x004 12)) 'uie]

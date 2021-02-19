@@ -45,9 +45,11 @@
 (define m
  (parameterize
      ([use-debug-mode #f]
-      [debug-instr #t])
+      [debug-instr #t]
+      [use-fnmem #f])
    (init-machine-with-prog program)))
 (parameterize
    ([use-debug-mode #f]
-    [debug-instr #t])
+    [debug-instr #t]
+    [use-fnmem #f])
  (execute-until-mret m))
