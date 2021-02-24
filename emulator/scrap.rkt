@@ -47,8 +47,8 @@
       [debug-instr #t]
       [use-fnmem #f])
    (init-machine-with-prog program)))
-(parameterize
+(printf "RES: ~a~n" (parameterize
    ([use-debug-mode #f]
     [debug-instr #t]
     [use-fnmem #f])
- (execute-until-mret m))
+ (execute-until-mret m)))

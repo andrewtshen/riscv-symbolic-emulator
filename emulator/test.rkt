@@ -531,7 +531,32 @@
                (verify (assert
                          (not (and (bveq (machine-pc m) (bvsub (machine-csr m 'mtvec) (base-address)))
                                    (equal? (machine-mode m) 1))))))
-             (check-true (unsat? model_only_user_mode))))
+             (check-true (unsat? model_only_user_mode)))
+  (test-case "does not return null test"
+             (clear-terms!)
+             (printf "* Running does not return null test ~n")
+             (define m
+               (parameterize
+                 ([ramsize-log2 32])
+                 (init-machine)))
+             (define m1 (deep-copy-machine m))
+             
+             (define next_instr
+               (parameterize
+                 ([use-sym-optimizations #t]
+                  [use-debug-mode #f]
+                  [ramsize-log2 32])
+                 (step m)))
+             
+             (clear-asserts!)
+             (define model_does_not_return_null
+               (verify (assert
+                         (not (equal? next_instr null)))))
+             (check-true (unsat? model_does_not_return_null))
+             (clear-asserts!)
+             (define model_does_return_illegal_instr
+               (verify (assert (not (equal? next_instr 'illegal-instruction)))))
+             (check-true (not (unsat? model_does_return_illegal_instr)))))
 
 ;; Test Case for Base Case
 
@@ -610,7 +635,7 @@
 
 (define res-instruction-check (run-tests instruction-check))
 (define res-utils (run-tests utils))
-(define res-high-level-test (run-tests high-level-test))
+; (define res-high-level-test (run-tests high-level-test))
 (define res-step-checks (run-tests step-checks))
 
 ;; Testing the base case and inductive step
