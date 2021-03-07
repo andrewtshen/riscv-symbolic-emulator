@@ -635,7 +635,7 @@
 
 (define res-instruction-check (run-tests instruction-check))
 (define res-utils (run-tests utils))
-; (define res-high-level-test (run-tests high-level-test))
+(define res-high-level-test (run-tests high-level-test))
 (define res-step-checks (run-tests step-checks))
 
 ;; Testing the base case and inductive step

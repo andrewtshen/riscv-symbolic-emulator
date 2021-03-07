@@ -16,38 +16,28 @@
   (define funct7 (extract 31 25 b_instr))
   (cond
     [(and (bveq funct3 (bv #b000 3)) (bveq funct7 (bv #b0000000 7)))
-      (add-instr m rd rs1 rs2)
-      (list 'add rd rs1 rs2)]
+     (add-instr m rd rs1 rs2)]
     [(and (bveq funct3 (bv #b000 3)) (bveq funct7 (bv #b0100000 7)))
-      (sub-instr m rd rs1 rs2)
-      (list 'sub rd rs1 rs2)]
+     (sub-instr m rd rs1 rs2)]
     [(and (bveq funct3 (bv #b001 3)) (bveq funct7 (bv #b0000000 7)))
-      (sll-instr m rd rs1 rs2)
-      (list 'sll rd rs1 rs2)]
+     (sll-instr m rd rs1 rs2)]
     [(and (bveq funct3 (bv #b010 3)) (bveq funct7 (bv #b0000000 7)))
-      (slt-instr m rd rs1 rs2)
-      (list 'slt rd rs1 rs2)]
+     (slt-instr m rd rs1 rs2)]
     [(and (bveq funct3 (bv #b011 3)) (bveq funct7 (bv #b0000000 7)))
-      (sltu-instr m rd rs1 rs2)
-      (list 'sltu rd rs1 rs2)]
+     (sltu-instr m rd rs1 rs2)]
     [(and (bveq funct3 (bv #b100 3)) (bveq funct7 (bv #b0000000 7)))
-      (xor-instr m rd rs1 rs2)
-      (list 'xor rd rs1 rs2)]
+     (xor-instr m rd rs1 rs2)]
     [(and (bveq funct3 (bv #b101 3)) (bveq funct7 (bv #b0000000 7)))
-      (srl-instr m rd rs1 rs2)
-      (list 'srl rd rs1 rs2)]
+     (srl-instr m rd rs1 rs2)]
     [(and (bveq funct3 (bv #b101 3)) (bveq funct7 (bv #b0100000 7)))
-      (sra-instr m rd rs1 rs2)
-      (list 'sra rd rs1 rs2)]
+     (sra-instr m rd rs1 rs2)]
     [(and (bveq funct3 (bv #b110 3)) (bveq funct7 (bv #b0000000 7)))
-      (or-instr m rd rs1 rs2)
-      (list 'or rd rs1 rs2)]
+     (or-instr m rd rs1 rs2)]
     [(and (bveq funct3 (bv #b111 3)) (bveq funct7 (bv #b0000000 7)))
-      (and-instr m rd rs1 rs2)
-      (list 'and rd rs1 rs2)]
+     (and-instr m rd rs1 rs2)]
     [else
-      ; (printf "No such R FMT ~n")
-      'illegal-instruction]))
+     ; (printf "No such R FMT ~n")
+     'illegal-instruction]))
 
 (define (execute-I m b_instr)
   ; TODO Could group by opcode first and then check for funct3
@@ -60,74 +50,52 @@
   (cond
     ; Move some instructions to the top for potentially faster speed (less branches to check)
     [(and (bveq funct3 (bv #b000 3)) (bveq opcode (bv #b0000011 7)))
-      (lb-instr m rd rs1 imm)
-      (list 'lb rd rs1 imm)]
+     (lb-instr m rd rs1 imm)]
     [(and (bveq funct3 (bv #b001 3)) (bveq opcode (bv #b0000011 7)))
-      (lh-instr m rd rs1 imm)
-      (list 'lh rd rs1 imm)]
+     (lh-instr m rd rs1 imm)]
     [(and (bveq funct3 (bv #b010 3)) (bveq opcode (bv #b0000011 7)))
-      (lw-instr m rd rs1 imm)
-      (list 'lw rd rs1 imm)]
+     (lw-instr m rd rs1 imm)]
     [(and (bveq funct3 (bv #b011 3)) (bveq opcode (bv #b0000011 7)))
-      (ld-instr m rd rs1 imm)
-      (list 'ld rd rs1 imm)]
+     (ld-instr m rd rs1 imm)]
     [(and (bveq funct3 (bv #b100 3)) (bveq opcode (bv #b0000011 7)))
-      (lbu-instr m rd rs1 imm)
-      (list 'lbu rd rs1 imm)]
+     (lbu-instr m rd rs1 imm)]
     [(and (bveq funct3 (bv #b101 3)) (bveq opcode (bv #b0000011 7)))
-      (lhu-instr m rd rs1 imm)
-      (list 'lhu rd rs1 imm)]
+     (lhu-instr m rd rs1 imm)]
     [(and (bveq funct3 (bv #b110 3)) (bveq opcode (bv #b0000011 7)))
-      (lwu-instr m rd rs1 imm)
-      (list 'lwu rd rs1 imm)]
+     (lwu-instr m rd rs1 imm)]
     [(and (bveq funct3 (bv #b000 3)) (bveq opcode (bv #b1100111 7)))
-      (jalr-instr m rd rs1 imm)
-      (list 'jalr rd rs1 imm)]
-
+     (jalr-instr m rd rs1 imm)]
     [(and (bveq funct3 (bv #b000 3)) (bveq opcode (bv #b0010011 7)))
-      (addi-instr m rd rs1 imm)
-      (list 'addi rd rs1 imm)]
+     (addi-instr m rd rs1 imm)]
     [(and (bveq funct3 (bv #b010 3)) (bveq opcode (bv #b0010011 7)))
-      (slti-instr m rd rs1 imm)
-      (list 'slti rd rs1 imm)]
+     (slti-instr m rd rs1 imm)]
     [(and (bveq funct3 (bv #b011 3)) (bveq opcode (bv #b0010011 7)))
-      (sltiu-instr m rd rs1 imm)
-      (list 'sltiu rd rs1 imm)]
+     (sltiu-instr m rd rs1 imm)]
     [(and (bveq funct3 (bv #b100 3)) (bveq opcode (bv #b0010011 7)))
-      (xori-instr m rd rs1 imm)
-      (list 'xori rd rs1 imm)]
+     (xori-instr m rd rs1 imm)]
     [(and (bveq funct3 (bv #b110 3)) (bveq opcode (bv #b0010011 7)))
-      (ori-instr m rd rs1 imm)
-      (list 'ori rd rs1 imm)]
+     (ori-instr m rd rs1 imm)]
     [(and (bveq funct3 (bv #b111 3)) (bveq opcode (bv #b0010011 7)))
-      (andi-instr m rd rs1 imm)
-      (list 'andi rd rs1 imm)]
+     (andi-instr m rd rs1 imm)]
     [(and (bveq funct3 (bv #b001 3)) (bveq opcode (bv #b0010011 7)))
-      ; TODO: Check if supposed to be 24?
-      (slli-instr m rd rs1 (extract 24 20 b_instr))
-      (list 'slli rd rs1 (extract 24 20 b_instr))]
+     ; TODO: Check if supposed to be 24?
+     (slli-instr m rd rs1 (extract 24 20 b_instr))]
     [(and (bveq funct3 (bv #b101 3)) (bveq opcode (bv #b0010011 7)) (bveq shift_type (bv #b0 1)))
-      (srli-instr m rd rs1 (extract 25 20 b_instr))
-      (list 'srli rd rs1 (extract 25 20 b_instr))]
+     (srli-instr m rd rs1 (extract 25 20 b_instr))]
     [(and (bveq funct3 (bv #b101 3)) (bveq opcode (bv #b0010011 7)) (bveq shift_type (bv #b1 1)))
-      (srai-instr m rd rs1 (extract 25 20 b_instr))
-      (list 'srai rd rs1 (extract 25 20 b_instr))] 
+     (srai-instr m rd rs1 (extract 25 20 b_instr))]
     [(and (bveq funct3 (bv #b000 3)) (bveq opcode (bv #b0011011 7)))
-      ; TODO: Check if supposed to be normal imm
-      (addiw-instr m rd rs1 imm)
-      (list 'addiw rd rs1 imm)]
+     ; TODO: Check if supposed to be normal imm
+     (addiw-instr m rd rs1 imm)]
     [(and (bveq funct3 (bv #b001 3)) (bveq opcode (bv #b0011011 7)))
-      (slliw-instr m rd rs1 (extract 25 20 b_instr))
-      (list 'slliw rd rs1 (extract 25 20 b_instr))]
+     (slliw-instr m rd rs1 (extract 25 20 b_instr))]
     [(and (bveq funct3 (bv #b101 3)) (bveq opcode (bv #b0011011 7)) (bveq shift_type (bv #b0 1)))
-      (srliw-instr m rd rs1 (extract 25 20 b_instr))
-      (list 'srliw rd rs1 (extract 25 20 b_instr))]
+     (srliw-instr m rd rs1 (extract 25 20 b_instr))]
     [(and (bveq funct3 (bv #b101 3)) (bveq opcode (bv #b0011011 7)) (bveq shift_type (bv #b1 1)))
-      (sraiw-instr m rd rs1 (extract 25 20 b_instr))
-      (list 'sraiw rd rs1 (extract 25 20 b_instr))]
+     (sraiw-instr m rd rs1 (extract 25 20 b_instr))]
     [else
-      ; (printf "No such I FMT ~n")
-      'illegal-instruction]))
+     ; (printf "No such I FMT ~n")
+     'illegal-instruction]))
 
 (define (execute-B m b_instr)
   (define funct3 (extract 14 12 b_instr))
@@ -141,26 +109,20 @@
                 (extract 11 8 b_instr)))
   (cond
     [(bveq funct3 (bv #b000 3))
-      (beq-instr m rs1 rs2 imm)
-      (list 'beq rs1 rs2 imm)]
+     (beq-instr m rs1 rs2 imm)]
     [(bveq funct3 (bv #b001 3))
-      (bne-instr m rs1 rs2 imm)
-      (list 'bne rs1 rs2 imm)]
+     (bne-instr m rs1 rs2 imm)]
     [(bveq funct3 (bv #b100 3))
-      (blt-instr m rs1 rs2 imm)
-      (list 'blt rs1 rs2 imm)]
+     (blt-instr m rs1 rs2 imm)]
     [(bveq funct3 (bv #b101 3))
-      (bge-instr m rs1 rs2 imm)
-      (list 'bge rs1 rs2 imm)]
+     (bge-instr m rs1 rs2 imm)]
     [(bveq funct3 (bv #b110 3))
-      (bltu-instr m rs1 rs2 imm)
-      (list 'bltu rs1 rs2 imm)]
+     (bltu-instr m rs1 rs2 imm)]
     [(bveq funct3 (bv #b111 3))
-      (bgeu-instr m rs1 rs2 imm)
-      (list 'bgeu rs1 rs2 imm)]
+     (bgeu-instr m rs1 rs2 imm)]
     [else
-      ; (printf "No such B FMT ~n")
-      'illegal-instruction]))
+     ; (printf "No such B FMT ~n")
+     'illegal-instruction]))
 
 (define (execute-U m b_instr)
   (define opcode (extract 6 0 b_instr))
@@ -169,14 +131,12 @@
   (define imm (extract 31 12 b_instr))
   (cond
     [(bveq opcode (bv #b0110111 7))
-      (lui-instr m rd imm)
-      (list 'lui rd imm)]
+     (lui-instr m rd imm)]
     [(bveq opcode (bv #b0010111 7))
-      (auipc-instr m rd imm)
-      (list 'auipc rd imm)]
+     (auipc-instr m rd imm)]
     [else
-      ; (printf "No such U FMT ~n")
-      'illegal-instruction]))
+     ; (printf "No such U FMT ~n")
+     'illegal-instruction]))
 
 (define (execute-S m b_instr)
   (define opcode (extract 6 0 b_instr))
@@ -188,20 +148,16 @@
                 (extract 11 7 b_instr)))
   (cond
     [(and (bveq funct3 (bv #b000 3)) (bveq opcode (bv #b0100011 7)))
-      (sb-instr m rs1 rs2 imm)
-      (list 'sb rs1 rs2 imm)]
+     (sb-instr m rs1 rs2 imm)]
     [(and (bveq funct3 (bv #b001 3)) (bveq opcode (bv #b0100011 7)))
-      (sh-instr m rs1 rs2 imm)
-      (list 'sh rs1 rs2 imm)]
+     (sh-instr m rs1 rs2 imm)]
     [(and (bveq funct3 (bv #b010 3)) (bveq opcode (bv #b0100011 7)))
-      (sw-instr m rs1 rs2 imm)
-      (list 'sw rs1 rs2 imm)]
+     (sw-instr m rs1 rs2 imm)]
     [(and (bveq funct3 (bv #b011 3)) (bveq opcode (bv #b0100011 7)))
-      (sd-instr m rs1 rs2 imm)
-      (list 'sd rs1 rs2 imm)]
+     (sd-instr m rs1 rs2 imm)]
     [else
-      ; (printf "No such S FMT ~n")
-      'illegal-instruction]))
+     ; (printf "No such S FMT ~n")
+     'illegal-instruction]))
 
 (define (execute-J m b_instr)
   (define opcode (extract 6 0 b_instr))
@@ -213,11 +169,10 @@
                 (extract 30 21 b_instr)))
   (cond
     [(bveq opcode (bv #b1101111 7))
-      (jal-instr m rd imm)
-      (list 'jal rd imm)]
+     (jal-instr m rd imm)]
     [else
-      ; (printf "No such J FMT ~n")
-      'illegal-instruction]))
+     ; (printf "No such J FMT ~n")
+     'illegal-instruction]))
 
 (define (execute-SYSTEM m b_instr)
   (define opcode (extract 6 0 b_instr))
@@ -229,17 +184,13 @@
      (define funct12 (extract 31 20 b_instr))
      (cond
        [(bveq funct12 (bv #b001100000010 12))
-        (mret-instr m)
-        (list 'mret)]
+        (mret-instr m)]
        [(bveq funct12 (bv #b000000000010 12))
-        (uret-instr m)
-        (list 'uret)]
+        (uret-instr m)]
        [(bveq funct12 (bv #b000000000000 12))
-        (ecall-instr m)
-        (list 'ecall)]
+        (ecall-instr m)]
        [(bveq funct12 (bv #b000000000001 12))
-        (ebreak-instr m)
-        (list 'ebreak)]
+        (ebreak-instr m)]
        [else 
         ; (printf "No such SYSTEM FMT ~n")
         'illegal-instruction])]
@@ -249,23 +200,17 @@
      (cond
        [(null? sym_csr) null]
        [(bveq funct3 (bv #b001 3))
-        (csrrw-instr m rd rs1 sym_csr)
-        (list 'csrrw rd rs1 sym_csr)]
+        (csrrw-instr m rd rs1 sym_csr)]
        [(bveq funct3 (bv #b010 3))
-        (csrrs-instr m rd rs1 sym_csr)
-        (list 'csrrs rd rs1 sym_csr)]
+        (csrrs-instr m rd rs1 sym_csr)]
        [(bveq funct3 (bv #b011 3))
-        (csrrc-instr m rd rs1 sym_csr)
-        (list 'csrrc rd rs1 sym_csr)]
+        (csrrc-instr m rd rs1 sym_csr)]
        [(bveq funct3 (bv #b101 3))
-        (csrrwi-instr m rd rs1 sym_csr)
-        (list 'csrrwi rd rs1 sym_csr)]
+        (csrrwi-instr m rd rs1 sym_csr)]
        [(bveq funct3 (bv #b110 3))
-        (csrrsi-instr m rd rs1 sym_csr)
-        (list 'csrrsi rd rs1 sym_csr)]
+        (csrrsi-instr m rd rs1 sym_csr)]
        [(bveq funct3 (bv #b111 3))
-        (csrrci-instr m rd rs1 sym_csr)
-        (list 'csrrci rd rs1 sym_csr)]
+        (csrrci-instr m rd rs1 sym_csr)]
        [else
         ; (printf "No such SYSTEM FMT ~n")
         'illegal-instruction])]))
