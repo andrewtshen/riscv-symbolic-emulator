@@ -84,27 +84,9 @@ dir:
 emulate: all
 	racket emulate.rkt
 
-.PHONY: proof
-proof: all
-	raco test test.rkt
-
 .PHONY: test
 test: all
-	@echo "----------------------"
-	racket init.rkt
-	@echo "----------------------"
-	racket decode.rkt
-	@echo "----------------------"
-	racket fmt.rkt
-	@echo "----------------------"
-	racket execute.rkt
-	@echo "----------------------"
-	racket test.rkt
-	@echo "----------------------"
-	racket machine.rkt
-	@echo "----------------------"
-	racket emulate.rkt
-	@echo "----------------------"
+	raco test test.rkt
 
 .PHONY: clean
 clean:
