@@ -33,21 +33,6 @@
         decoded_instr))
 (provide step)
 
-; (define (step m)
-;   (define next_instr
-;     (if (use-sym-optimizations)
-;         (fresh-symbolic next_instr (bitvector 32)) ; fetch arbitrary instruction
-;         (get-next-instr m))) ; fetch actual instruction
-;   ; (define next_instr (bv #x80f10023 32)) ; use a concrete instruction
-;   ; (printf "next_instr: ~a~n" next_instr)
-;   (define decoded_instr
-;     (cond
-;       [(null? next_instr) null]
-;       [else (execute m next_instr)]))
-;   ; (printf "decoded_instr: ~a~n" decoded_instr)
-;   decoded_instr)
-; (provide step)
-
 ; get instructions until reach mret
 (define (execute-until-mret m)
   (let loop ([decoded_instr (step m)])

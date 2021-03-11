@@ -198,7 +198,6 @@
      (define csr (extract 31 20 b_instr))
      (define sym_csr (decode-csr csr))
      (cond
-       [(null? sym_csr) null]
        [(bveq funct3 (bv #b001 3))
         (csrrw-instr m rd rs1 sym_csr)]
        [(bveq funct3 (bv #b010 3))
@@ -233,6 +232,7 @@
 (provide execute)
 
 (define (decode-csr b_csr)
+  ; (printf "CSR: ~a~n" b_csr)
   (cond
     [(bveq b_csr (bv #x000 12)) 'ustatus]
     [(bveq b_csr (bv #x004 12)) 'uie]

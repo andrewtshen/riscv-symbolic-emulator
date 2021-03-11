@@ -10,6 +10,8 @@
   "print-utils.rkt")
 (require (only-in racket/base 
   parameterize for in-range for* define-syntax-rule symbol?))
+(require (only-in racket
+  class init super-new define/public send object%))
 (require profile)
 
 ; (printf "* Running boot sequence test ~n")

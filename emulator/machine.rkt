@@ -88,7 +88,7 @@
     [(eq? csr 'pmpaddr15) (pmpaddr-value (pmp-pmpaddri (machine-pmp m) 15))]
     [else
      ; (printf "No such CSR: ~a~n" csr)
-     null]))
+     'illegal-instruction]))
 (provide machine-csr)
 
 (define (set-machine-csr! m csr val)

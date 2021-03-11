@@ -10,8 +10,11 @@
 ; Conventions used for decoding are as follows: v_var represents the bitvector value stored in register var. Otherwise,
 ; the variable var contains the index into the register that it refers to.
 
-; Execute Instruction
-; SPECIAL Format
+
+;; Execute Instruction
+
+
+;; SPECIAL Format
 (define (ecall-instr m)
   ; TODO: real ecall implementation
   (define pc (machine-pc m))
@@ -113,7 +116,7 @@
 (provide csrrci-instr)
 
 
-; I Format
+;; I Format
 (define (addi-instr m rd rs1 imm)
   (define pc (machine-pc m))
   (define se_imm (sign-extend imm (bitvector 64)))
@@ -375,7 +378,7 @@
 (provide jalr-instr)
 
 
-; R Format
+;; R Format
 (define (add-instr m rd rs1 rs2)
   (define pc (machine-pc m))
   (define v_rs1 (get-gprs-i (machine-gprs m) rs1))
@@ -582,7 +585,7 @@
 (provide remuw-instr)
 
 
-; B Format
+;; B Format
 (define (beq-instr m rs1 rs2 imm)
   (define pc (machine-pc m))
   (define v_rs1 (get-gprs-i (machine-gprs m)rs1))
@@ -664,7 +667,7 @@
 (provide auipc-instr)
 
 
-; S Format
+;; S Format
 (define (sb-instr m rs1 rs2 imm)
   (define pc (machine-pc m))
   (define nbits 8)
@@ -742,7 +745,7 @@
 (provide sd-instr)
 
 
-; J Format
+;; J Format
 (define (jal-instr m rd imm)
   (define pc (machine-pc m))
   (define se_imm (sign-extend (concat imm (bv 0 1)) (bitvector 64)))
@@ -757,7 +760,7 @@
 (provide jal-instr)
 
 
-; FENCE Format
+;; FENCE Format
 (define (FENCE-instr m)
   ; TODO: FENCE instruction not implemented yet
   (define pc (machine-pc m))
