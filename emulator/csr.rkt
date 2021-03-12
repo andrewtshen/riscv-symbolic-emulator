@@ -9,8 +9,8 @@
 (define-simple-macro (fresh-symbolic name type)
   (let () (define-symbolic* name type) name))
 
-
-;; Structs to Build csr Vector
+;; CSR Constants
+; For more info: https://github.com/d0iasm/rvemu/blob/main/src/csr.rs
 
 (define MXLEN 64)
 ; The number of CSRs. The field is 12 bits so the maximum kind of CSRs is 4096 (2**12).
