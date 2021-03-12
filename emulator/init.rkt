@@ -24,7 +24,6 @@
   (if (use-concrete-mem)
     (build-vector n (lambda (i) (bv 0 size)))
     (build-vector n (lambda (i) (define-symbolic* m (bitvector size)) m))))
-; set mem to 0 for testing with qemu
 
 (define-simple-macro (fresh-symbolic name type)
   (let () (define-symbolic* name type) name))
