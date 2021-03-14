@@ -80,9 +80,9 @@
   (define gprs (make-sym-vector 31 64 gpr))
   (for [(i (in-range 1 32))]
     (set-gprs-i! gprs i (bv 0 64)))
-  (set-gprs-i! gprs 5 (bv #x80000000 64))
-  (set-gprs-i! gprs 9 (bv #x0 64))
-  (set-gprs-i! gprs 10 (bv 1020 64))
+
+  (set-gprs-i! gprs 10 (bv #x0 64))
+  (set-gprs-i! gprs 11 (bv 1020 64))
 
   (machine
    (cpu 

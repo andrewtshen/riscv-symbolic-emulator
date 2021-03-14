@@ -5,11 +5,12 @@
   "parameters.rkt"
   "concrete-optimizations.rkt")
 (require (only-in racket/base
-  for for/list in-range values))
+                  for for/list in-range values))
 (require syntax/parse/define)
 
+
 (define-simple-macro (fresh-symbolic name type)
-  (let () (define-symbolic* name type) name))
+                     (let () (define-symbolic* name type) name))
 (provide fresh-symbolic)
 
 ;; Structs to Build the Machine
@@ -56,7 +57,7 @@
 (define (set-gprs-i! gprs i val)
   (cond 
     [(and (< 0 i) (< i 32))
-      (vector-set! gprs (- i 1) val)]
+     (vector-set! gprs (- i 1) val)]
     [(zero? i) #f]
     [else null]))
 (provide set-gprs-i!)
@@ -175,16 +176,17 @@
   ; nbytes is always concrete so it is okay to use (bv x 64) here
   (define eaddr (bvadd addr (bv (* nbytes 8) 64) (base-address)))
   (define legal
-      (if (use-concrete-optimizations)
+    (if (use-concrete-optimizations)
         (concrete-pmp-check (machine-pmp m) (machine-mode m) saddr eaddr)
         (pmp-check (machine-pmp m) (machine-mode m) saddr eaddr)))
-
+  
   (if (or (equal? (machine-mode m) 1) legal)
-    (cond
-      [(use-sym-optimizations) (fresh-symbolic val (bitvector (* nbytes 8)))]
-      [(use-concrete-optimizations) (concrete-bytearray-read (machine-ram m) addr nbytes)]
-      [else (bytearray-read (machine-ram m) addr nbytes)])
-    null))
+      ; TODO: review this code -- seems sort of strange unintended behaviour
+      (cond
+        [(use-sym-optimizations) (fresh-symbolic val (bitvector (* nbytes 8)))]
+        [(use-concrete-optimizations) (concrete-bytearray-read (machine-ram m) addr nbytes)]
+        [else (bytearray-read (machine-ram m) addr nbytes)])
+      'illegal-instruction))
 (provide machine-ram-read)
 
 (define (bytearray-read ba addr nbytes)
@@ -202,13 +204,14 @@
   (define eaddr (bvadd addr (bv (sub1 (/ nbits 8)) 64) (base-address)))
   (define legal
     (if (use-concrete-optimizations)
-      (concrete-pmp-check (machine-pmp m) (machine-mode m) saddr eaddr)
-      (pmp-check (machine-pmp m) (machine-mode m) saddr eaddr)))
-
+        (concrete-pmp-check (machine-pmp m) (machine-mode m) saddr eaddr)
+        (pmp-check (machine-pmp m) (machine-mode m) saddr eaddr)))
+  ; (printf "saddr/eaddr: ~a ~a~n Legal: ~a~n Machine mode: ~a~n" saddr eaddr legal (machine-mode m))
+  
   ; machine mode (1) or legal, we can read the memory
-  (when (or (equal? (machine-mode m) 1) legal)
+  (when legal
     (bytearray-write! m addr value nbits))
-
+  
   legal)
 (provide machine-ram-write!)
 

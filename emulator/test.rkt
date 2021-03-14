@@ -7,7 +7,8 @@
   "pmp.rkt"
   "execute.rkt"
   "parameters.rkt"
-  "print-utils.rkt")
+  "print-utils.rkt"
+  "instr.rkt")
 (require (only-in racket/base 
                   custodian-limit-memory current-custodian parameterize call-with-parameterization
                   parameterize* for for/list for/vector in-range))
@@ -94,7 +95,8 @@
 
 (define (assert-mem-equal m1 m2 pos)
   ; Assert that memory is equal between machines m1 and m2
-  (assert (bveq (memory-read (machine-ram m1) pos) (memory-read (machine-ram m2) pos))))
+  (assert (bveq (memory-read (machine-ram m1) pos)
+                (memory-read (machine-ram m2) pos))))
 (provide assert-mem-equal)
 
 ;; Sanity Checks for Individual Instructions
@@ -434,37 +436,32 @@
                                   ([use-sym-optimizations #f]
                                    [use-debug-mode #f]
                                    [ramsize-log2 32])
-                                  (step m)))
-             
+                                  (step m)))             
              (define-symbolic* sym-idx (bitvector 32))
              
-             ; Currently PMP allows user to only write in the region 0x0 --> 0x1FFFF
-             (clear-asserts!)
+             ; Currently PMP allows user to only write in the region 0x20000 --> 0x3FFFF
              (define model_noninterference
                (verify
-                 #:assume
-                 (assert (and (not (bvule (bv #x20000 32) sym-idx) (bvule sym-idx (bv #x3FFFF 32)))))
-                 #:guarantee
-                 (assert-mem-equal m m1 sym-idx)))
+                 (begin
+                   (assume (or (bvult sym-idx (bv #x20000 32)) (bvult (bv #x3FFFF 32) sym-idx)))
+                   (assert-mem-equal m m1 sym-idx))))
              (check-true (unsat? model_noninterference))
              
              ; Check the upper/lower bounds of the user region
-             (clear-asserts!)
+             (clear-vc!)
              (define model_ubound
                (verify
-                 #:assume
-                 (assert (bveq sym-idx (bv #x3FFFF 32)))
-                 #:guarantee
-                 (assert-mem-equal m m1 sym-idx)))
+                 (begin
+                   (assume (bveq sym-idx (bv #x3FFFF 32)))
+                   (assert-mem-equal m m1 sym-idx))))
              (check-true (not (unsat? model_ubound)))
              
-             (clear-asserts!)
+             (clear-vc!)
              (define model_lbound
                (verify
-                 #:assume
-                 (assert (bveq sym-idx (bv #x20000 32)))
-                 #:guarantee
-                 (assert-mem-equal m m1 sym-idx)))
+                 (begin
+                   (assume (bveq sym-idx (bv #x20000 32)))
+                   (assert-mem-equal m m1 sym-idx))))
              (check-true (not (unsat? model_lbound))))
   (test-case "mode test"
              (clear-terms!)
@@ -482,7 +479,7 @@
                   [ramsize-log2 32])
                  (step m)))
              
-             (clear-asserts!)
+             (clear-vc!)
              (define model_mode
                (verify (assert
                          (or (equal? (machine-mode m) (machine-mode m1))
@@ -506,7 +503,7 @@
                   [ramsize-log2 32])
                  (step m)))
              
-             (clear-asserts!)
+             (clear-vc!)
              (define model_only_user_mode
                (verify (assert (equal? (machine-mode m) 0))))
              (check-true (unsat? model_only_user_mode)))
@@ -526,7 +523,7 @@
                   [ramsize-log2 32])
                  (step m)))
              
-             (clear-asserts!)
+             (clear-vc!)
              (define model_only_user_mode
                (verify (assert
                          (not (and (bveq (machine-pc m) (bvsub (machine-csr m 'mtvec) (base-address)))
@@ -548,12 +545,12 @@
                   [ramsize-log2 32])
                  (step m)))
              
-             (clear-asserts!)
+             (clear-vc!)
              (define model_does_not_return_null
                (verify (assert
                          (not (equal? next_instr null)))))
              (check-true (unsat? model_does_not_return_null))
-             (clear-asserts!)
+             (clear-vc!)
              (define model_does_return_illegal_instr
                (verify (assert (not (equal? next_instr 'illegal-instruction)))))
              (check-true (not (unsat? model_does_return_illegal_instr)))))
@@ -595,7 +592,7 @@
              ; Create machine in the OK state
              (define m
                (parameterize
-                 ([ramsize-log2 20])
+                 ([ramsize-log2 32])
                  (init-machine)))
              
              ; Create a copy of the machine and take arbitrary step
@@ -604,7 +601,7 @@
                (parameterize
                  ([use-sym-optimizations #f]
                   [use-debug-mode #f]
-                  [ramsize-log2 20])
+                  [ramsize-log2 32])
                  (step m)))
              
              ; Check that mode of m1 is either equal to the mtvec or user mode
@@ -617,28 +614,26 @@
              (check-true (unsat? model_mode))
              
              ; Check that m1 is in an OK state
-             (clear-asserts!)
              (define model_OK (verify (assert-OK m1)))
              (check-true (unsat? model_OK))
              
              ; Check that memory between m and m1 is same except for in user memory;
              ; (0x20000 -> 0x3FFFF)
-             (clear-asserts!)
-             (define-symbolic* sym-idx (bitvector 20))
+             ; TODO: check if it is 32 or 20 for mem access
+             (define-symbolic* sym-idx (bitvector 32))
              (define model_noninterference
                (verify
-                 #:assume
-                 (assert (and (not (bvule (bv #x20000 32) sym-idx) (bvule sym-idx (bv #x3FFFF 32)))))
-                 #:guarantee
-                 (assert-mem-equal m m1 sym-idx)))
+                 (begin
+                   (assume (or (bvult sym-idx (bv #x20000 32)) (bvult (bv #x3FFFF 32) sym-idx)))
+                   (assert-mem-equal m m1 sym-idx))))
              (check-true (unsat? model_noninterference))))
 
-(define res-instruction-check (run-tests instruction-check))
-(define res-utils (run-tests utils))
-(define res-high-level-test (run-tests high-level-test))
-(define res-step-checks (run-tests step-checks))
+; (define res-instruction-check (run-tests instruction-check))
+; (define res-utils (run-tests utils))
+; (define res-high-level-test (run-tests high-level-test))
+; (define res-step-checks (run-tests step-checks))
 
-;; Testing the base case and inductive step
+; ;; Testing the base case and inductive step
 
 (define res-boot-sequence (time (run-tests boot-sequence)))
 (define res-inductive-step (time (run-tests inductive-step)))
