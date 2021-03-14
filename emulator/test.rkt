@@ -568,7 +568,7 @@
                  ([use-sym-optimizations #f]
                   [use-debug-mode #f]
                   [use-fnmem #f]
-                  [use-concrete-optimizations #t])
+                  [use-concrete-optimizations #f])
                  (init-machine-with-prog program)))
              (parameterize
                ([use-sym-optimizations #f]
@@ -578,7 +578,6 @@
                (execute-until-mret m))
              
              ; Check that after boot sequence machine mode is user mode (0) and in OK state
-             (print-pmp m)
              (check-true (equal? (machine-mode m) 0))
              (assert-OK m)))
 
@@ -592,15 +591,15 @@
              ; Create machine in the OK state
              (define m
                (parameterize
-                 ([ramsize-log2 32])
+                 ([use-sym-optimizations #t]
+                  [ramsize-log2 32])
                  (init-machine)))
              
              ; Create a copy of the machine and take arbitrary step
              (define m1 (deep-copy-machine m))
              (define next_instr
                (parameterize
-                 ([use-sym-optimizations #f]
-                  [use-debug-mode #f]
+                 ([use-sym-optimizations #t]
                   [ramsize-log2 32])
                  (step m)))
              
@@ -628,10 +627,10 @@
                    (assert-mem-equal m m1 sym-idx))))
              (check-true (unsat? model_noninterference))))
 
-; (define res-instruction-check (run-tests instruction-check))
-; (define res-utils (run-tests utils))
-; (define res-high-level-test (run-tests high-level-test))
-; (define res-step-checks (run-tests step-checks))
+(define res-instruction-check (run-tests instruction-check))
+(define res-utils (run-tests utils))
+(define res-high-level-test (run-tests high-level-test))
+(define res-step-checks (run-tests step-checks))
 
 ; ;; Testing the base case and inductive step
 
