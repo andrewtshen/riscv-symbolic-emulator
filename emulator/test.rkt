@@ -86,8 +86,8 @@
               (pmpaddr-startaddr p)
               (pmpaddr-endaddr p)))
           (pmp-numimplemented (csrs-pmp (cpu-csrs (machine-cpu m))))))
-      (for/vector ([i (cpu-gprs (machine-cpu m))])
-        i)
+      (for/vector ([gpr (cpu-gprs (machine-cpu m))])
+        gpr)
       (machine-pc m))
     (machine-ram m)
     (machine-mode m)))
@@ -101,6 +101,7 @@
 
 ;; Sanity Checks for Individual Instructions
 
+; TODO: change list-ref stuff here to use get-gprs-i
 (define-test-suite
   instruction-check
   (test-case "add test"
@@ -116,7 +117,7 @@
                (execute-until-mret m))
              (define gprsx
                (for/list ([i (in-range 10 18)])
-                 (get-gprs-i (machine-gprs m) i)))
+                 (get-gprs-i (machine-gprs m) (bv i 5))))
              (define model_add
                (verify (begin (assert
                                 (bveq (bvadd (list-ref gprsx 5) (list-ref gprsx 7))
@@ -132,7 +133,7 @@
                (execute-until-mret m))
              (define gprsx
                (for/list ([i (in-range 10 18)])
-                 (get-gprs-i (machine-gprs m) i)))
+                 (get-gprs-i (machine-gprs m) (bv i 5))))
              (define model_addi
                (verify (begin (assert
                                 (bveq (list-ref gprsx 6)
@@ -148,7 +149,7 @@
                (execute-until-mret m))
              (define gprsx
                (for/list ([i (in-range 10 18)])
-                 (get-gprs-i (machine-gprs m) i)))
+                 (get-gprs-i (machine-gprs m) (bv i 5))))
              (define model_addw
                (verify (begin (assert
                                 (bveq (list-ref gprsx 6)
@@ -180,7 +181,7 @@
                (execute-until-mret m))
              (define gprsx
                (for/list ([i (in-range 10 18)])
-                 (get-gprs-i (machine-gprs m) i)))
+                 (get-gprs-i (machine-gprs m) (bv i 5))))
              ; doubleword, use all bits
              (define model_sd_ld
                (verify (begin (assert
@@ -197,7 +198,7 @@
                (execute-until-mret m))
              (define gprsx
                (for/list ([i (in-range 10 18)])
-                 (get-gprs-i (machine-gprs m) i)))
+                 (get-gprs-i (machine-gprs m) (bv i 5))))
              ; word, index into the 32 lower bits
              (define model_sw_lw
                (verify (begin (assert
@@ -214,7 +215,7 @@
                (execute-until-mret m))
              (define gprsx
                (for/list ([i (in-range 10 18)])
-                 (get-gprs-i (machine-gprs m) i)))
+                 (get-gprs-i (machine-gprs m) (bv i 5))))
              ; half-word, index into the 15 lower bits
              (define model_sh_lh
                (verify (begin (assert
@@ -231,7 +232,7 @@
                (execute-until-mret m))
              (define gprsx
                (for/list ([i (in-range 10 18)])
-                 (get-gprs-i (machine-gprs m) i)))
+                 (get-gprs-i (machine-gprs m) (bv i 5))))
              ; half-word, index into the 15 lower bits
              (define model_sb_lb
                (verify (begin (assert
@@ -248,7 +249,7 @@
                (execute-until-mret m))
              (define gprsx
                (for/list ([i (in-range 10 18)])
-                 (get-gprs-i (machine-gprs m) i)))
+                 (get-gprs-i (machine-gprs m) (bv i 5))))
              (define model_srliw
                (verify (begin (assert
                                 (and (bveq (list-ref gprsx 1) (bv #xffffffffffffffff 64))
@@ -267,7 +268,7 @@
                (execute-until-mret m))
              (define gprsx
                (for/list ([i (in-range 10 18)])
-                 (get-gprs-i (machine-gprs m) i)))
+                 (get-gprs-i (machine-gprs m) (bv i 5))))
              (define model_addiw
                (verify (begin (assert (and (bveq (list-ref gprsx 1) (bv #x000000007fffffff 64))
                                            (bveq (list-ref gprsx 2) (bv #xffffffff800007fe 64))
@@ -359,7 +360,6 @@
              (define program (file->bytearray "build/pmp.bin"))
              (define m (init-machine-with-prog program))
              (execute-until-mret m)
-             ; (print-pmp m)
              (check-equal? (machine-mode m) 0)
              (check-true (pmp-check (machine-pmp m) (machine-mode m)
                                     (bv #x80800000 64) (bv #x80800000 64)))

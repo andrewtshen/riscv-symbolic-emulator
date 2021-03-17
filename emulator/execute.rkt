@@ -9,10 +9,10 @@
 ; Decode and execute all of the binary instructions and instruction as list
 
 (define (execute-R m b_instr)
-  (define rd (bitvector->natural (extract 11 7 b_instr)))
+  (define rd (extract 11 7 b_instr))
   (define funct3 (extract 14 12 b_instr))
-  (define rs1 (bitvector->natural (extract 19 15 b_instr)))
-  (define rs2 (bitvector->natural (extract 24 20 b_instr)))
+  (define rs1 (extract 19 15 b_instr))
+  (define rs2 (extract 24 20 b_instr))
   (define funct7 (extract 31 25 b_instr))
   (cond
     [(and (bveq funct3 (bv #b000 3)) (bveq funct7 (bv #b0000000 7)))
@@ -42,9 +42,9 @@
 (define (execute-I m b_instr)
   ; TODO Could group by opcode first and then check for funct3
   (define opcode (extract 6 0 b_instr))
-  (define rd (bitvector->natural (extract 11 7 b_instr)))
+  (define rd (extract 11 7 b_instr))
   (define funct3 (extract 14 12 b_instr))
-  (define rs1 (bitvector->natural (extract 19 15 b_instr)))
+  (define rs1 (extract 19 15 b_instr))
   (define imm (extract 31 20 b_instr))
   (define shift_type (extract 30 30 b_instr))
   (cond
@@ -99,8 +99,8 @@
 
 (define (execute-B m b_instr)
   (define funct3 (extract 14 12 b_instr))
-  (define rs1 (bitvector->natural (extract 19 15 b_instr)))
-  (define rs2 (bitvector->natural (extract 24 20 b_instr)))
+  (define rs1 (extract 19 15 b_instr))
+  (define rs2 (extract 24 20 b_instr))
   ; append upper imm and lower imm into imm
   (define imm (concat 
                 (extract 31 31 b_instr) 
@@ -127,7 +127,7 @@
 (define (execute-U m b_instr)
   (define opcode (extract 6 0 b_instr))
   ; append upper imm and lower imm into imm
-  (define rd (bitvector->natural (extract 11 7 b_instr)))
+  (define rd (extract 11 7 b_instr))
   (define imm (extract 31 12 b_instr))
   (cond
     [(bveq opcode (bv #b0110111 7))
@@ -141,8 +141,8 @@
 (define (execute-S m b_instr)
   (define opcode (extract 6 0 b_instr))
   (define funct3 (extract 14 12 b_instr))
-  (define rs1 (bitvector->natural (extract 19 15 b_instr)))
-  (define rs2 (bitvector->natural (extract 24 20 b_instr)))
+  (define rs1 (extract 19 15 b_instr))
+  (define rs2 (extract 24 20 b_instr))
   (define imm (concat
                 (extract 31 25 b_instr)
                 (extract 11 7 b_instr)))
@@ -161,7 +161,7 @@
 
 (define (execute-J m b_instr)
   (define opcode (extract 6 0 b_instr))
-  (define rd (bitvector->natural (extract 11 7 b_instr)))
+  (define rd (extract 11 7 b_instr))
   (define imm (concat
                 (extract 31 31 b_instr)
                 (extract 19 12 b_instr)
@@ -176,9 +176,9 @@
 
 (define (execute-SYSTEM m b_instr)
   (define opcode (extract 6 0 b_instr))
-  (define rd (bitvector->natural (extract 11 7 b_instr)))
+  (define rd (extract 11 7 b_instr))
   (define funct3 (extract 14 12 b_instr))
-  (define rs1 (bitvector->natural (extract 19 15 b_instr)))
+  (define rs1 (extract 19 15 b_instr))
   (cond
     [(bveq funct3 (bv #b000 3))
      (define funct12 (extract 31 20 b_instr))

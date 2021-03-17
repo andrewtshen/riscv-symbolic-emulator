@@ -68,7 +68,7 @@
   (define pc (machine-pc m))
   (when (equal? (machine-mode m) 1)
     (define v_rs1 (get-gprs-i (machine-gprs m) rs1))
-    (when (not (zero? rd))
+    (when (not (bvzero? rd))
       (define v_csr (machine-csr m csr))
       (set-gprs-i! (machine-gprs m) rd (zero-extend v_csr (bitvector 64))))
     ; TODO: Implement specific setting permissions for CSR bits
@@ -85,7 +85,7 @@
     (set-gprs-i! (machine-gprs m) rd (zero-extend v_csr (bitvector 64)))
     
     ; TODO: Implement specific setting permissions for CSR bits
-    (when (not (zero? rs1))
+    (when (not (bvzero? rs1))
       (set-machine-csr! m csr (bvor v_csr v_rs1)))
     (set-machine-pc! m (bvadd pc (bv 4 64))))
   (list 'csrrs rd rs1 csr))
@@ -122,9 +122,9 @@
   (define se_imm (sign-extend imm (bitvector 64)))
   ; nop op pseudo code condition
   (cond
-    [(not (and (equal? rd 0) (equal? rs1 0) (bveq se_imm (bv 0 64))))
+    [(not (and (bvzero? rd) (bvzero? rs1) (bveq se_imm (bv 0 64))))
      (define v_rs1 (get-gprs-i (machine-gprs m) rs1))
-     (when (not (eq? v_rs1 null))
+     (when (not (null? v_rs1))
        (set-machine-pc! m (bvadd pc (bv 4 64)))
        (set-gprs-i! (machine-gprs m) rd (bvadd v_rs1 se_imm)))]
     [else
@@ -213,8 +213,6 @@
 
 (define (addiw-instr m rd rs1 imm)
   (define pc (machine-pc m))
-  (when (debug-instr)
-    (printf "~a ~a ~a ~a~n" 'addiw rd rs1 imm))
   (define v_rs1 (get-gprs-i (machine-gprs m) rs1))
   (define se_imm (sign-extend imm (bitvector 64)))
   (define 32bit_sum (extract 31 0 (bvadd v_rs1 se_imm)))
@@ -371,7 +369,7 @@
   (define adj_addr (bvsub addr (base-address)))
   
   (define save (bvadd pc (bv 4 64)))
-  (when (not (equal? rd 0))
+  (when (not (bvzero? rd))
     (set-gprs-i! (machine-gprs m) rd save))
   (set-machine-pc! m adj_addr)
   (list 'jalr rd rs1 imm))
@@ -588,9 +586,9 @@
 ;; B Format
 (define (beq-instr m rs1 rs2 imm)
   (define pc (machine-pc m))
-  (define v_rs1 (get-gprs-i (machine-gprs m)rs1))
-  (define v_rs2 (get-gprs-i (machine-gprs m)rs2))
-  (if (equal? v_rs1 v_rs2)
+  (define v_rs1 (get-gprs-i (machine-gprs m) rs1))
+  (define v_rs2 (get-gprs-i (machine-gprs m) rs2))
+  (if (bveq v_rs1 v_rs2)
       (set-machine-pc! m (bvadd pc (bvmul (sign-extend imm (bitvector 64)) (bv 2 64))))
       (set-machine-pc! m (bvadd pc (bv 4 64))))
   (list 'beq rs1 rs2 imm))
@@ -598,9 +596,9 @@
 
 (define (bne-instr m rs1 rs2 imm)
   (define pc (machine-pc m))
-  (define v_rs1 (get-gprs-i (machine-gprs m)rs1))
-  (define v_rs2 (get-gprs-i (machine-gprs m)rs2))
-  (if (not (equal? v_rs1 v_rs2))
+  (define v_rs1 (get-gprs-i (machine-gprs m) rs1))
+  (define v_rs2 (get-gprs-i (machine-gprs m) rs2))
+  (if (not (bveq v_rs1 v_rs2))
       (set-machine-pc! m (bvadd pc (bvmul (sign-extend imm (bitvector 64)) (bv 2 64))))
       (set-machine-pc! m (bvadd pc (bv 4 64))))
   (list 'bne rs1 rs2 imm))
@@ -608,8 +606,8 @@
 
 (define (blt-instr m rs1 rs2 imm)
   (define pc (machine-pc m))
-  (define v_rs1 (get-gprs-i (machine-gprs m)rs1))
-  (define v_rs2 (get-gprs-i (machine-gprs m)rs2))
+  (define v_rs1 (get-gprs-i (machine-gprs m) rs1))
+  (define v_rs2 (get-gprs-i (machine-gprs m) rs2))
   (if (bvslt v_rs1 v_rs2)
       (set-machine-pc! m (bvadd pc (bvmul (sign-extend imm (bitvector 64)) (bv 2 64))))
       (set-machine-pc! m (bvadd pc (bv 4 64))))
@@ -618,8 +616,8 @@
 
 (define (bge-instr m rs1 rs2 imm)
   (define pc (machine-pc m))
-  (define v_rs1 (get-gprs-i (machine-gprs m)rs1))
-  (define v_rs2 (get-gprs-i (machine-gprs m)rs2))
+  (define v_rs1 (get-gprs-i (machine-gprs m) rs1))
+  (define v_rs2 (get-gprs-i (machine-gprs m) rs2))
   (if (bvsge v_rs1 v_rs2)
       (set-machine-pc! m (bvadd pc (bvmul (sign-extend imm (bitvector 64)) (bv 2 64))))
       (set-machine-pc! m (bvadd pc (bv 4 64))))
@@ -753,7 +751,7 @@
   (define save_addr (bvadd (bvadd pc (bv 4 64)) (base-address)))
   ; imm is the offset from pc, so we don't need to do anything with (base-address)
   (define jump_addr (bvadd se_imm pc))
-  (when (not (equal? rd 0))
+  (when (not (bvzero? rd))
     (set-gprs-i! (machine-gprs m) rd save_addr))
   (set-machine-pc! m jump_addr)
   (list 'jal rd imm))

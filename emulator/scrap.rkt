@@ -33,6 +33,7 @@
       (assert (not (pmp-check (machine-pmp m) 0 sym-idx sym-idx))))))
 
 (printf "Model: ~a~n" model)
+
 ; (printf "~a~n" (evaluate sym-idx model))
 ; (printf "~a~n" (pmp-check (machine-pmp m) (machine-mode m) (bv #x0 64) (bv #x0 64)))
 

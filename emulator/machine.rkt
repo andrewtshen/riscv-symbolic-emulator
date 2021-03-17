@@ -46,20 +46,18 @@
 
 ;; gprs Accessors/Mutators
 
+; gprs: vector size 32, i: bitvector 5
 (define (get-gprs-i gprs i)
   (cond
-    [(and (< 0 i) (< i 32))
-     (vector-ref gprs (- i 1))]
-    [(zero? i) (bv 0 64)]
-    [else null]))
+    [(bvzero? i) (bv 0 64)]
+    [else (vector-ref-bv gprs i)]))
 (provide get-gprs-i)
 
+; gprs: vector size 32, i: bitvector 5, val: bitvector 64
 (define (set-gprs-i! gprs i val)
-  (cond 
-    [(and (< 0 i) (< i 32))
-     (vector-set! gprs (- i 1) val)]
-    [(zero? i) #f]
-    [else null]))
+  (cond
+    [(bvzero? i) null]
+    [else (vector-set!-bv gprs i val)]))
 (provide set-gprs-i!)
 
 ; Helpers for accessing csrs from the machine
