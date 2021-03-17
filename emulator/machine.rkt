@@ -143,9 +143,7 @@
 ; Set up state for illegal instruction and return null to signal end of exec
 (define (illegal-instr m)
   (set-machine-pc! m (bvsub (machine-csr m 'mtvec) (base-address)))
-  (set-machine-mode! m 1)
-  ; stop execution of instruction
-  null)
+  (set-machine-mode! m 1))
 (provide illegal-instr)
 
 ;; Memory Reads/Writes
@@ -158,16 +156,16 @@
         (mem addr*))))
 (provide uf-memory-write)
 
-; m: machine, addr, bitvector ramsize-log2, value: bitvector 8
+; m: machine, addr: bitvector ramsize-log2, value: bitvector 8
 (define (vector-memory-write! m addr value)
-  (vector-set! (machine-ram m) (bitvector->natural addr) value))
+  (vector-set!-bv (machine-ram m) addr value))
 (provide vector-memory-write!)
 
 ; mem: uf, addr: bitvector: ramsize-log2, val: bitvector 8
 (define (memory-read mem addr)
   (if (use-fnmem)
       (mem addr)
-      (vector-ref mem (bitvector->natural addr))))
+      (vector-ref-bv mem addr)))
 (provide memory-read)
 
 ; Read an nbytes from a machine-ram ba starting at address addr
@@ -180,8 +178,7 @@
         (concrete-pmp-check (machine-pmp m) (machine-mode m) saddr eaddr)
         (pmp-check (machine-pmp m) (machine-mode m) saddr eaddr)))
   
-  (if (or (equal? (machine-mode m) 1) legal)
-      ; TODO: review this code -- seems sort of strange unintended behaviour
+  (if legal
       (cond
         [(use-sym-optimizations) (fresh-symbolic val (bitvector (* nbytes 8)))]
         [(use-concrete-optimizations) (concrete-bytearray-read (machine-ram m) addr nbytes)]
@@ -206,7 +203,6 @@
     (if (use-concrete-optimizations)
         (concrete-pmp-check (machine-pmp m) (machine-mode m) saddr eaddr)
         (pmp-check (machine-pmp m) (machine-mode m) saddr eaddr)))
-  ; (printf "saddr/eaddr: ~a ~a~n Legal: ~a~n Machine mode: ~a~n" saddr eaddr legal (machine-mode m))
   
   ; machine mode (1) or legal, we can read the memory
   (when legal

@@ -61,7 +61,7 @@
                 ; TODO: Implement locked variant of access, for now just return false (no access)
                 (set! legal #f))))
         (when (null? legal)
-          (set! legal #f))
+          (set! legal (equal? mode 1)))
         legal)))
 (provide concrete-pmp-check)
 
