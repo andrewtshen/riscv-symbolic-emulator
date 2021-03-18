@@ -318,7 +318,7 @@
                (execute-until-mret m))
 
              ; Check that after boot sequence machine mode is user mode (0) and in OK state
-             (check-true (equal? (machine-mode m) 0))
+             (check-true (bveq (machine-mode m) (bv 0 3)))
              (assert-OK m))
   (test-case "kernel test (no concrete optimizations)"
              (clear-terms!)
@@ -339,7 +339,7 @@
                (execute-until-mret m))
 
              ; Check that after boot sequence machine mode is user mode (0) and in OK state
-             (check-true (equal? (machine-mode m) 0))
+             (check-true (bveq (machine-mode m) (bv 0 3)))
              (assert-OK m)))
 
 ;; Sanity Checks for Misc. Utilities
@@ -360,7 +360,7 @@
              (define program (file->bytearray "build/pmp.bin"))
              (define m (init-machine-with-prog program))
              (execute-until-mret m)
-             (check-equal? (machine-mode m) 0)
+             (check-true (bveq (machine-mode m) (bv 0 3)))
              (check-true (pmp-check (machine-pmp m) (machine-mode m)
                                     (bv #x80800000 64) (bv #x80800000 64)))
              (check-true (pmp-check (machine-pmp m) (machine-mode m)
@@ -376,7 +376,7 @@
                                     (bv #x10700001 64) (bv #x107FFFFF 64)))
              (check-equal? (pmp-check (machine-pmp m) (machine-mode m)
                                       (bv #x00700001 64) (bv #x107FFFFF 64)) #f)
-             (check-true (equal? (machine-mode m) 0))
+             (check-true (bveq (machine-mode m) (bv 0 3)))
              (check-equal? (pmp-numimplemented (machine-pmp m)) 3)
              (check-true (not (equal? (pmp-numimplemented (machine-pmp m)) 4)))
              (check-true (not (equal? (pmp-numimplemented (machine-pmp m)) 5)))
@@ -482,10 +482,10 @@
              (clear-vc!)
              (define model_mode
                (verify (assert
-                         (or (equal? (machine-mode m) (machine-mode m1))
+                         (or (bveq (machine-mode m) (machine-mode m1))
                              (and (bveq (machine-pc m)
                                         (bvsub (machine-csr m 'mtvec) (base-address)))
-                                  (equal? (machine-mode m) 1))))))
+                                  (bveq (machine-mode m) (bv 1 3)))))))
              (check-true (unsat? model_mode)))
   (test-case "only user mode test"
              (clear-terms!)
@@ -505,7 +505,7 @@
              
              (clear-vc!)
              (define model_only_user_mode
-               (verify (assert (equal? (machine-mode m) 0))))
+               (verify (assert (bveq (machine-mode m) (bv 0 3)))))
              (check-true (unsat? model_only_user_mode)))
   (test-case "cannot reach mtvec test"
              (clear-terms!)
@@ -527,7 +527,7 @@
              (define model_only_user_mode
                (verify (assert
                          (not (and (bveq (machine-pc m) (bvsub (machine-csr m 'mtvec) (base-address)))
-                                   (equal? (machine-mode m) 1))))))
+                                   (bveq (machine-mode m) (bv 1 3)))))))
              (check-true (unsat? model_only_user_mode)))
   (test-case "does not return null test"
              (clear-terms!)
@@ -578,7 +578,7 @@
                (execute-until-mret m))
              
              ; Check that after boot sequence machine mode is user mode (0) and in OK state
-             (check-true (equal? (machine-mode m) 0))
+             (check-true (bveq (machine-mode m) (bv 0 3)))
              (assert-OK m)))
 
 ;; Test Case for Inductive Step
@@ -606,10 +606,10 @@
              ; Check that mode of m1 is either equal to the mtvec or user mode
              (define model_mode
                (verify (assert
-                         (or (equal? (machine-mode m) (machine-mode m1))
+                         (or (bveq (machine-mode m) (machine-mode m1))
                              (and (bveq (machine-pc m)
                                         (bvsub (machine-csr m 'mtvec) (base-address)))
-                                  (equal? (machine-mode m) 1))))))
+                                  (bveq (machine-mode m) (bv 1 3)))))))
              (check-true (unsat? model_mode))
              
              ; Check that m1 is in an OK state

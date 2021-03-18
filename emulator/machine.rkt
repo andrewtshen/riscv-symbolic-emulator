@@ -141,7 +141,7 @@
 ; Set up state for illegal instruction and return null to signal end of exec
 (define (illegal-instr m)
   (set-machine-pc! m (bvsub (machine-csr m 'mtvec) (base-address)))
-  (set-machine-mode! m 1))
+  (set-machine-mode! m (bv 1 3)))
 (provide illegal-instr)
 
 ;; Memory Reads/Writes

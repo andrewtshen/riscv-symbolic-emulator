@@ -41,7 +41,7 @@
   ; TODO: fix this and set mstatus to its actual value of MPP, for now we are setting to 0
   ; since we always but it to user mode
   ; (set-machine-mode! m (bitvector->natural MPP))
-  (set-machine-mode! m 0)
+  (set-machine-mode! m (bv 0 3))
   (set-machine-pc! m (bvsub (machine-csr m 'mepc) (base-address)))
   (list 'mret))
 (provide mret-instr)
@@ -66,7 +66,7 @@
 
 (define (csrrw-instr m rd rs1 csr)
   (define pc (machine-pc m))
-  (when (equal? (machine-mode m) 1)
+  (when (bveq (machine-mode m) (bv 1 3))
     (define v_rs1 (get-gprs-i (machine-gprs m) rs1))
     (when (not (bvzero? rd))
       (define v_csr (machine-csr m csr))
@@ -79,7 +79,7 @@
 
 (define (csrrs-instr m rd rs1 csr)
   (define pc (machine-pc m))
-  (when (equal? (machine-mode m) 1)
+  (when (bveq (machine-mode m) (bv 1 3))
     (define v_rs1 (get-gprs-i (machine-gprs m) rs1))
     (define v_csr (machine-csr m csr))
     (set-gprs-i! (machine-gprs m) rd (zero-extend v_csr (bitvector 64)))

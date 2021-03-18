@@ -251,8 +251,8 @@
             (if (not (pmp-is-locked? setting))
                 ; Check machine mode
                 (cond
-                  [(equal? mode 1) (set! legal #t)]
-                  [(equal? mode 0)
+                  [(bveq mode (bv 1 3)) (set! legal #t)]
+                  [(bveq mode (bv 0 3))
                    ; TODO: actually check what the access type is
                    (set! legal (and (bveq R (bv 1 1)) (bveq W (bv 1 1)) (bveq X (bv 1 1))))]
                   [else
@@ -261,7 +261,7 @@
                 ; TODO: Implement locked variant of access, for now just return false (no access)
                 (set! legal #f))))
         (when (null? legal)
-          (set! legal (equal? mode 1)))
+          (set! legal (bveq mode (bv 1 3))))
         legal)))
 (provide pmp-check)
 

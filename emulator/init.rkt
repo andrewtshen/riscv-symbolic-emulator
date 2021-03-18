@@ -55,7 +55,7 @@
   (set! mepc (bv 0 64))
   (set! mstatus (bv 0 64))
   (define pc (bv 0 64))
-  (define mode 1) ; start in machine mode
+  (define mode (bv 1 3)) ; start in machine mode
 
   ; Set up PMP and default configurations
   (define pmp (make-pmp))
@@ -97,7 +97,7 @@
 (define (init-machine)
   (define-symbolic* mtvec mepc mstatus pc (bitvector 64))
   (set! mtvec (bv #x0000000080000080 64))
-  (define mode 0) ; start in user mode
+  (define mode (bv 0 3)) ; start in user mode
 
   ; Set up PMP and default configurations to enable ONLY #x0000000080020000 - #x000000000001ffff
   (define pmp (make-pmp))
