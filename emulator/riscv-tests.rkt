@@ -16,10 +16,10 @@
 
 ;; RISC-V Tests for Individual Instructions
 
-(define-test-suite instruction-check
+(define-test-suite riscv-tests
   (test-case "add test"
+             (printf "* riscv-tests/isa/rv64ui-p-add.bin ~n")
              (define program (file->bytearray "riscv-tests/isa/rv64ui-p-add.bin"))
-             (printf "* Running add.bin test ~n")
              (define m (parameterize
                            ([use-debug-mode #f]
                             [use-fnmem #f])
@@ -27,14 +27,6 @@
              (parameterize
                  ([use-debug-mode #f]
                   [use-fnmem #f])
-               (execute-until-mret m))
-             ; (define gprsx
-             ;   (for/list ([i (in-range 10 18)])
-             ;     (gprs-get-x m i)))
-             ; (define model_add (verify (begin 
-             ;   (assert (bveq (bvadd (list-ref gprsx 5) (list-ref gprsx 7))
-             ;                 (list-ref gprsx 6))))))
-             ; (check-true (unsat? model_add))
-             ))
+               (execute-until-mret m))))
 
-(define res-instruction-check (run-tests instruction-check))
+(define res-instruction-check (run-tests riscv-tests))

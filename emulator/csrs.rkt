@@ -186,6 +186,7 @@
 (define MEIP_BIT (bvshl (bv 1 64) (bv 11 64)))
 
 ;; CSRS Methods
+
 (define (make-csrs)
   (make-sym-vector CSR_SIZE MXLEN csrs))
 (provide make-csrs)
@@ -197,6 +198,7 @@
 (define (set-csr! csrs csr val)
   (vector-set!-bv csrs csr val))
 (provide set-csr!)
+
 
 ; (define csrs (make-sym-vector CSR_SIZE MXLEN csrs))
 ; (printf "~a~n" (get-csr csrs PMPCFG0))

@@ -83,6 +83,7 @@
   (when (bveq (machine-mode m) (bv 1 3))
     (define v_rs1 (get-gprs-i (machine-gprs m) rs1))
     (define v_csr (machine-csr m csr))
+    ; TODO: see if zero-extend is excessive
     (set-gprs-i! (machine-gprs m) rd (zero-extend v_csr (bitvector 64)))
     
     ; TODO: Implement specific setting permissions for CSR bits
@@ -98,10 +99,17 @@
   (list 'csrrc))
 (provide csrrc-instr)
 
-(define (csrrwi-instr m)
-  ; TODO: csrrwi instruction not implemented yet
+(define (csrrwi-instr m rd rs1 csr)
   (define pc (machine-pc m))
-  (list 'csrrwi))
+  (when (bveq (machine-mode m) (bv 1 3))
+    (define ze_rs1 (zero-extend rs1 (bitvector 64)))
+    (when (not (bvzero? rd))
+      (define v_csr (machine-csr m csr))
+      (set-gprs-i! (machine-gprs m) rd (zero-extend v_csr (bitvector 64))))
+    ; TODO: Implement specific setting permissions for CSR bits
+    (set-machine-csr! m csr ze_rs1)
+    (set-machine-pc! m (bvadd pc (bv 4 64))))
+  (list 'csrrwi rd rs1 csr))
 (provide csrrwi-instr)
 
 (define (csrrsi-instr m)
