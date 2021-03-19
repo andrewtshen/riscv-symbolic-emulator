@@ -78,8 +78,7 @@
     [(and (bveq funct3 (bv #b111 3)) (bveq opcode (bv #b0010011 7)))
      (andi-instr m rd rs1 imm)]
     [(and (bveq funct3 (bv #b001 3)) (bveq opcode (bv #b0010011 7)))
-     ; TODO: Check if supposed to be 24?
-     (slli-instr m rd rs1 (extract 24 20 b_instr))]
+     (slli-instr m rd rs1 (extract 25 20 b_instr))]
     [(and (bveq funct3 (bv #b101 3)) (bveq opcode (bv #b0010011 7)) (bveq shift_type (bv #b0 1)))
      (srli-instr m rd rs1 (extract 25 20 b_instr))]
     [(and (bveq funct3 (bv #b101 3)) (bveq opcode (bv #b0010011 7)) (bveq shift_type (bv #b1 1)))
