@@ -4,7 +4,8 @@
   "pmp.rkt"
   "machine.rkt"
   "parameters.rkt"
-  "print-utils.rkt")
+  "print-utils.rkt"
+  "csrs.rkt")
 (require (only-in racket/file file->bytes)
          (only-in racket/base bytes-length for for/list in-range subbytes bytes-ref in-naturals))
 (require syntax/parse/define)
@@ -50,12 +51,16 @@
     (printf "Not enough RAM provided to run program~n"))
 
   ; Make and set all the initial csrs to 0 (TODO: change to actual values)
-  (define-symbolic* mtvec mepc mstatus (bitvector 64))
-  (set! mtvec (bv 0 64))
-  (set! mepc (bv 0 64))
-  (set! mstatus (bv 0 64))
+  (define csrs (make-csrs))
+  (set-csr! csrs MTVEC (bv 0 64))
+  (set-csr! csrs MEPC (bv 0 64))
+  (set-csr! csrs MSTATUS (bv 0 64))
+  
+  ; Set pc to 0 when loading with program
   (define pc (bv 0 64))
-  (define mode (bv 1 3)) ; start in machine mode
+  
+  ; Start in machine mode
+  (define mode (bv 1 3))
 
   ; Set up PMP and default configurations
   (define pmp (make-pmp))
@@ -85,19 +90,21 @@
   (set-gprs-i! gprs (bv 11 5) (bv 1020 64))
 
   (machine
-   (cpu 
-    (csrs
-     mtvec mepc mstatus pmp)
-    gprs
-    pc) ; set pc to 0 when loading with program
+   (cpu csrs gprs pc pmp)
    mem
    mode))
 (provide init-machine-with-prog)
 
 (define (init-machine)
-  (define-symbolic* mtvec mepc mstatus pc (bitvector 64))
-  (set! mtvec (bv #x0000000080000080 64))
-  (define mode (bv 0 3)) ; start in user mode
+  ; Use symbolic pc
+  (define-symbolic* pc (bitvector 64))
+  
+  ; Set up csrs
+  (define csrs (make-csrs))
+  (set-csr! csrs MTVEC (bv #x0000000080000080 64))
+  
+  ; Start in user mode
+  (define mode (bv 0 3)) 
 
   ; Set up PMP and default configurations to enable ONLY #x0000000080020000 - #x000000000001ffff
   (define pmp (make-pmp))
@@ -119,11 +126,7 @@
   (define gprs (make-sym-vector 32 64 gpr)) ; be careful of -1 for offset
 
   (machine
-   (cpu 
-    (csrs
-     mtvec mepc mstatus pmp)
-    gprs
-    pc) ; symbolic pc
+   (cpu csrs gprs pc pmp)
    mem
    mode))
 (provide init-machine)

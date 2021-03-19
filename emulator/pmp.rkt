@@ -66,14 +66,12 @@
   (pmpcfg
     (bv 0 64)
     (make-pmpcfg-settings 8)))
-; (provide make-pmpcfg)
 
 (define (make-pmpaddr)
   (pmpaddr
     (bv 0 64)
     (bv 0 64)
     (bv 0 64)))
-; (provide make-pmpaddr)
 
 ;; PMP utilities for decoding registers and checking
 

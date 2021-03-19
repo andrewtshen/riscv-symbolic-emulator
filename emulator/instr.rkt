@@ -3,7 +3,8 @@
 (require
   "init.rkt"
   "machine.rkt"
-  "parameters.rkt") 
+  "parameters.rkt"
+  "csrs.rkt") 
 
 ; Execute each individual instruction symbolically and update the program count to the proper place.
 ; Used rv8.io and https://content.riscv.org/wp-content/uploads/2017/05/riscv-spec-v2.2.pdf for implementing instructions
@@ -35,14 +36,14 @@
 
 (define (mret-instr m)
   (define pc (machine-pc m))
-  (define mstatus (machine-csr m 'mstatus))
+  (define mstatus (machine-csr m MSTATUS))
   (define MPP (extract 12 11 mstatus))
   ; this is always user mode
   ; TODO: fix this and set mstatus to its actual value of MPP, for now we are setting to 0
   ; since we always but it to user mode
   ; (set-machine-mode! m (bitvector->natural MPP))
   (set-machine-mode! m (bv 0 3))
-  (set-machine-pc! m (bvsub (machine-csr m 'mepc) (base-address)))
+  (set-machine-pc! m (bvsub (machine-csr m MEPC) (base-address)))
   (list 'mret))
 (provide mret-instr)
 

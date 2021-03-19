@@ -8,7 +8,8 @@
   "execute.rkt"
   "parameters.rkt"
   "print-utils.rkt"
-  "instr.rkt")
+  "instr.rkt"
+  "csrs.rkt")
 (require (only-in racket/base 
                   custodian-limit-memory current-custodian parameterize call-with-parameterization
                   parameterize* for for/list for/vector in-range))
@@ -20,25 +21,25 @@
   
   ; mode is not always equal, do not assert
   ; OK property
-  (assert (bveq (machine-csr m 'mtvec) (bv #x0000000080000080 64)))
-  (assert (bveq (machine-csr m 'pmpcfg0) (bv #x000000000000001f 64)))
-  (assert (bveq (machine-csr m 'pmpcfg2) (bv #x0000000000000018 64)))
-  (assert (bveq (machine-csr m 'pmpaddr0) (bv #x000000002000bfff 64)))
-  (assert (bveq (machine-csr m 'pmpaddr1) (bv #x0 64)))
-  (assert (bveq (machine-csr m 'pmpaddr2) (bv #x0 64)))
-  (assert (bveq (machine-csr m 'pmpaddr3) (bv #x0 64)))
-  (assert (bveq (machine-csr m 'pmpaddr4) (bv #x0 64)))
-  (assert (bveq (machine-csr m 'pmpaddr5) (bv #x0 64)))
-  (assert (bveq (machine-csr m 'pmpaddr6) (bv #x0 64)))
-  (assert (bveq (machine-csr m 'pmpaddr7) (bv #x0 64)))
-  (assert (bveq (machine-csr m 'pmpaddr8) (bv #x7fffffffffffffff 64)))
-  (assert (bveq (machine-csr m 'pmpaddr9) (bv #x0 64)))
-  (assert (bveq (machine-csr m 'pmpaddr10) (bv #x0 64)))
-  (assert (bveq (machine-csr m 'pmpaddr11) (bv #x0 64)))
-  (assert (bveq (machine-csr m 'pmpaddr12) (bv #x0 64)))
-  (assert (bveq (machine-csr m 'pmpaddr13) (bv #x0 64)))
-  (assert (bveq (machine-csr m 'pmpaddr14) (bv #x0 64)))
-  (assert (bveq (machine-csr m 'pmpaddr15) (bv #x0 64))))
+  (assert (bveq (machine-csr m MTVEC) (bv #x0000000080000080 64)))
+  (assert (bveq (machine-csr m PMPCFG0) (bv #x000000000000001f 64)))
+  (assert (bveq (machine-csr m PMPCFG2) (bv #x0000000000000018 64)))
+  (assert (bveq (machine-csr m PMPADDR0) (bv #x000000002000bfff 64)))
+  (assert (bveq (machine-csr m PMPADDR1) (bv #x0 64)))
+  (assert (bveq (machine-csr m PMPADDR2) (bv #x0 64)))
+  (assert (bveq (machine-csr m PMPADDR3) (bv #x0 64)))
+  (assert (bveq (machine-csr m PMPADDR4) (bv #x0 64)))
+  (assert (bveq (machine-csr m PMPADDR5) (bv #x0 64)))
+  (assert (bveq (machine-csr m PMPADDR6) (bv #x0 64)))
+  (assert (bveq (machine-csr m PMPADDR7) (bv #x0 64)))
+  (assert (bveq (machine-csr m PMPADDR8) (bv #x7fffffffffffffff 64)))
+  (assert (bveq (machine-csr m PMPADDR9) (bv #x0 64)))
+  (assert (bveq (machine-csr m PMPADDR10) (bv #x0 64)))
+  (assert (bveq (machine-csr m PMPADDR11) (bv #x0 64)))
+  (assert (bveq (machine-csr m PMPADDR12) (bv #x0 64)))
+  (assert (bveq (machine-csr m PMPADDR13) (bv #x0 64)))
+  (assert (bveq (machine-csr m PMPADDR14) (bv #x0 64)))
+  (assert (bveq (machine-csr m PMPADDR15) (bv #x0 64))))
 (provide assert-OK)
 
 (define (assert-csr-equal m1 m2)
@@ -65,30 +66,28 @@
   ; Create a deep copy of machine m
   (machine
     (cpu
-      (csrs 
-        (machine-csr m 'mtvec)
-        (machine-csr m 'mepc)
-        (machine-csr m 'mstatus)
-        (pmp
-          (for/vector ([p (pmp-pmpcfgs (csrs-pmp (cpu-csrs (machine-cpu m))))])
-            (pmpcfg
-              (pmpcfg-value p)
-              (for/vector ([s (pmpcfg-settings p)])
-                (pmpcfg-setting
-                  (pmpcfg-setting-R s)
-                  (pmpcfg-setting-W s)
-                  (pmpcfg-setting-X s)
-                  (pmpcfg-setting-A s)
-                  (pmpcfg-setting-L s)))))
-          (for/vector ([p (pmp-pmpaddrs (csrs-pmp (cpu-csrs (machine-cpu m))))])
-            (pmpaddr
-              (pmpaddr-value p)
-              (pmpaddr-startaddr p)
-              (pmpaddr-endaddr p)))
-          (pmp-numimplemented (csrs-pmp (cpu-csrs (machine-cpu m))))))
+      (for/vector ([csr (cpu-csrs (machine-cpu m))])
+        csr)
       (for/vector ([gpr (cpu-gprs (machine-cpu m))])
         gpr)
-      (machine-pc m))
+      (machine-pc m)
+      (pmp
+        (for/vector ([p (pmp-pmpcfgs (cpu-pmp (machine-cpu m)))])
+          (pmpcfg
+            (pmpcfg-value p)
+            (for/vector ([s (pmpcfg-settings p)])
+              (pmpcfg-setting
+                (pmpcfg-setting-R s)
+                (pmpcfg-setting-W s)
+                (pmpcfg-setting-X s)
+                (pmpcfg-setting-A s)
+                (pmpcfg-setting-L s)))))
+        (for/vector ([p (pmp-pmpaddrs (cpu-pmp (machine-cpu m)))])
+          (pmpaddr
+            (pmpaddr-value p)
+            (pmpaddr-startaddr p)
+            (pmpaddr-endaddr p)))
+        (pmp-numimplemented (cpu-pmp (machine-cpu m)))))
     (machine-ram m)
     (machine-mode m)))
 (provide deep-copy-machine)
@@ -484,7 +483,7 @@
                (verify (assert
                          (or (bveq (machine-mode m) (machine-mode m1))
                              (and (bveq (machine-pc m)
-                                        (bvsub (machine-csr m 'mtvec) (base-address)))
+                                        (bvsub (machine-csr m MTVEC) (base-address)))
                                   (bveq (machine-mode m) (bv 1 3)))))))
              (check-true (unsat? model_mode)))
   (test-case "only user mode test"
@@ -526,7 +525,7 @@
              (clear-vc!)
              (define model_only_user_mode
                (verify (assert
-                         (not (and (bveq (machine-pc m) (bvsub (machine-csr m 'mtvec) (base-address)))
+                         (not (and (bveq (machine-pc m) (bvsub (machine-csr m MTVEC) (base-address)))
                                    (bveq (machine-mode m) (bv 1 3)))))))
              (check-true (unsat? model_only_user_mode)))
   (test-case "does not return null test"
@@ -608,7 +607,7 @@
                (verify (assert
                          (or (bveq (machine-mode m) (machine-mode m1))
                              (and (bveq (machine-pc m)
-                                        (bvsub (machine-csr m 'mtvec) (base-address)))
+                                        (bvsub (machine-csr m MTVEC) (base-address)))
                                   (bveq (machine-mode m) (bv 1 3)))))))
              (check-true (unsat? model_mode))
              
@@ -632,7 +631,7 @@
 (define res-high-level-test (run-tests high-level-test))
 (define res-step-checks (run-tests step-checks))
 
-;; Testing the base case and inductive step
+; ;; Testing the base case and inductive step
 
 (define res-boot-sequence (time (run-tests boot-sequence)))
 (define res-inductive-step (time (run-tests inductive-step)))
