@@ -78,20 +78,19 @@
     [(and (bveq funct3 (bv #b111 3)) (bveq opcode (bv #b0010011 7)))
      (andi-instr m rd rs1 imm)]
     [(and (bveq funct3 (bv #b001 3)) (bveq opcode (bv #b0010011 7)))
-     (slli-instr m rd rs1 (extract 25 20 b_instr))]
+     (slli-instr m rd rs1 (extract 5 0 imm))]
     [(and (bveq funct3 (bv #b101 3)) (bveq opcode (bv #b0010011 7)) (bveq shift_type (bv #b0 1)))
-     (srli-instr m rd rs1 (extract 25 20 b_instr))]
+     (srli-instr m rd rs1 (extract 5 0 imm))]
     [(and (bveq funct3 (bv #b101 3)) (bveq opcode (bv #b0010011 7)) (bveq shift_type (bv #b1 1)))
-     (srai-instr m rd rs1 (extract 25 20 b_instr))]
-    [(and (bveq funct3 (bv #b000 3)) (bveq opcode (bv #b0011011 7)))
-     ; TODO: Check if supposed to be normal imm
-     (addiw-instr m rd rs1 imm)]
+     (srai-instr m rd rs1 (extract 5 0 imm))]
     [(and (bveq funct3 (bv #b001 3)) (bveq opcode (bv #b0011011 7)))
-     (slliw-instr m rd rs1 (extract 25 20 b_instr))]
+     (slliw-instr m rd rs1 (extract 5 0 imm))]
     [(and (bveq funct3 (bv #b101 3)) (bveq opcode (bv #b0011011 7)) (bveq shift_type (bv #b0 1)))
-     (srliw-instr m rd rs1 (extract 25 20 b_instr))]
+     (srliw-instr m rd rs1 (extract 5 0 imm))]
     [(and (bveq funct3 (bv #b101 3)) (bveq opcode (bv #b0011011 7)) (bveq shift_type (bv #b1 1)))
-     (sraiw-instr m rd rs1 (extract 25 20 b_instr))]
+     (sraiw-instr m rd rs1 (extract 5 0 imm))]
+    [(and (bveq funct3 (bv #b000 3)) (bveq opcode (bv #b0011011 7)))
+     (addiw-instr m rd rs1 imm)]
     [else
      ; (printf "No such I FMT ~n")
      'illegal-instruction]))
