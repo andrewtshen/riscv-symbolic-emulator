@@ -376,9 +376,8 @@
   ; adjust for address offset
   (define adj_addr (bvsub addr (base-address)))
   
-  (define save (bvadd pc (bv 4 64)))
-  (when (not (bvzero? rd))
-    (set-gprs-i! (machine-gprs m) rd save))
+  (define save (bvadd pc (bv 4 64) (base-address)))
+  (set-gprs-i! (machine-gprs m) rd save)
   (set-machine-pc! m adj_addr)
   (list 'jalr rd rs1 imm))
 (provide jalr-instr)
@@ -768,7 +767,7 @@
   (define pc (machine-pc m))
   (define se_imm (sign-extend (concat imm (bv 0 1)) (bitvector 64)))
   ; adjust for (base-address)
-  (define save_addr (bvadd (bvadd pc (bv 4 64)) (base-address)))
+  (define save_addr (bvadd pc (bv 4 64)))
   ; imm is the offset from pc, so we don't need to do anything with (base-address)
   (define jump_addr (bvadd se_imm pc))
   (when (not (bvzero? rd))

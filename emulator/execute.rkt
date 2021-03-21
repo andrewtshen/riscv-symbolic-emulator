@@ -223,7 +223,9 @@
     [(bveq funct3 (bv #b000 3))
      (FENCE-instr m)]
     [(bveq funct3 (bv #b001 3))
-     (FENCE_I-instr m)]))
+     (FENCE_I-instr m)]
+    [else
+     'illegal-instruction]))
 
 ; Execute a 32 bit instruction
 (define (execute m b_instr)

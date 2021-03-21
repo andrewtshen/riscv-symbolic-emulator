@@ -38,14 +38,14 @@
   (check-equal? a0 (bv 0 64)))
 
 (define-test-suite riscv-tests
-  (test-case "add"
-             (execute-test "riscv-tests/isa/rv64ui-p-add.bin"))
-  (test-case "addi"
-             (execute-test "riscv-tests/isa/rv64ui-p-addi.bin"))
-  (test-case "addiw"
-             (execute-test "riscv-tests/isa/rv64ui-p-addiw.bin"))
-  (test-case "addw"
-             (execute-test "riscv-tests/isa/rv64ui-p-addw.bin")))
+  ; (test-case "add"
+  ;            (execute-test "riscv-tests/isa/rv64ui-p-add.bin"))
+  ; (test-case "addi"
+  ;            (execute-test "riscv-tests/isa/rv64ui-p-addi.bin"))
+  ; (test-case "addiw"
+  ;            (execute-test "riscv-tests/isa/rv64ui-p-addiw.bin"))
+  ; (test-case "addw"
+  ;            (execute-test "riscv-tests/isa/rv64ui-p-addw.bin"))
   ; (test-case "and"
   ;            (execute-test "riscv-tests/isa/rv64ui-p-and.bin"))
   ; (test-case "andi"
@@ -64,12 +64,13 @@
   ;            (execute-test "riscv-tests/isa/rv64ui-p-bltu.bin"))
   ; (test-case "bne"
   ;            (execute-test "riscv-tests/isa/rv64ui-p-bne.bin"))
+  ; TODO: Find out how fence_i works
   ; (test-case "fence_i"
   ;            (execute-test "riscv-tests/isa/rv64ui-p-fence_i.bin"))
   ; (test-case "jal"
   ;            (execute-test "riscv-tests/isa/rv64ui-p-jal.bin"))
-  ; (test-case "jalr"
-  ;            (execute-test "riscv-tests/isa/rv64ui-p-jalr.bin"))
+  (test-case "jalr"
+             (execute-test "riscv-tests/isa/rv64ui-p-jalr.bin")))
   ; (test-case "lb"
   ;            (execute-test "riscv-tests/isa/rv64ui-p-lb.bin"))
   ; (test-case "lbu"
