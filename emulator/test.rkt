@@ -348,12 +348,12 @@
   (test-case "ctz64"
              (clear-terms!)
              ; TODO: Why is there assert here?
-             (assert (check-equal? 8  (ctz64 (bv #xffffffffffffff00 64))))
-             (assert (check-equal? 7  (ctz64 (bv #xffffffffffffff80 64))))
-             (assert (check-equal? 2  (ctz64 (bv #xfffffffffffffff4 64))))
-             (assert (check-equal? 63 (ctz64 (bv #x8000000000000000 64))))
-             (assert (check-equal? 0  (ctz64 (bv #xffffffffffffffff 64))))
-             (assert (check-equal? 0  (ctz64 (bv #x0000000000000000 64)))))
+             (check-equal? 8  (ctz64 (bv #xffffffffffffff00 64)))
+             (check-equal? 7  (ctz64 (bv #xffffffffffffff80 64)))
+             (check-equal? 2  (ctz64 (bv #xfffffffffffffff4 64)))
+             (check-equal? 63 (ctz64 (bv #x8000000000000000 64)))
+             (check-equal? 0  (ctz64 (bv #xffffffffffffffff 64)))
+             (check-equal? 0  (ctz64 (bv #x0000000000000000 64))))
   (test-case "pmp check"
              (clear-terms!)
              (printf "* Running pmp.bin test ~n")
