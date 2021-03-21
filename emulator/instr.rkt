@@ -488,10 +488,22 @@
   (list 'andw))
 (provide andw-instr)
 
-(define (subw-instr m)
-  ; TODO: subw instruction not implemented yet
+(define (addw-instr m rd rs1 rs2)
   (define pc (machine-pc m))
-  (list 'subw))
+  (define v_rs1 (extract 31 0 (get-gprs-i (machine-gprs m) rs1)))
+  (define v_rs2 (extract 31 0 (get-gprs-i (machine-gprs m) rs2)))
+  (set-gprs-i! (machine-gprs m) rd (sign-extend (bvadd v_rs1 v_rs2) (bitvector 64)))
+  (set-machine-pc! m (bvadd pc (bv 4 64)))
+  (list 'addw rd rs1 rs2))
+(provide addw-instr)
+
+(define (subw-instr m rd rs1 rs2)
+  (define pc (machine-pc m))
+  (define v_rs1 (extract 31 0 (get-gprs-i (machine-gprs m) rs1)))
+  (define v_rs2 (extract 31 0 (get-gprs-i (machine-gprs m) rs2)))
+  (set-gprs-i! (machine-gprs m) rd (zero-extend (bvsub v_rs1 v_rs2) (bitvector 64)))
+  (set-machine-pc! m (bvadd pc (bv 4 64)))
+  (list 'subw-instr rd rs1 rs2))
 (provide subw-instr)
 
 (define (sllw-instr m)

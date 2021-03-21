@@ -28,7 +28,8 @@
                        (fresh-symbolic next_instr (bitvector 32))  ; fetch arbitrary instruction
                        (get-next-instr m)) ; fetch actual instruction
         (define decoded_instr (execute m next_instr))
-        ; (printf "PC: ~x BYTES: ~a INS: ~a~n" (bitvector->natural pc) next_instr decoded_instr)
+        (when (use-debug-mode)
+          (printf "PC: ~x BYTES: ~a INS: ~a~n" (bitvector->natural pc) next_instr decoded_instr))
         decoded_instr))
 (provide step)
 

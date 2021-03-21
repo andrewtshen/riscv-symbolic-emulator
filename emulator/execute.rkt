@@ -9,16 +9,21 @@
 ; Decode and execute all of the binary instructions and instruction as list
 
 (define (execute-R m b_instr)
+  (define opcode (extract 6 0 b_instr))
   (define rd (extract 11 7 b_instr))
   (define funct3 (extract 14 12 b_instr))
   (define rs1 (extract 19 15 b_instr))
   (define rs2 (extract 24 20 b_instr))
   (define funct7 (extract 31 25 b_instr))
   (cond
-    [(and (bveq funct3 (bv #b000 3)) (bveq funct7 (bv #b0000000 7)))
+    [(and (bveq funct3 (bv #b000 3)) (bveq funct7 (bv #b0000000 7)) (bveq opcode (bv #b0110011 7)))
      (add-instr m rd rs1 rs2)]
-    [(and (bveq funct3 (bv #b000 3)) (bveq funct7 (bv #b0100000 7)))
+    [(and (bveq funct3 (bv #b000 3)) (bveq funct7 (bv #b0100000 7)) (bveq opcode (bv #b0110011 7)))
      (sub-instr m rd rs1 rs2)]
+    [(and (bveq funct3 (bv #b000 3)) (bveq funct7 (bv #b0000000 7)) (bveq opcode (bv #b0111011 7)))
+     (addw-instr m rd rs1 rs2)]
+    [(and (bveq funct3 (bv #b000 3)) (bveq funct7 (bv #b0100000 7)) (bveq opcode (bv #b0111011 7)))
+     (subw-instr m rd rs1 rs2)]
     [(and (bveq funct3 (bv #b001 3)) (bveq funct7 (bv #b0000000 7)))
      (sll-instr m rd rs1 rs2)]
     [(and (bveq funct3 (bv #b010 3)) (bveq funct7 (bv #b0000000 7)))

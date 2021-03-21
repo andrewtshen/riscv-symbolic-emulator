@@ -38,20 +38,20 @@
   (check-equal? a0 (bv 0 64)))
 
 (define-test-suite riscv-tests
-  ; (test-case "add"
-  ;            (execute-test "riscv-tests/isa/rv64ui-p-add.bin"))
-  ; (test-case "addi"
-  ;            (execute-test "riscv-tests/isa/rv64ui-p-addi.bin"))
-  ; (test-case "addiw"
-  ;            (execute-test "riscv-tests/isa/rv64ui-p-addiw.bin"))
-  ; (test-case "addw"
-  ;            (execute-test "riscv-tests/isa/rv64ui-p-addw.bin"))
+  (test-case "add"
+             (execute-test "riscv-tests/isa/rv64ui-p-add.bin"))
+  (test-case "addi"
+             (execute-test "riscv-tests/isa/rv64ui-p-addi.bin"))
+  (test-case "addiw"
+             (execute-test "riscv-tests/isa/rv64ui-p-addiw.bin"))
+  (test-case "addw"
+             (execute-test "riscv-tests/isa/rv64ui-p-addw.bin")))
   ; (test-case "and"
   ;            (execute-test "riscv-tests/isa/rv64ui-p-and.bin"))
   ; (test-case "andi"
   ;            (execute-test "riscv-tests/isa/rv64ui-p-andi.bin"))
-  (test-case "auipc"
-             (execute-test "riscv-tests/isa/rv64ui-p-auipc.bin")))
+  ; (test-case "auipc"
+  ;            (execute-test "riscv-tests/isa/rv64ui-p-auipc.bin"))
   ; (test-case "beq"
   ;            (execute-test "riscv-tests/isa/rv64ui-p-beq.bin"))
   ; (test-case "bge"
