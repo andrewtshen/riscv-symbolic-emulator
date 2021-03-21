@@ -129,14 +129,13 @@
 (define (addi-instr m rd rs1 imm)
   (define pc (machine-pc m))
   (define se_imm (sign-extend imm (bitvector 64)))
-  ; nop op pseudo code condition
   (cond
     [(not (and (bvzero? rd) (bvzero? rs1) (bveq se_imm (bv 0 64))))
      (define v_rs1 (get-gprs-i (machine-gprs m) rs1))
-     (when (not (null? v_rs1))
-       (set-machine-pc! m (bvadd pc (bv 4 64)))
-       (set-gprs-i! (machine-gprs m) rd (bvadd v_rs1 se_imm)))]
+     (set-gprs-i! (machine-gprs m) rd (bvadd v_rs1 se_imm))
+     (set-machine-pc! m (bvadd pc (bv 4 64)))]
     [else
+     ; nop op pseudo code condition
      (set-machine-pc! m (bvadd pc (bv 4 64)))])
   (list 'addi rd rs1 imm))
 (provide addi-instr)
@@ -658,8 +657,8 @@
 (define (lui-instr m rd imm)
   (define pc (machine-pc m))
   ; extend immediate by 12 bits
-  (define ze_imm (zero-extend (concat imm (bv 0 12)) (bitvector 64)))
-  (set-gprs-i! (machine-gprs m) rd ze_imm)
+  (define se_imm (sign-extend (concat imm (bv 0 12)) (bitvector 64)))
+  (set-gprs-i! (machine-gprs m) rd se_imm)
   (set-machine-pc! m (bvadd pc (bv 4 64)))
   (list 'lui rd imm))
 (provide lui-instr)
@@ -771,11 +770,13 @@
 (define (FENCE-instr m)
   ; TODO: FENCE instruction not implemented yet
   (define pc (machine-pc m))
+  (set-machine-pc! m (bvadd pc (bv 4 64)))
   (list 'FENCE))
 (provide FENCE-instr)
 
 (define (FENCE_I-instr m)
   ; TODO: FENCE_I instruction not implemented yet
   (define pc (machine-pc m))
+  (set-machine-pc! m (bvadd pc (bv 4 64)))
   (list 'FENCE_I))
 (provide FENCE_I-instr)

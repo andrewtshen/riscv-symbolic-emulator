@@ -211,6 +211,15 @@
         ; (printf "No such SYSTEM FMT ~n")
         'illegal-instruction])]))
 
+(define (execute-FENCE m b_instr)
+  (define funct3 (extract 14 12 b_instr))
+  ; TODO: Fill in details for these instructions (currently act as NOP)
+  (cond
+    [(bveq funct3 (bv #b000 3))
+     (FENCE-instr m)]
+    [(bveq funct3 (bv #b001 3))
+     (FENCE_I-instr m)]))
+
 ; Execute a 32 bit instruction
 (define (execute m b_instr)
   (define opcode (extract 6 0 b_instr))
@@ -223,6 +232,8 @@
     [(eq? fmt 'S) (execute-S m b_instr)]
     [(eq? fmt 'J) (execute-J m b_instr)]
     [(eq? fmt 'SYSTEM) (execute-SYSTEM m b_instr)]
+    [(eq? fmt 'FENCE)
+     (execute-FENCE m b_instr)]
     [else
      ; (printf "No such FMT ~n")
      'illegal-instruction]))

@@ -58,7 +58,8 @@
 (define (set-gprs-i! gprs i val)
   (cond
     [(bvzero? i) null]
-    [else (vector-set!-bv gprs i val)]))
+    [else
+     (vector-set!-bv gprs i val)]))
 (provide set-gprs-i!)
 
 ;; csrs Accessors/Mutators

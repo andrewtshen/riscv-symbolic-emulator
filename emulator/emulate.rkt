@@ -23,26 +23,34 @@
         (begin body ...))))
 
 (define (step m)
+  (define pc (machine-pc m))
   (try! next_instr (if (use-sym-optimizations)
-                       ; fetch arbitrary instruction
-                       (fresh-symbolic next_instr (bitvector 32)) 
-                       ; fetch actual instruction
-                       (get-next-instr m))
+                       (fresh-symbolic next_instr (bitvector 32))  ; fetch arbitrary instruction
+                       (get-next-instr m)) ; fetch actual instruction
         (define decoded_instr (execute m next_instr))
-        ; (printf "decoded_instr: ~a~n" decoded_instr)
+        ; (printf "PC: ~x BYTES: ~a INS: ~a~n" (bitvector->natural pc) next_instr decoded_instr)
         decoded_instr))
 (provide step)
 
 ; get instructions until reach mret
 (define (execute-until-mret m)
   (let loop ([decoded_instr (step m)])
-    ; (printf "PC: ~x INS: ~a~n" (bitvector->natural (machine-pc m)) decoded_instr)
     (cond
       [(or (equal? decoded_instr '(mret))
            (equal? decoded_instr 'illegal-instruction))
        decoded_instr]
       [else (loop (step m))])))
 (provide execute-until-mret)
+
+; get instructions until reach ecall
+(define (execute-until-ecall m)
+  (let loop ([decoded_instr (step m)])
+    (cond
+      [(or (equal? decoded_instr '(ecall))
+           (equal? decoded_instr 'illegal-instruction))
+       decoded_instr]
+      [else (loop (step m))])))
+(provide execute-until-ecall)
 
 ; ; example execution
 ; (define program (file->bytearray "build/pmp.bin"))

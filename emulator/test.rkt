@@ -347,6 +347,7 @@
   utils
   (test-case "ctz64"
              (clear-terms!)
+             ; TODO: Why is there assert here?
              (assert (check-equal? 8  (ctz64 (bv #xffffffffffffff00 64))))
              (assert (check-equal? 7  (ctz64 (bv #xffffffffffffff80 64))))
              (assert (check-equal? 2  (ctz64 (bv #xfffffffffffffff4 64))))
