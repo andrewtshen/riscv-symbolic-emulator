@@ -666,8 +666,8 @@
 (define (auipc-instr m rd imm)
   (define pc (machine-pc m))
   ; extend immediate by 12 bits, then zero-extend to 64 bits
-  (define ze_imm (zero-extend (concat imm (bv 0 12)) (bitvector 64)))
-  (set-gprs-i! (machine-gprs m) rd (bvadd pc (base-address) ze_imm))
+  (define se_imm (sign-extend (concat imm (bv 0 12)) (bitvector 64)))
+  (set-gprs-i! (machine-gprs m) rd (bvadd pc (base-address) se_imm))
   (set-machine-pc! m (bvadd pc (bv 4 64)))
   (list 'auipc rd imm))
 (provide auipc-instr)
