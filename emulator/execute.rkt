@@ -18,24 +18,30 @@
   (cond
     [(and (bveq funct3 (bv #b000 3)) (bveq funct7 (bv #b0000000 7)) (bveq opcode (bv #b0110011 7)))
      (add-instr m rd rs1 rs2)]
-    [(and (bveq funct3 (bv #b000 3)) (bveq funct7 (bv #b0100000 7)) (bveq opcode (bv #b0110011 7)))
-     (sub-instr m rd rs1 rs2)]
     [(and (bveq funct3 (bv #b000 3)) (bveq funct7 (bv #b0000000 7)) (bveq opcode (bv #b0111011 7)))
      (addw-instr m rd rs1 rs2)]
+    [(and (bveq funct3 (bv #b000 3)) (bveq funct7 (bv #b0100000 7)) (bveq opcode (bv #b0110011 7)))
+     (sub-instr m rd rs1 rs2)]
     [(and (bveq funct3 (bv #b000 3)) (bveq funct7 (bv #b0100000 7)) (bveq opcode (bv #b0111011 7)))
      (subw-instr m rd rs1 rs2)]
-    [(and (bveq funct3 (bv #b001 3)) (bveq funct7 (bv #b0000000 7)))
+    [(and (bveq funct3 (bv #b001 3)) (bveq funct7 (bv #b0000000 7)) (bveq opcode (bv #b0110011 7)))
      (sll-instr m rd rs1 rs2)]
+    [(and (bveq funct3 (bv #b001 3)) (bveq funct7 (bv #b0000000 7)) (bveq opcode (bv #b0111011 7)))
+     (sllw-instr m rd rs1 rs2)]
     [(and (bveq funct3 (bv #b010 3)) (bveq funct7 (bv #b0000000 7)))
      (slt-instr m rd rs1 rs2)]
     [(and (bveq funct3 (bv #b011 3)) (bveq funct7 (bv #b0000000 7)))
      (sltu-instr m rd rs1 rs2)]
     [(and (bveq funct3 (bv #b100 3)) (bveq funct7 (bv #b0000000 7)))
      (xor-instr m rd rs1 rs2)]
-    [(and (bveq funct3 (bv #b101 3)) (bveq funct7 (bv #b0000000 7)))
+    [(and (bveq funct3 (bv #b101 3)) (bveq funct7 (bv #b0000000 7)) (bveq opcode (bv #b0110011 7)))
      (srl-instr m rd rs1 rs2)]
-    [(and (bveq funct3 (bv #b101 3)) (bveq funct7 (bv #b0100000 7)))
+    [(and (bveq funct3 (bv #b101 3)) (bveq funct7 (bv #b0000000 7)) (bveq opcode (bv #b0111011 7)))
+     (srlw-instr m rd rs1 rs2)]
+    [(and (bveq funct3 (bv #b101 3)) (bveq funct7 (bv #b0100000 7)) (bveq opcode (bv #b0110011 7)))
      (sra-instr m rd rs1 rs2)]
+    [(and (bveq funct3 (bv #b101 3)) (bveq funct7 (bv #b0100000 7)) (bveq opcode (bv #b0111011 7)))
+     (sraw-instr m rd rs1 rs2)]
     [(and (bveq funct3 (bv #b110 3)) (bveq funct7 (bv #b0000000 7)))
      (or-instr m rd rs1 rs2)]
     [(and (bveq funct3 (bv #b111 3)) (bveq funct7 (bv #b0000000 7)))
