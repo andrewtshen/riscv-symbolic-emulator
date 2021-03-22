@@ -332,7 +332,7 @@
   (define adj_addr (bvsub addr (base-address)))
   (define nbytes 1)
   ; stronger case that covers all possible values that val can take
-  (define val (sign-extend (machine-ram-read m adj_addr nbytes) (bitvector 64)))
+  (define val (zero-extend (machine-ram-read m adj_addr nbytes) (bitvector 64)))
   (set-gprs-i! (machine-gprs m) rd val)
   (set-machine-pc! m (bvadd pc (bv 4 64)))
   (list 'lbu rd rs1 imm))
@@ -346,7 +346,7 @@
   (define adj_addr (bvsub addr (base-address)))
   (define nbytes 2)
   ; stronger case that covers all possible values that val can take
-  (define val (sign-extend (machine-ram-read m adj_addr nbytes) (bitvector 64)))
+  (define val (zero-extend (machine-ram-read m adj_addr nbytes) (bitvector 64)))
   (set-gprs-i! (machine-gprs m) rd val)
   (set-machine-pc! m (bvadd pc (bv 4 64)))
   (list 'lhu rd rs1 imm))
@@ -360,7 +360,7 @@
   (define adj_addr (bvsub addr (base-address)))
   (define nbytes 4)
   ; stronger case that covers all possible values that val can take
-  (define val (sign-extend (machine-ram-read m adj_addr nbytes) (bitvector 64)))
+  (define val (zero-extend (machine-ram-read m adj_addr nbytes) (bitvector 64)))
   (set-gprs-i! (machine-gprs m) rd val)
   (set-machine-pc! m (bvadd pc (bv 4 64)))
   (list 'lwu rd rs1 imm))

@@ -69,8 +69,8 @@
   ;            (execute-test "riscv-tests/isa/rv64ui-p-fence_i.bin"))
   ; (test-case "jal"
   ;            (execute-test "riscv-tests/isa/rv64ui-p-jal.bin"))
-  (test-case "jalr"
-             (execute-test "riscv-tests/isa/rv64ui-p-jalr.bin")))
+  ; (test-case "jalr"
+  ;            (execute-test "riscv-tests/isa/rv64ui-p-jalr.bin"))
   ; (test-case "lb"
   ;            (execute-test "riscv-tests/isa/rv64ui-p-lb.bin"))
   ; (test-case "lbu"
@@ -97,10 +97,10 @@
   ;            (execute-test "riscv-tests/isa/rv64ui-p-sd.bin"))
   ; (test-case "sh"
   ;            (execute-test "riscv-tests/isa/rv64ui-p-sh.bin"))
-  ; (test-case "simple"
-  ;            (execute-test "riscv-tests/isa/rv64ui-p-simple.bin"))
-  ; (test-case "sll"
-  ;            (execute-test "riscv-tests/isa/rv64ui-p-sll.bin"))
+  (test-case "simple"
+             (execute-test "riscv-tests/isa/rv64ui-p-simple.bin"))
+  (test-case "sll"
+             (execute-test "riscv-tests/isa/rv64ui-p-sll.bin")))
   ; (test-case "slli"
   ;            (execute-test "riscv-tests/isa/rv64ui-p-slli.bin"))
   ; (test-case "slliw"
