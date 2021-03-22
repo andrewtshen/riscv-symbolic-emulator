@@ -28,6 +28,36 @@ jobs:
       - name: Install Racket Dependencies
         run: raco pkg install --auto --batch ./emulator
 
-      # Runs Emulator Tests Tests
+      # Run Emulator Tests
       - name: Run Racket Tests
         run: raco test emulator/test.rkt  
+
+  riscv-tests:
+    name: RISCV Tests 
+    runs-on: ubuntu-latest
+
+    steps:
+      # Checks out a copy of your repository on the ubuntu-latest machine
+      - name: Checkout Code
+        uses: actions/checkout@v2
+
+      # Installs Racket
+      - name: Install Racket
+        uses: Bogdanp/setup-racket@v0.11
+        with:
+          architecture: 'x64'
+          distribution: 'full'
+          version: '8.0'
+
+      # Get Binary Files from Git LFS
+      - name: Get Binary Files from Git LFS
+        run: git lfs pull
+
+      # Install Racket Dependencies for the emulator
+      - name: Install Racket Dependencies
+        run: raco pkg install --auto --batch ./emulator
+
+      # Run riscv-tests
+      - name: Run Racket Tests
+        run: raco test emulator/riscv-test.rkt
+
