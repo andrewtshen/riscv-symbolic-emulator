@@ -7,7 +7,9 @@
   "pmp.rkt"
   "execute.rkt"
   "parameters.rkt"
-  "print-utils.rkt")
+  "print-utils.rkt"
+  "instr.rkt"
+  "csrs.rkt")
 (require (only-in racket/base 
                   custodian-limit-memory current-custodian parameterize call-with-parameterization
                   parameterize* for for/list for/vector in-range))
@@ -19,25 +21,25 @@
   
   ; mode is not always equal, do not assert
   ; OK property
-  (assert (bveq (machine-csr m 'mtvec) (bv #x0000000080000080 64)))
-  (assert (bveq (machine-csr m 'pmpcfg0) (bv #x000000000000001f 64)))
-  (assert (bveq (machine-csr m 'pmpcfg2) (bv #x0000000000000018 64)))
-  (assert (bveq (machine-csr m 'pmpaddr0) (bv #x000000002000bfff 64)))
-  (assert (bveq (machine-csr m 'pmpaddr1) (bv #x0 64)))
-  (assert (bveq (machine-csr m 'pmpaddr2) (bv #x0 64)))
-  (assert (bveq (machine-csr m 'pmpaddr3) (bv #x0 64)))
-  (assert (bveq (machine-csr m 'pmpaddr4) (bv #x0 64)))
-  (assert (bveq (machine-csr m 'pmpaddr5) (bv #x0 64)))
-  (assert (bveq (machine-csr m 'pmpaddr6) (bv #x0 64)))
-  (assert (bveq (machine-csr m 'pmpaddr7) (bv #x0 64)))
-  (assert (bveq (machine-csr m 'pmpaddr8) (bv #x7fffffffffffffff 64)))
-  (assert (bveq (machine-csr m 'pmpaddr9) (bv #x0 64)))
-  (assert (bveq (machine-csr m 'pmpaddr10) (bv #x0 64)))
-  (assert (bveq (machine-csr m 'pmpaddr11) (bv #x0 64)))
-  (assert (bveq (machine-csr m 'pmpaddr12) (bv #x0 64)))
-  (assert (bveq (machine-csr m 'pmpaddr13) (bv #x0 64)))
-  (assert (bveq (machine-csr m 'pmpaddr14) (bv #x0 64)))
-  (assert (bveq (machine-csr m 'pmpaddr15) (bv #x0 64))))
+  (assert (bveq (machine-csr m MTVEC) (bv #x0000000080000080 64)))
+  (assert (bveq (machine-csr m PMPCFG0) (bv #x000000000000001f 64)))
+  (assert (bveq (machine-csr m PMPCFG2) (bv #x0000000000000018 64)))
+  (assert (bveq (machine-csr m PMPADDR0) (bv #x000000002000bfff 64)))
+  (assert (bveq (machine-csr m PMPADDR1) (bv #x0 64)))
+  (assert (bveq (machine-csr m PMPADDR2) (bv #x0 64)))
+  (assert (bveq (machine-csr m PMPADDR3) (bv #x0 64)))
+  (assert (bveq (machine-csr m PMPADDR4) (bv #x0 64)))
+  (assert (bveq (machine-csr m PMPADDR5) (bv #x0 64)))
+  (assert (bveq (machine-csr m PMPADDR6) (bv #x0 64)))
+  (assert (bveq (machine-csr m PMPADDR7) (bv #x0 64)))
+  (assert (bveq (machine-csr m PMPADDR8) (bv #x7fffffffffffffff 64)))
+  (assert (bveq (machine-csr m PMPADDR9) (bv #x0 64)))
+  (assert (bveq (machine-csr m PMPADDR10) (bv #x0 64)))
+  (assert (bveq (machine-csr m PMPADDR11) (bv #x0 64)))
+  (assert (bveq (machine-csr m PMPADDR12) (bv #x0 64)))
+  (assert (bveq (machine-csr m PMPADDR13) (bv #x0 64)))
+  (assert (bveq (machine-csr m PMPADDR14) (bv #x0 64)))
+  (assert (bveq (machine-csr m PMPADDR15) (bv #x0 64))))
 (provide assert-OK)
 
 (define (assert-csr-equal m1 m2)
@@ -64,41 +66,41 @@
   ; Create a deep copy of machine m
   (machine
     (cpu
-      (csrs 
-        (machine-csr m 'mtvec)
-        (machine-csr m 'mepc)
-        (machine-csr m 'mstatus)
-        (pmp
-          (for/vector ([p (pmp-pmpcfgs (csrs-pmp (cpu-csrs (machine-cpu m))))])
-            (pmpcfg
-              (pmpcfg-value p)
-              (for/vector ([s (pmpcfg-settings p)])
-                (pmpcfg-setting
-                  (pmpcfg-setting-R s)
-                  (pmpcfg-setting-W s)
-                  (pmpcfg-setting-X s)
-                  (pmpcfg-setting-A s)
-                  (pmpcfg-setting-L s)))))
-          (for/vector ([p (pmp-pmpaddrs (csrs-pmp (cpu-csrs (machine-cpu m))))])
-            (pmpaddr
-              (pmpaddr-value p)
-              (pmpaddr-startaddr p)
-              (pmpaddr-endaddr p)))
-          (pmp-numimplemented (csrs-pmp (cpu-csrs (machine-cpu m))))))
-      (for/vector ([i (cpu-gprs (machine-cpu m))])
-        i)
-      (machine-pc m))
+      (for/vector ([csr (cpu-csrs (machine-cpu m))])
+        csr)
+      (for/vector ([gpr (cpu-gprs (machine-cpu m))])
+        gpr)
+      (machine-pc m)
+      (pmp
+        (for/vector ([p (pmp-pmpcfgs (cpu-pmp (machine-cpu m)))])
+          (pmpcfg
+            (pmpcfg-value p)
+            (for/vector ([s (pmpcfg-settings p)])
+              (pmpcfg-setting
+                (pmpcfg-setting-R s)
+                (pmpcfg-setting-W s)
+                (pmpcfg-setting-X s)
+                (pmpcfg-setting-A s)
+                (pmpcfg-setting-L s)))))
+        (for/vector ([p (pmp-pmpaddrs (cpu-pmp (machine-cpu m)))])
+          (pmpaddr
+            (pmpaddr-value p)
+            (pmpaddr-startaddr p)
+            (pmpaddr-endaddr p)))
+        (pmp-numimplemented (cpu-pmp (machine-cpu m)))))
     (machine-ram m)
     (machine-mode m)))
 (provide deep-copy-machine)
 
 (define (assert-mem-equal m1 m2 pos)
   ; Assert that memory is equal between machines m1 and m2
-  (assert (bveq (memory-read (machine-ram m1) pos) (memory-read (machine-ram m2) pos))))
+  (assert (bveq (memory-read (machine-ram m1) pos)
+                (memory-read (machine-ram m2) pos))))
 (provide assert-mem-equal)
 
 ;; Sanity Checks for Individual Instructions
 
+; TODO: change list-ref stuff here to use get-gprs-i
 (define-test-suite
   instruction-check
   (test-case "add test"
@@ -114,7 +116,7 @@
                (execute-until-mret m))
              (define gprsx
                (for/list ([i (in-range 10 18)])
-                 (get-gprs-i (machine-gprs m) i)))
+                 (get-gprs-i (machine-gprs m) (bv i 5))))
              (define model_add
                (verify (begin (assert
                                 (bveq (bvadd (list-ref gprsx 5) (list-ref gprsx 7))
@@ -130,7 +132,7 @@
                (execute-until-mret m))
              (define gprsx
                (for/list ([i (in-range 10 18)])
-                 (get-gprs-i (machine-gprs m) i)))
+                 (get-gprs-i (machine-gprs m) (bv i 5))))
              (define model_addi
                (verify (begin (assert
                                 (bveq (list-ref gprsx 6)
@@ -146,7 +148,7 @@
                (execute-until-mret m))
              (define gprsx
                (for/list ([i (in-range 10 18)])
-                 (get-gprs-i (machine-gprs m) i)))
+                 (get-gprs-i (machine-gprs m) (bv i 5))))
              (define model_addw
                (verify (begin (assert
                                 (bveq (list-ref gprsx 6)
@@ -178,7 +180,7 @@
                (execute-until-mret m))
              (define gprsx
                (for/list ([i (in-range 10 18)])
-                 (get-gprs-i (machine-gprs m) i)))
+                 (get-gprs-i (machine-gprs m) (bv i 5))))
              ; doubleword, use all bits
              (define model_sd_ld
                (verify (begin (assert
@@ -195,7 +197,7 @@
                (execute-until-mret m))
              (define gprsx
                (for/list ([i (in-range 10 18)])
-                 (get-gprs-i (machine-gprs m) i)))
+                 (get-gprs-i (machine-gprs m) (bv i 5))))
              ; word, index into the 32 lower bits
              (define model_sw_lw
                (verify (begin (assert
@@ -212,7 +214,7 @@
                (execute-until-mret m))
              (define gprsx
                (for/list ([i (in-range 10 18)])
-                 (get-gprs-i (machine-gprs m) i)))
+                 (get-gprs-i (machine-gprs m) (bv i 5))))
              ; half-word, index into the 15 lower bits
              (define model_sh_lh
                (verify (begin (assert
@@ -229,7 +231,7 @@
                (execute-until-mret m))
              (define gprsx
                (for/list ([i (in-range 10 18)])
-                 (get-gprs-i (machine-gprs m) i)))
+                 (get-gprs-i (machine-gprs m) (bv i 5))))
              ; half-word, index into the 15 lower bits
              (define model_sb_lb
                (verify (begin (assert
@@ -246,7 +248,7 @@
                (execute-until-mret m))
              (define gprsx
                (for/list ([i (in-range 10 18)])
-                 (get-gprs-i (machine-gprs m) i)))
+                 (get-gprs-i (machine-gprs m) (bv i 5))))
              (define model_srliw
                (verify (begin (assert
                                 (and (bveq (list-ref gprsx 1) (bv #xffffffffffffffff 64))
@@ -265,7 +267,7 @@
                (execute-until-mret m))
              (define gprsx
                (for/list ([i (in-range 10 18)])
-                 (get-gprs-i (machine-gprs m) i)))
+                 (get-gprs-i (machine-gprs m) (bv i 5))))
              (define model_addiw
                (verify (begin (assert (and (bveq (list-ref gprsx 1) (bv #x000000007fffffff 64))
                                            (bveq (list-ref gprsx 2) (bv #xffffffff800007fe 64))
@@ -313,9 +315,9 @@
                 [use-fnmem #f]
                 [use-concrete-optimizations #t])
                (execute-until-mret m))
-             
+
              ; Check that after boot sequence machine mode is user mode (0) and in OK state
-             (check-true (equal? (machine-mode m) 0))
+             (check-true (bveq (machine-mode m) (bv 0 3)))
              (assert-OK m))
   (test-case "kernel test (no concrete optimizations)"
              (clear-terms!)
@@ -334,9 +336,9 @@
                 [use-fnmem #f]
                 [use-concrete-optimizations #f])
                (execute-until-mret m))
-             
+
              ; Check that after boot sequence machine mode is user mode (0) and in OK state
-             (check-true (equal? (machine-mode m) 0))
+             (check-true (bveq (machine-mode m) (bv 0 3)))
              (assert-OK m)))
 
 ;; Sanity Checks for Misc. Utilities
@@ -345,20 +347,20 @@
   utils
   (test-case "ctz64"
              (clear-terms!)
-             (assert (check-equal? 8  (ctz64 (bv #xffffffffffffff00 64))))
-             (assert (check-equal? 7  (ctz64 (bv #xffffffffffffff80 64))))
-             (assert (check-equal? 2  (ctz64 (bv #xfffffffffffffff4 64))))
-             (assert (check-equal? 63 (ctz64 (bv #x8000000000000000 64))))
-             (assert (check-equal? 0  (ctz64 (bv #xffffffffffffffff 64))))
-             (assert (check-equal? 0  (ctz64 (bv #x0000000000000000 64)))))
+             ; TODO: Why is there assert here?
+             (check-equal? 8  (ctz64 (bv #xffffffffffffff00 64)))
+             (check-equal? 7  (ctz64 (bv #xffffffffffffff80 64)))
+             (check-equal? 2  (ctz64 (bv #xfffffffffffffff4 64)))
+             (check-equal? 63 (ctz64 (bv #x8000000000000000 64)))
+             (check-equal? 0  (ctz64 (bv #xffffffffffffffff 64)))
+             (check-equal? 0  (ctz64 (bv #x0000000000000000 64))))
   (test-case "pmp check"
              (clear-terms!)
              (printf "* Running pmp.bin test ~n")
              (define program (file->bytearray "build/pmp.bin"))
              (define m (init-machine-with-prog program))
              (execute-until-mret m)
-             ; (print-pmp m)
-             (check-equal? (machine-mode m) 0)
+             (check-true (bveq (machine-mode m) (bv 0 3)))
              (check-true (pmp-check (machine-pmp m) (machine-mode m)
                                     (bv #x80800000 64) (bv #x80800000 64)))
              (check-true (pmp-check (machine-pmp m) (machine-mode m)
@@ -374,7 +376,7 @@
                                     (bv #x10700001 64) (bv #x107FFFFF 64)))
              (check-equal? (pmp-check (machine-pmp m) (machine-mode m)
                                       (bv #x00700001 64) (bv #x107FFFFF 64)) #f)
-             (check-true (equal? (machine-mode m) 0))
+             (check-true (bveq (machine-mode m) (bv 0 3)))
              (check-equal? (pmp-numimplemented (machine-pmp m)) 3)
              (check-true (not (equal? (pmp-numimplemented (machine-pmp m)) 4)))
              (check-true (not (equal? (pmp-numimplemented (machine-pmp m)) 5)))
@@ -434,37 +436,32 @@
                                   ([use-sym-optimizations #f]
                                    [use-debug-mode #f]
                                    [ramsize-log2 32])
-                                  (step m)))
-             
+                                  (step m)))             
              (define-symbolic* sym-idx (bitvector 32))
              
-             ; Currently PMP allows user to only write in the region 0x0 --> 0x1FFFF
-             (clear-asserts!)
+             ; Currently PMP allows user to only write in the region 0x20000 --> 0x3FFFF
              (define model_noninterference
                (verify
-                 #:assume
-                 (assert (and (not (bvule (bv #x20000 32) sym-idx) (bvule sym-idx (bv #x3FFFF 32)))))
-                 #:guarantee
-                 (assert-mem-equal m m1 sym-idx)))
+                 (begin
+                   (assume (or (bvult sym-idx (bv #x20000 32)) (bvult (bv #x3FFFF 32) sym-idx)))
+                   (assert-mem-equal m m1 sym-idx))))
              (check-true (unsat? model_noninterference))
              
              ; Check the upper/lower bounds of the user region
-             (clear-asserts!)
+             (clear-vc!)
              (define model_ubound
                (verify
-                 #:assume
-                 (assert (bveq sym-idx (bv #x3FFFF 32)))
-                 #:guarantee
-                 (assert-mem-equal m m1 sym-idx)))
+                 (begin
+                   (assume (bveq sym-idx (bv #x3FFFF 32)))
+                   (assert-mem-equal m m1 sym-idx))))
              (check-true (not (unsat? model_ubound)))
              
-             (clear-asserts!)
+             (clear-vc!)
              (define model_lbound
                (verify
-                 #:assume
-                 (assert (bveq sym-idx (bv #x20000 32)))
-                 #:guarantee
-                 (assert-mem-equal m m1 sym-idx)))
+                 (begin
+                   (assume (bveq sym-idx (bv #x20000 32)))
+                   (assert-mem-equal m m1 sym-idx))))
              (check-true (not (unsat? model_lbound))))
   (test-case "mode test"
              (clear-terms!)
@@ -482,13 +479,13 @@
                   [ramsize-log2 32])
                  (step m)))
              
-             (clear-asserts!)
+             (clear-vc!)
              (define model_mode
                (verify (assert
-                         (or (equal? (machine-mode m) (machine-mode m1))
+                         (or (bveq (machine-mode m) (machine-mode m1))
                              (and (bveq (machine-pc m)
-                                        (bvsub (machine-csr m 'mtvec) (base-address)))
-                                  (equal? (machine-mode m) 1))))))
+                                        (bvsub (machine-csr m MTVEC) (base-address)))
+                                  (bveq (machine-mode m) (bv 1 3)))))))
              (check-true (unsat? model_mode)))
   (test-case "only user mode test"
              (clear-terms!)
@@ -506,9 +503,9 @@
                   [ramsize-log2 32])
                  (step m)))
              
-             (clear-asserts!)
+             (clear-vc!)
              (define model_only_user_mode
-               (verify (assert (equal? (machine-mode m) 0))))
+               (verify (assert (bveq (machine-mode m) (bv 0 3)))))
              (check-true (unsat? model_only_user_mode)))
   (test-case "cannot reach mtvec test"
              (clear-terms!)
@@ -526,11 +523,11 @@
                   [ramsize-log2 32])
                  (step m)))
              
-             (clear-asserts!)
+             (clear-vc!)
              (define model_only_user_mode
                (verify (assert
-                         (not (and (bveq (machine-pc m) (bvsub (machine-csr m 'mtvec) (base-address)))
-                                   (equal? (machine-mode m) 1))))))
+                         (not (and (bveq (machine-pc m) (bvsub (machine-csr m MTVEC) (base-address)))
+                                   (bveq (machine-mode m) (bv 1 3)))))))
              (check-true (unsat? model_only_user_mode)))
   (test-case "does not return null test"
              (clear-terms!)
@@ -548,12 +545,12 @@
                   [ramsize-log2 32])
                  (step m)))
              
-             (clear-asserts!)
+             (clear-vc!)
              (define model_does_not_return_null
                (verify (assert
                          (not (equal? next_instr null)))))
              (check-true (unsat? model_does_not_return_null))
-             (clear-asserts!)
+             (clear-vc!)
              (define model_does_return_illegal_instr
                (verify (assert (not (equal? next_instr 'illegal-instruction)))))
              (check-true (not (unsat? model_does_return_illegal_instr)))))
@@ -571,7 +568,7 @@
                  ([use-sym-optimizations #f]
                   [use-debug-mode #f]
                   [use-fnmem #f]
-                  [use-concrete-optimizations #t])
+                  [use-concrete-optimizations #f])
                  (init-machine-with-prog program)))
              (parameterize
                ([use-sym-optimizations #f]
@@ -581,8 +578,7 @@
                (execute-until-mret m))
              
              ; Check that after boot sequence machine mode is user mode (0) and in OK state
-             (print-pmp m)
-             (check-true (equal? (machine-mode m) 0))
+             (check-true (bveq (machine-mode m) (bv 0 3)))
              (assert-OK m)))
 
 ;; Test Case for Inductive Step
@@ -595,42 +591,40 @@
              ; Create machine in the OK state
              (define m
                (parameterize
-                 ([ramsize-log2 20])
+                 ([use-sym-optimizations #t]
+                  [ramsize-log2 32])
                  (init-machine)))
              
              ; Create a copy of the machine and take arbitrary step
              (define m1 (deep-copy-machine m))
              (define next_instr
                (parameterize
-                 ([use-sym-optimizations #f]
-                  [use-debug-mode #f]
-                  [ramsize-log2 20])
+                 ([use-sym-optimizations #t]
+                  [ramsize-log2 32])
                  (step m)))
              
              ; Check that mode of m1 is either equal to the mtvec or user mode
              (define model_mode
                (verify (assert
-                         (or (equal? (machine-mode m) (machine-mode m1))
+                         (or (bveq (machine-mode m) (machine-mode m1))
                              (and (bveq (machine-pc m)
-                                        (bvsub (machine-csr m 'mtvec) (base-address)))
-                                  (equal? (machine-mode m) 1))))))
+                                        (bvsub (machine-csr m MTVEC) (base-address)))
+                                  (bveq (machine-mode m) (bv 1 3)))))))
              (check-true (unsat? model_mode))
              
              ; Check that m1 is in an OK state
-             (clear-asserts!)
              (define model_OK (verify (assert-OK m1)))
              (check-true (unsat? model_OK))
              
              ; Check that memory between m and m1 is same except for in user memory;
              ; (0x20000 -> 0x3FFFF)
-             (clear-asserts!)
-             (define-symbolic* sym-idx (bitvector 20))
+             ; TODO: check if it is 32 or 20 for mem access
+             (define-symbolic* sym-idx (bitvector 32))
              (define model_noninterference
                (verify
-                 #:assume
-                 (assert (and (not (bvule (bv #x20000 32) sym-idx) (bvule sym-idx (bv #x3FFFF 32)))))
-                 #:guarantee
-                 (assert-mem-equal m m1 sym-idx)))
+                 (begin
+                   (assume (or (bvult sym-idx (bv #x20000 32)) (bvult (bv #x3FFFF 32) sym-idx)))
+                   (assert-mem-equal m m1 sym-idx))))
              (check-true (unsat? model_noninterference))))
 
 (define res-instruction-check (run-tests instruction-check))
@@ -638,7 +632,7 @@
 (define res-high-level-test (run-tests high-level-test))
 (define res-step-checks (run-tests step-checks))
 
-;; Testing the base case and inductive step
+; ;; Testing the base case and inductive step
 
 (define res-boot-sequence (time (run-tests boot-sequence)))
 (define res-inductive-step (time (run-tests inductive-step)))

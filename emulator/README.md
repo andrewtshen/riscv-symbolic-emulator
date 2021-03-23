@@ -1,6 +1,6 @@
 # RISC-V Symbolic Emulator
 
-### TODO: FIX FILES AFTER REFORMATING
+### TODO: FIX FILES AFTER REFORMATING AND NUMEROUS CHANGES TO STRUCTURE
 
 ### Method
 The main program is `emulate.rkt` which sets up the machine from and loads the program to be run from `init.rkt`. Then instructions are read in 4-bytes, converted to their readable forms using `fmt.rkt` to get the format, `decode.rkt` to convert the binary to the normal format. `execute.rkt` finally performs that decoded symbolic value.

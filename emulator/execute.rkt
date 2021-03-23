@@ -9,28 +9,39 @@
 ; Decode and execute all of the binary instructions and instruction as list
 
 (define (execute-R m b_instr)
-  (define rd (bitvector->natural (extract 11 7 b_instr)))
+  (define opcode (extract 6 0 b_instr))
+  (define rd (extract 11 7 b_instr))
   (define funct3 (extract 14 12 b_instr))
-  (define rs1 (bitvector->natural (extract 19 15 b_instr)))
-  (define rs2 (bitvector->natural (extract 24 20 b_instr)))
+  (define rs1 (extract 19 15 b_instr))
+  (define rs2 (extract 24 20 b_instr))
   (define funct7 (extract 31 25 b_instr))
   (cond
-    [(and (bveq funct3 (bv #b000 3)) (bveq funct7 (bv #b0000000 7)))
+    [(and (bveq funct3 (bv #b000 3)) (bveq funct7 (bv #b0000000 7)) (bveq opcode (bv #b0110011 7)))
      (add-instr m rd rs1 rs2)]
-    [(and (bveq funct3 (bv #b000 3)) (bveq funct7 (bv #b0100000 7)))
+    [(and (bveq funct3 (bv #b000 3)) (bveq funct7 (bv #b0000000 7)) (bveq opcode (bv #b0111011 7)))
+     (addw-instr m rd rs1 rs2)]
+    [(and (bveq funct3 (bv #b000 3)) (bveq funct7 (bv #b0100000 7)) (bveq opcode (bv #b0110011 7)))
      (sub-instr m rd rs1 rs2)]
-    [(and (bveq funct3 (bv #b001 3)) (bveq funct7 (bv #b0000000 7)))
+    [(and (bveq funct3 (bv #b000 3)) (bveq funct7 (bv #b0100000 7)) (bveq opcode (bv #b0111011 7)))
+     (subw-instr m rd rs1 rs2)]
+    [(and (bveq funct3 (bv #b001 3)) (bveq funct7 (bv #b0000000 7)) (bveq opcode (bv #b0110011 7)))
      (sll-instr m rd rs1 rs2)]
+    [(and (bveq funct3 (bv #b001 3)) (bveq funct7 (bv #b0000000 7)) (bveq opcode (bv #b0111011 7)))
+     (sllw-instr m rd rs1 rs2)]
     [(and (bveq funct3 (bv #b010 3)) (bveq funct7 (bv #b0000000 7)))
      (slt-instr m rd rs1 rs2)]
     [(and (bveq funct3 (bv #b011 3)) (bveq funct7 (bv #b0000000 7)))
      (sltu-instr m rd rs1 rs2)]
     [(and (bveq funct3 (bv #b100 3)) (bveq funct7 (bv #b0000000 7)))
      (xor-instr m rd rs1 rs2)]
-    [(and (bveq funct3 (bv #b101 3)) (bveq funct7 (bv #b0000000 7)))
+    [(and (bveq funct3 (bv #b101 3)) (bveq funct7 (bv #b0000000 7)) (bveq opcode (bv #b0110011 7)))
      (srl-instr m rd rs1 rs2)]
-    [(and (bveq funct3 (bv #b101 3)) (bveq funct7 (bv #b0100000 7)))
+    [(and (bveq funct3 (bv #b101 3)) (bveq funct7 (bv #b0000000 7)) (bveq opcode (bv #b0111011 7)))
+     (srlw-instr m rd rs1 rs2)]
+    [(and (bveq funct3 (bv #b101 3)) (bveq funct7 (bv #b0100000 7)) (bveq opcode (bv #b0110011 7)))
      (sra-instr m rd rs1 rs2)]
+    [(and (bveq funct3 (bv #b101 3)) (bveq funct7 (bv #b0100000 7)) (bveq opcode (bv #b0111011 7)))
+     (sraw-instr m rd rs1 rs2)]
     [(and (bveq funct3 (bv #b110 3)) (bveq funct7 (bv #b0000000 7)))
      (or-instr m rd rs1 rs2)]
     [(and (bveq funct3 (bv #b111 3)) (bveq funct7 (bv #b0000000 7)))
@@ -42,9 +53,9 @@
 (define (execute-I m b_instr)
   ; TODO Could group by opcode first and then check for funct3
   (define opcode (extract 6 0 b_instr))
-  (define rd (bitvector->natural (extract 11 7 b_instr)))
+  (define rd (extract 11 7 b_instr))
   (define funct3 (extract 14 12 b_instr))
-  (define rs1 (bitvector->natural (extract 19 15 b_instr)))
+  (define rs1 (extract 19 15 b_instr))
   (define imm (extract 31 20 b_instr))
   (define shift_type (extract 30 30 b_instr))
   (cond
@@ -78,29 +89,27 @@
     [(and (bveq funct3 (bv #b111 3)) (bveq opcode (bv #b0010011 7)))
      (andi-instr m rd rs1 imm)]
     [(and (bveq funct3 (bv #b001 3)) (bveq opcode (bv #b0010011 7)))
-     ; TODO: Check if supposed to be 24?
-     (slli-instr m rd rs1 (extract 24 20 b_instr))]
+     (slli-instr m rd rs1 (extract 5 0 imm))]
     [(and (bveq funct3 (bv #b101 3)) (bveq opcode (bv #b0010011 7)) (bveq shift_type (bv #b0 1)))
-     (srli-instr m rd rs1 (extract 25 20 b_instr))]
+     (srli-instr m rd rs1 (extract 5 0 imm))]
     [(and (bveq funct3 (bv #b101 3)) (bveq opcode (bv #b0010011 7)) (bveq shift_type (bv #b1 1)))
-     (srai-instr m rd rs1 (extract 25 20 b_instr))]
-    [(and (bveq funct3 (bv #b000 3)) (bveq opcode (bv #b0011011 7)))
-     ; TODO: Check if supposed to be normal imm
-     (addiw-instr m rd rs1 imm)]
+     (srai-instr m rd rs1 (extract 5 0 imm))]
     [(and (bveq funct3 (bv #b001 3)) (bveq opcode (bv #b0011011 7)))
-     (slliw-instr m rd rs1 (extract 25 20 b_instr))]
+     (slliw-instr m rd rs1 (extract 5 0 imm))]
     [(and (bveq funct3 (bv #b101 3)) (bveq opcode (bv #b0011011 7)) (bveq shift_type (bv #b0 1)))
-     (srliw-instr m rd rs1 (extract 25 20 b_instr))]
+     (srliw-instr m rd rs1 (extract 5 0 imm))]
     [(and (bveq funct3 (bv #b101 3)) (bveq opcode (bv #b0011011 7)) (bveq shift_type (bv #b1 1)))
-     (sraiw-instr m rd rs1 (extract 25 20 b_instr))]
+     (sraiw-instr m rd rs1 (extract 5 0 imm))]
+    [(and (bveq funct3 (bv #b000 3)) (bveq opcode (bv #b0011011 7)))
+     (addiw-instr m rd rs1 imm)]
     [else
      ; (printf "No such I FMT ~n")
      'illegal-instruction]))
 
 (define (execute-B m b_instr)
   (define funct3 (extract 14 12 b_instr))
-  (define rs1 (bitvector->natural (extract 19 15 b_instr)))
-  (define rs2 (bitvector->natural (extract 24 20 b_instr)))
+  (define rs1 (extract 19 15 b_instr))
+  (define rs2 (extract 24 20 b_instr))
   ; append upper imm and lower imm into imm
   (define imm (concat 
                 (extract 31 31 b_instr) 
@@ -127,7 +136,7 @@
 (define (execute-U m b_instr)
   (define opcode (extract 6 0 b_instr))
   ; append upper imm and lower imm into imm
-  (define rd (bitvector->natural (extract 11 7 b_instr)))
+  (define rd (extract 11 7 b_instr))
   (define imm (extract 31 12 b_instr))
   (cond
     [(bveq opcode (bv #b0110111 7))
@@ -141,8 +150,8 @@
 (define (execute-S m b_instr)
   (define opcode (extract 6 0 b_instr))
   (define funct3 (extract 14 12 b_instr))
-  (define rs1 (bitvector->natural (extract 19 15 b_instr)))
-  (define rs2 (bitvector->natural (extract 24 20 b_instr)))
+  (define rs1 (extract 19 15 b_instr))
+  (define rs2 (extract 24 20 b_instr))
   (define imm (concat
                 (extract 31 25 b_instr)
                 (extract 11 7 b_instr)))
@@ -161,7 +170,7 @@
 
 (define (execute-J m b_instr)
   (define opcode (extract 6 0 b_instr))
-  (define rd (bitvector->natural (extract 11 7 b_instr)))
+  (define rd (extract 11 7 b_instr))
   (define imm (concat
                 (extract 31 31 b_instr)
                 (extract 19 12 b_instr)
@@ -176,9 +185,9 @@
 
 (define (execute-SYSTEM m b_instr)
   (define opcode (extract 6 0 b_instr))
-  (define rd (bitvector->natural (extract 11 7 b_instr)))
+  (define rd (extract 11 7 b_instr))
   (define funct3 (extract 14 12 b_instr))
-  (define rs1 (bitvector->natural (extract 19 15 b_instr)))
+  (define rs1 (extract 19 15 b_instr))
   (cond
     [(bveq funct3 (bv #b000 3))
      (define funct12 (extract 31 20 b_instr))
@@ -196,23 +205,33 @@
         'illegal-instruction])]
     [else
      (define csr (extract 31 20 b_instr))
-     (define sym_csr (decode-csr csr))
      (cond
        [(bveq funct3 (bv #b001 3))
-        (csrrw-instr m rd rs1 sym_csr)]
+        (csrrw-instr m rd rs1 csr)]
        [(bveq funct3 (bv #b010 3))
-        (csrrs-instr m rd rs1 sym_csr)]
+        (csrrs-instr m rd rs1 csr)]
        [(bveq funct3 (bv #b011 3))
-        (csrrc-instr m rd rs1 sym_csr)]
+        (csrrc-instr m rd rs1 csr)]
        [(bveq funct3 (bv #b101 3))
-        (csrrwi-instr m rd rs1 sym_csr)]
+        (csrrwi-instr m rd rs1 csr)]
        [(bveq funct3 (bv #b110 3))
-        (csrrsi-instr m rd rs1 sym_csr)]
+        (csrrsi-instr m rd rs1 csr)]
        [(bveq funct3 (bv #b111 3))
-        (csrrci-instr m rd rs1 sym_csr)]
+        (csrrci-instr m rd rs1 csr)]
        [else
         ; (printf "No such SYSTEM FMT ~n")
         'illegal-instruction])]))
+
+(define (execute-FENCE m b_instr)
+  (define funct3 (extract 14 12 b_instr))
+  ; TODO: Fill in details for these instructions (currently act as NOP)
+  (cond
+    [(bveq funct3 (bv #b000 3))
+     (FENCE-instr m)]
+    [(bveq funct3 (bv #b001 3))
+     (FENCE_I-instr m)]
+    [else
+     'illegal-instruction]))
 
 ; Execute a 32 bit instruction
 (define (execute m b_instr)
@@ -226,57 +245,12 @@
     [(eq? fmt 'S) (execute-S m b_instr)]
     [(eq? fmt 'J) (execute-J m b_instr)]
     [(eq? fmt 'SYSTEM) (execute-SYSTEM m b_instr)]
+    [(eq? fmt 'FENCE)
+     (execute-FENCE m b_instr)]
     [else
      ; (printf "No such FMT ~n")
      'illegal-instruction]))
 (provide execute)
-
-(define (decode-csr b_csr)
-  ; (printf "CSR: ~a~n" b_csr)
-  (cond
-    [(bveq b_csr (bv #x000 12)) 'ustatus]
-    [(bveq b_csr (bv #x004 12)) 'uie]
-    [(bveq b_csr (bv #x005 12)) 'utevc]
-    [(bveq b_csr (bv #x040 12)) 'uscratch]
-    [(bveq b_csr (bv #x041 12)) 'uepc]
-    [(bveq b_csr (bv #x042 12)) 'ucause]
-    [(bveq b_csr (bv #x043 12)) 'ubadaddr]
-    [(bveq b_csr (bv #x044 12)) 'uip]
-    [(bveq b_csr (bv #x300 12)) 'mstatus]
-    [(bveq b_csr (bv #x301 12)) 'misa]
-    [(bveq b_csr (bv #x302 12)) 'medeleg]
-    [(bveq b_csr (bv #x303 12)) 'mideleg]
-    [(bveq b_csr (bv #x304 12)) 'mie]
-    [(bveq b_csr (bv #x305 12)) 'mtvec]
-    [(bveq b_csr (bv #x340 12)) 'mscratch]
-    [(bveq b_csr (bv #x341 12)) 'mepc]
-    [(bveq b_csr (bv #x342 12)) 'mcause]
-    [(bveq b_csr (bv #x343 12)) 'mbadaddr]
-    [(bveq b_csr (bv #x344 12)) 'mip]
-    [(bveq b_csr (bv #x3A0 12)) 'pmpcfg0]
-    [(bveq b_csr (bv #x3A1 12)) 'pmpcfg1]
-    [(bveq b_csr (bv #x3A2 12)) 'pmpcfg2]
-    [(bveq b_csr (bv #x3A3 12)) 'pmpcfg3]
-    [(bveq b_csr (bv #x3B0 12)) 'pmpaddr0]
-    [(bveq b_csr (bv #x3B1 12)) 'pmpaddr1]
-    [(bveq b_csr (bv #x3B2 12)) 'pmpaddr2]
-    [(bveq b_csr (bv #x3B3 12)) 'pmpaddr3]
-    [(bveq b_csr (bv #x3B4 12)) 'pmpaddr4]
-    [(bveq b_csr (bv #x3B5 12)) 'pmpaddr5]
-    [(bveq b_csr (bv #x3B6 12)) 'pmpaddr6]
-    [(bveq b_csr (bv #x3B7 12)) 'pmpaddr7]
-    [(bveq b_csr (bv #x3B8 12)) 'pmpaddr8]
-    [(bveq b_csr (bv #x3B9 12)) 'pmpaddr9]
-    [(bveq b_csr (bv #x3BA 12)) 'pmpaddr10]
-    [(bveq b_csr (bv #x3BB 12)) 'pmpaddr11]
-    [(bveq b_csr (bv #x3BC 12)) 'pmpaddr12]
-    [(bveq b_csr (bv #x3BD 12)) 'pmpaddr13]
-    [(bveq b_csr (bv #x3BE 12)) 'pmpaddr14]
-    [(bveq b_csr (bv #x3BF 12)) 'pmpaddr15]
-    [else
-     ; (printf "No such CSR FMT ~n")
-     'illegal-instruction]))
-
 
 ; example: add x5, x6, x7
 ; (define b_instr (bv #b00000000011100110000001010110011 32))

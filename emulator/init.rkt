@@ -4,7 +4,8 @@
   "pmp.rkt"
   "machine.rkt"
   "parameters.rkt"
-  "print-utils.rkt")
+  "print-utils.rkt"
+  "csrs.rkt")
 (require (only-in racket/file file->bytes)
          (only-in racket/base bytes-length for for/list in-range subbytes bytes-ref in-naturals))
 (require syntax/parse/define)
@@ -24,7 +25,6 @@
   (if (use-concrete-mem)
     (build-vector n (lambda (i) (bv 0 size)))
     (build-vector n (lambda (i) (define-symbolic* m (bitvector size)) m))))
-; set mem to 0 for testing with qemu
 
 (define-simple-macro (fresh-symbolic name type)
   (let () (define-symbolic* name type) name))
@@ -51,12 +51,17 @@
     (printf "Not enough RAM provided to run program~n"))
 
   ; Make and set all the initial csrs to 0 (TODO: change to actual values)
-  (define-symbolic* mtvec mepc mstatus (bitvector 64))
-  (set! mtvec (bv 0 64))
-  (set! mepc (bv 0 64))
-  (set! mstatus (bv 0 64))
+  (define csrs (make-csrs))
+  (set-csr! csrs MTVEC (bv 0 64))
+  (set-csr! csrs MEPC (bv 0 64))
+  (set-csr! csrs MSTATUS (bv 0 64))
+  (set-csr! csrs MHARTID (bv 0 64))
+  
+  ; Set pc to 0 when loading with program
   (define pc (bv 0 64))
-  (define mode 1) ; start in machine mode
+  
+  ; Start in machine mode
+  (define mode (bv 1 3))
 
   ; Set up PMP and default configurations
   (define pmp (make-pmp))
@@ -78,27 +83,29 @@
        (vector-append program (make-sym-vector (- (expt 2 (ramsize-log2)) proglength) 8 mem))))
 
   ; Make gprs, default to zero, and do some special virt machine setup
-  (define gprs (make-sym-vector 31 64 gpr))
-  (for [(i (in-range 1 32))]
-    (set-gprs-i! gprs i (bv 0 64)))
-  (set-gprs-i! gprs 5 (bv #x80000000 64))
-  (set-gprs-i! gprs 9 (bv #x0 64))
-  (set-gprs-i! gprs 10 (bv 1020 64))
+  (define gprs (make-sym-vector 32 64 gpr))
+  (for [(i (in-range 32))]
+    (set-gprs-i! gprs (bv i 5) (bv 0 64)))
+
+  (set-gprs-i! gprs (bv 10 5) (bv #x0 64))
+  (set-gprs-i! gprs (bv 11 5) (bv 1020 64))
 
   (machine
-   (cpu 
-    (csrs
-     mtvec mepc mstatus pmp)
-    gprs
-    pc) ; set pc to 0 when loading with program
+   (cpu csrs gprs pc pmp)
    mem
    mode))
 (provide init-machine-with-prog)
 
 (define (init-machine)
-  (define-symbolic* mtvec mepc mstatus pc (bitvector 64))
-  (set! mtvec (bv #x0000000080000080 64))
-  (define mode 0) ; start in user mode
+  ; Use symbolic pc
+  (define-symbolic* pc (bitvector 64))
+  
+  ; Set up csrs
+  (define csrs (make-csrs))
+  (set-csr! csrs MTVEC (bv #x0000000080000080 64))
+  
+  ; Start in user mode
+  (define mode (bv 0 3)) 
 
   ; Set up PMP and default configurations to enable ONLY #x0000000080020000 - #x000000000001ffff
   (define pmp (make-pmp))
@@ -117,14 +124,10 @@
          (make-sym-vector (expt 2 (ramsize-log2)) 8 mem)))
 
   ; Make gprs
-  (define gprs (make-sym-vector 31 64 gpr)) ; be careful of -1 for offset
+  (define gprs (make-sym-vector 32 64 gpr)) ; be careful of -1 for offset
 
   (machine
-   (cpu 
-    (csrs
-     mtvec mepc mstatus pmp)
-    gprs
-    pc) ; symbolic pc
+   (cpu csrs gprs pc pmp)
    mem
    mode))
 (provide init-machine)

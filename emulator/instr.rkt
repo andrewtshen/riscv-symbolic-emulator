@@ -3,7 +3,8 @@
 (require
   "init.rkt"
   "machine.rkt"
-  "parameters.rkt") 
+  "parameters.rkt"
+  "csrs.rkt") 
 
 ; Execute each individual instruction symbolically and update the program count to the proper place.
 ; Used rv8.io and https://content.riscv.org/wp-content/uploads/2017/05/riscv-spec-v2.2.pdf for implementing instructions
@@ -35,14 +36,14 @@
 
 (define (mret-instr m)
   (define pc (machine-pc m))
-  (define mstatus (machine-csr m 'mstatus))
+  (define mstatus (machine-csr m MSTATUS))
   (define MPP (extract 12 11 mstatus))
   ; this is always user mode
   ; TODO: fix this and set mstatus to its actual value of MPP, for now we are setting to 0
   ; since we always but it to user mode
   ; (set-machine-mode! m (bitvector->natural MPP))
-  (set-machine-mode! m 0)
-  (set-machine-pc! m (bvsub (machine-csr m 'mepc) (base-address)))
+  (set-machine-mode! m (bv 0 3))
+  (set-machine-pc! m (bvsub (machine-csr m MEPC) (base-address)))
   (list 'mret))
 (provide mret-instr)
 
@@ -66,9 +67,9 @@
 
 (define (csrrw-instr m rd rs1 csr)
   (define pc (machine-pc m))
-  (when (equal? (machine-mode m) 1)
+  (when (bveq (machine-mode m) (bv 1 3))
     (define v_rs1 (get-gprs-i (machine-gprs m) rs1))
-    (when (not (zero? rd))
+    (when (not (bvzero? rd))
       (define v_csr (machine-csr m csr))
       (set-gprs-i! (machine-gprs m) rd (zero-extend v_csr (bitvector 64))))
     ; TODO: Implement specific setting permissions for CSR bits
@@ -79,13 +80,14 @@
 
 (define (csrrs-instr m rd rs1 csr)
   (define pc (machine-pc m))
-  (when (equal? (machine-mode m) 1)
+  (when (bveq (machine-mode m) (bv 1 3))
     (define v_rs1 (get-gprs-i (machine-gprs m) rs1))
     (define v_csr (machine-csr m csr))
+    ; TODO: see if zero-extend is excessive
     (set-gprs-i! (machine-gprs m) rd (zero-extend v_csr (bitvector 64)))
     
     ; TODO: Implement specific setting permissions for CSR bits
-    (when (not (zero? rs1))
+    (when (not (bvzero? rs1))
       (set-machine-csr! m csr (bvor v_csr v_rs1)))
     (set-machine-pc! m (bvadd pc (bv 4 64))))
   (list 'csrrs rd rs1 csr))
@@ -97,10 +99,17 @@
   (list 'csrrc))
 (provide csrrc-instr)
 
-(define (csrrwi-instr m)
-  ; TODO: csrrwi instruction not implemented yet
+(define (csrrwi-instr m rd rs1 csr)
   (define pc (machine-pc m))
-  (list 'csrrwi))
+  (when (bveq (machine-mode m) (bv 1 3))
+    (define ze_rs1 (zero-extend rs1 (bitvector 64)))
+    (when (not (bvzero? rd))
+      (define v_csr (machine-csr m csr))
+      (set-gprs-i! (machine-gprs m) rd (zero-extend v_csr (bitvector 64))))
+    ; TODO: Implement specific setting permissions for CSR bits
+    (set-machine-csr! m csr ze_rs1)
+    (set-machine-pc! m (bvadd pc (bv 4 64))))
+  (list 'csrrwi rd rs1 csr))
 (provide csrrwi-instr)
 
 (define (csrrsi-instr m)
@@ -120,14 +129,13 @@
 (define (addi-instr m rd rs1 imm)
   (define pc (machine-pc m))
   (define se_imm (sign-extend imm (bitvector 64)))
-  ; nop op pseudo code condition
   (cond
-    [(not (and (equal? rd 0) (equal? rs1 0) (bveq se_imm (bv 0 64))))
+    [(not (and (bvzero? rd) (bvzero? rs1) (bveq se_imm (bv 0 64))))
      (define v_rs1 (get-gprs-i (machine-gprs m) rs1))
-     (when (not (eq? v_rs1 null))
-       (set-machine-pc! m (bvadd pc (bv 4 64)))
-       (set-gprs-i! (machine-gprs m) rd (bvadd v_rs1 se_imm)))]
+     (set-gprs-i! (machine-gprs m) rd (bvadd v_rs1 se_imm))
+     (set-machine-pc! m (bvadd pc (bv 4 64)))]
     [else
+     ; nop op pseudo code condition
      (set-machine-pc! m (bvadd pc (bv 4 64)))])
   (list 'addi rd rs1 imm))
 (provide addi-instr)
@@ -167,8 +175,8 @@
   (define v_rs1 (get-gprs-i (machine-gprs m) rs1))
   (define se_imm (sign-extend imm (bitvector 64)))
   (if (bvslt v_rs1 se_imm)
-      (set-gprs-i! (machine-gprs m) rd 1)
-      (set-gprs-i! (machine-gprs m) rd 0))
+      (set-gprs-i! (machine-gprs m) rd (bv 1 64))
+      (set-gprs-i! (machine-gprs m) rd (bv 0 64)))
   (set-machine-pc! m (bvadd pc (bv 4 64)))
   (list 'slti rd rs1 imm))
 (provide slti-instr)
@@ -177,9 +185,9 @@
   (define pc (machine-pc m))
   (define v_rs1 (get-gprs-i (machine-gprs m) rs1))
   (define se_imm (sign-extend imm (bitvector 64)))
-  (if (bvult v_rs1 imm)
-      (set-gprs-i! (machine-gprs m) rd 1)
-      (set-gprs-i! (machine-gprs m) rd 0))
+  (if (bvult v_rs1 se_imm)
+      (set-gprs-i! (machine-gprs m) rd (bv 1 64))
+      (set-gprs-i! (machine-gprs m) rd (bv 0 64)))
   (set-machine-pc! m (bvadd pc (bv 4 64)))
   (list 'sltiu rd rs1 imm))
 (provide sltiu-instr)
@@ -213,12 +221,9 @@
 
 (define (addiw-instr m rd rs1 imm)
   (define pc (machine-pc m))
-  (when (debug-instr)
-    (printf "~a ~a ~a ~a~n" 'addiw rd rs1 imm))
-  (define v_rs1 (get-gprs-i (machine-gprs m) rs1))
-  (define se_imm (sign-extend imm (bitvector 64)))
-  (define 32bit_sum (extract 31 0 (bvadd v_rs1 se_imm)))
-  (set-gprs-i! (machine-gprs m) rd (sign-extend 32bit_sum (bitvector 64)))
+  (define v_rs1 (extract 31 0 (get-gprs-i (machine-gprs m) rs1)))
+  (define se_imm (sign-extend imm (bitvector 32)))
+  (set-gprs-i! (machine-gprs m) rd (sign-extend (bvadd v_rs1 se_imm) (bitvector 64)))
   (set-machine-pc! m (bvadd pc (bv 4 64)))
   (list 'addiw rd rs1 imm))
 (provide addiw-instr)
@@ -326,7 +331,7 @@
   (define adj_addr (bvsub addr (base-address)))
   (define nbytes 1)
   ; stronger case that covers all possible values that val can take
-  (define val (sign-extend (machine-ram-read m adj_addr nbytes) (bitvector 64)))
+  (define val (zero-extend (machine-ram-read m adj_addr nbytes) (bitvector 64)))
   (set-gprs-i! (machine-gprs m) rd val)
   (set-machine-pc! m (bvadd pc (bv 4 64)))
   (list 'lbu rd rs1 imm))
@@ -340,7 +345,7 @@
   (define adj_addr (bvsub addr (base-address)))
   (define nbytes 2)
   ; stronger case that covers all possible values that val can take
-  (define val (sign-extend (machine-ram-read m adj_addr nbytes) (bitvector 64)))
+  (define val (zero-extend (machine-ram-read m adj_addr nbytes) (bitvector 64)))
   (set-gprs-i! (machine-gprs m) rd val)
   (set-machine-pc! m (bvadd pc (bv 4 64)))
   (list 'lhu rd rs1 imm))
@@ -354,7 +359,7 @@
   (define adj_addr (bvsub addr (base-address)))
   (define nbytes 4)
   ; stronger case that covers all possible values that val can take
-  (define val (sign-extend (machine-ram-read m adj_addr nbytes) (bitvector 64)))
+  (define val (zero-extend (machine-ram-read m adj_addr nbytes) (bitvector 64)))
   (set-gprs-i! (machine-gprs m) rd val)
   (set-machine-pc! m (bvadd pc (bv 4 64)))
   (list 'lwu rd rs1 imm))
@@ -365,14 +370,13 @@
   (define v_rs1 (get-gprs-i (machine-gprs m) rs1))
   (define se_imm (sign-extend imm (bitvector 64)))
   
-  ; remove least significant bit
+  ; Remove least significant bit
   (define addr (bvand (bvadd v_rs1 se_imm) (bvnot (bv 1 64))))
-  ; adjust for address offset
+  ; Adjust for address offset
   (define adj_addr (bvsub addr (base-address)))
   
-  (define save (bvadd pc (bv 4 64)))
-  (when (not (equal? rd 0))
-    (set-gprs-i! (machine-gprs m) rd save))
+  (define save (bvadd pc (bv 4 64) (base-address)))
+  (set-gprs-i! (machine-gprs m) rd save)
   (set-machine-pc! m adj_addr)
   (list 'jalr rd rs1 imm))
 (provide jalr-instr)
@@ -401,19 +405,43 @@
   (define pc (machine-pc m))
   (define v_rs1 (get-gprs-i (machine-gprs m) rs1))
   (define v_rs2 (get-gprs-i (machine-gprs m) rs2))
-  (define shifted (bvshl v_rs1 v_rs2))
+  ; Use only low 6 bits
+  (define shamt (bvand v_rs2 (bv #b111111 64)))
+  (define shifted (bvshl v_rs1 shamt))
   (set-gprs-i! (machine-gprs m) rd shifted)
   (set-machine-pc! m (bvadd pc (bv 4 64)))
   (list 'sll rd rs1 rs2))
 (provide sll-instr)
+
+(define (srl-instr m rd rs1 rs2)
+  (define pc (machine-pc m))
+  (define v_rs1 (get-gprs-i (machine-gprs m) rs1))
+  (define v_rs2 (get-gprs-i (machine-gprs m) rs2))
+  (define shamt (bvand v_rs2 (bv #b111111 64)))
+  (define shifted (bvlshr v_rs1 shamt))
+  (set-gprs-i! (machine-gprs m) rd shifted)
+  (set-machine-pc! m (bvadd pc (bv 4 64)))
+  (list 'srl rd rs1 rs2))
+(provide srl-instr)
+
+(define (sra-instr m rd rs1 rs2)
+  (define pc (machine-pc m))
+  (define v_rs1 (get-gprs-i (machine-gprs m) rs1))
+  (define v_rs2 (get-gprs-i (machine-gprs m) rs2))
+  (define shamt (bvand v_rs2 (bv #b111111 64)))
+  (define shifted (bvashr v_rs1 shamt))
+  (set-gprs-i! (machine-gprs m) rd shifted)
+  (set-machine-pc! m (bvadd pc (bv 4 64)))
+  (list 'sra rd rs1 rs2))
+(provide sra-instr)
 
 (define (slt-instr m rd rs1 rs2)
   (define pc (machine-pc m))
   (define v_rs1 (get-gprs-i (machine-gprs m) rs1))
   (define v_rs2 (get-gprs-i (machine-gprs m) rs2))
   (if (bvslt v_rs1 v_rs2)
-      (set-gprs-i! (machine-gprs m) rd 1)
-      (set-gprs-i! (machine-gprs m) rd 0))
+      (set-gprs-i! (machine-gprs m) rd (bv 1 64))
+      (set-gprs-i! (machine-gprs m) rd (bv 0 64)))
   (set-machine-pc! m (bvadd pc (bv 4 64)))
   (list 'slt rd rs1 rs2))
 (provide slt-instr)
@@ -423,8 +451,8 @@
   (define v_rs1 (get-gprs-i (machine-gprs m) rs1))
   (define v_rs2 (get-gprs-i (machine-gprs m) rs2))
   (if (bvult v_rs1 v_rs2)
-      (set-gprs-i! (machine-gprs m) rd 1)
-      (set-gprs-i! (machine-gprs m) rd 0))
+      (set-gprs-i! (machine-gprs m) rd (bv 1 64))
+      (set-gprs-i! (machine-gprs m) rd (bv 0 64)))
   (set-machine-pc! m (bvadd pc (bv 4 64)))
   (list 'sltu rd rs1 rs2))
 (provide sltu-instr)
@@ -437,26 +465,6 @@
   (set-machine-pc! m (bvadd pc (bv 4 64)))
   (list 'xor rd rs1 rs2))
 (provide xor-instr)
-
-(define (srl-instr m rd rs1 rs2)
-  (define pc (machine-pc m))
-  (define v_rs1 (get-gprs-i (machine-gprs m) rs1))
-  (define v_rs2 (get-gprs-i (machine-gprs m) rs2))
-  (define shifted (bvlshr v_rs1 v_rs2))
-  (set-gprs-i! (machine-gprs m) rd shifted)
-  (set-machine-pc! m (bvadd pc (bv 4 64)))
-  (list 'srl rd rs1 rs2))
-(provide srl-instr)
-
-(define (sra-instr m rd rs1 rs2)
-  (define pc (machine-pc m))
-  (define v_rs1 (get-gprs-i (machine-gprs m) rs1))
-  (define v_rs2 (get-gprs-i (machine-gprs m) rs2))
-  (define shifted (bvashr v_rs1 v_rs2))
-  (set-gprs-i! (machine-gprs m) rd shifted)
-  (set-machine-pc! m (bvadd pc (bv 4 64)))
-  (list 'sra rd rs1 rs2))
-(provide sra-instr)
 
 (define (or-instr m rd rs1 rs2)
   (define pc (machine-pc m))
@@ -482,28 +490,56 @@
   (list 'andw))
 (provide andw-instr)
 
-(define (subw-instr m)
-  ; TODO: subw instruction not implemented yet
+(define (addw-instr m rd rs1 rs2)
   (define pc (machine-pc m))
-  (list 'subw))
+  (define v_rs1 (extract 31 0 (get-gprs-i (machine-gprs m) rs1)))
+  (define v_rs2 (extract 31 0 (get-gprs-i (machine-gprs m) rs2)))
+  (set-gprs-i! (machine-gprs m) rd (sign-extend (bvadd v_rs1 v_rs2) (bitvector 64)))
+  (set-machine-pc! m (bvadd pc (bv 4 64)))
+  (list 'addw rd rs1 rs2))
+(provide addw-instr)
+
+(define (subw-instr m rd rs1 rs2)
+  (define pc (machine-pc m))
+  (define v_rs1 (extract 31 0 (get-gprs-i (machine-gprs m) rs1)))
+  (define v_rs2 (extract 31 0 (get-gprs-i (machine-gprs m) rs2)))
+  (set-gprs-i! (machine-gprs m) rd (sign-extend (bvsub v_rs1 v_rs2) (bitvector 64)))
+  (set-machine-pc! m (bvadd pc (bv 4 64)))
+  (list 'subw-instr rd rs1 rs2))
 (provide subw-instr)
 
-(define (sllw-instr m)
-  ; TODO: sllw instruction not implemented yet
+(define (sllw-instr m rd rs1 rs2)
   (define pc (machine-pc m))
-  (list 'sllw))
+  (define v_rs1 (extract 31 0 (get-gprs-i (machine-gprs m) rs1)))
+  (define v_rs2 (extract 31 0 (get-gprs-i (machine-gprs m) rs2)))
+  ; Use only low 6 bits
+  (define shamt (bvand v_rs2 (bv #b11111 32)))
+  (define shifted (bvshl v_rs1 shamt))
+  (set-gprs-i! (machine-gprs m) rd (sign-extend shifted (bitvector 64)))
+  (set-machine-pc! m (bvadd pc (bv 4 64)))
+  (list 'sllw rd rs1 rs2))
 (provide sllw-instr)
 
-(define (srlw-instr m)
-  ; TODO: srlw instruction not implemented yet
+(define (srlw-instr m rd rs1 rs2)
   (define pc (machine-pc m))
-  (list 'srlw))
+  (define v_rs1 (extract 31 0 (get-gprs-i (machine-gprs m) rs1)))
+  (define v_rs2 (extract 31 0 (get-gprs-i (machine-gprs m) rs2)))
+  (define shamt (bvand v_rs2 (bv #b11111 32)))
+  (define shifted (bvlshr v_rs1 shamt))
+  (set-gprs-i! (machine-gprs m) rd (sign-extend shifted (bitvector 64)))
+  (set-machine-pc! m (bvadd pc (bv 4 64)))
+  (list 'srlw rd rs1 rs2))
 (provide srlw-instr)
 
-(define (sraw-instr m)
-  ; TODO: sraw instruction not implemented yet
+(define (sraw-instr m rd rs1 rs2)
   (define pc (machine-pc m))
-  (list 'sraw))
+  (define v_rs1 (extract 31 0 (get-gprs-i (machine-gprs m) rs1)))
+  (define v_rs2 (extract 31 0 (get-gprs-i (machine-gprs m) rs2)))
+  (define shamt (bvand v_rs2 (bv #b11111 32)))
+  (define shifted (bvashr v_rs1 shamt))
+  (set-gprs-i! (machine-gprs m) rd (sign-extend shifted (bitvector 64)))
+  (set-machine-pc! m (bvadd pc (bv 4 64)))
+  (list 'sraw rd rs1 rs2))
 (provide sraw-instr)
 
 (define (mul-instr m)
@@ -588,9 +624,9 @@
 ;; B Format
 (define (beq-instr m rs1 rs2 imm)
   (define pc (machine-pc m))
-  (define v_rs1 (get-gprs-i (machine-gprs m)rs1))
-  (define v_rs2 (get-gprs-i (machine-gprs m)rs2))
-  (if (equal? v_rs1 v_rs2)
+  (define v_rs1 (get-gprs-i (machine-gprs m) rs1))
+  (define v_rs2 (get-gprs-i (machine-gprs m) rs2))
+  (if (bveq v_rs1 v_rs2)
       (set-machine-pc! m (bvadd pc (bvmul (sign-extend imm (bitvector 64)) (bv 2 64))))
       (set-machine-pc! m (bvadd pc (bv 4 64))))
   (list 'beq rs1 rs2 imm))
@@ -598,9 +634,9 @@
 
 (define (bne-instr m rs1 rs2 imm)
   (define pc (machine-pc m))
-  (define v_rs1 (get-gprs-i (machine-gprs m)rs1))
-  (define v_rs2 (get-gprs-i (machine-gprs m)rs2))
-  (if (not (equal? v_rs1 v_rs2))
+  (define v_rs1 (get-gprs-i (machine-gprs m) rs1))
+  (define v_rs2 (get-gprs-i (machine-gprs m) rs2))
+  (if (not (bveq v_rs1 v_rs2))
       (set-machine-pc! m (bvadd pc (bvmul (sign-extend imm (bitvector 64)) (bv 2 64))))
       (set-machine-pc! m (bvadd pc (bv 4 64))))
   (list 'bne rs1 rs2 imm))
@@ -608,8 +644,8 @@
 
 (define (blt-instr m rs1 rs2 imm)
   (define pc (machine-pc m))
-  (define v_rs1 (get-gprs-i (machine-gprs m)rs1))
-  (define v_rs2 (get-gprs-i (machine-gprs m)rs2))
+  (define v_rs1 (get-gprs-i (machine-gprs m) rs1))
+  (define v_rs2 (get-gprs-i (machine-gprs m) rs2))
   (if (bvslt v_rs1 v_rs2)
       (set-machine-pc! m (bvadd pc (bvmul (sign-extend imm (bitvector 64)) (bv 2 64))))
       (set-machine-pc! m (bvadd pc (bv 4 64))))
@@ -618,8 +654,8 @@
 
 (define (bge-instr m rs1 rs2 imm)
   (define pc (machine-pc m))
-  (define v_rs1 (get-gprs-i (machine-gprs m)rs1))
-  (define v_rs2 (get-gprs-i (machine-gprs m)rs2))
+  (define v_rs1 (get-gprs-i (machine-gprs m) rs1))
+  (define v_rs2 (get-gprs-i (machine-gprs m) rs2))
   (if (bvsge v_rs1 v_rs2)
       (set-machine-pc! m (bvadd pc (bvmul (sign-extend imm (bitvector 64)) (bv 2 64))))
       (set-machine-pc! m (bvadd pc (bv 4 64))))
@@ -651,17 +687,17 @@
 (define (lui-instr m rd imm)
   (define pc (machine-pc m))
   ; extend immediate by 12 bits
-  (define ze_imm (zero-extend (concat imm (bv 0 12)) (bitvector 64)))
-  (set-gprs-i! (machine-gprs m) rd ze_imm)
+  (define se_imm (sign-extend (concat imm (bv 0 12)) (bitvector 64)))
+  (set-gprs-i! (machine-gprs m) rd se_imm)
   (set-machine-pc! m (bvadd pc (bv 4 64)))
   (list 'lui rd imm))
 (provide lui-instr)
 
 (define (auipc-instr m rd imm)
   (define pc (machine-pc m))
-  ; extend immediate by 12 bits, then zero-extend to 64 bits
-  (define ze_imm (zero-extend (concat imm (bv 0 12)) (bitvector 64)))
-  (set-gprs-i! (machine-gprs m) rd (bvadd pc (base-address) ze_imm))
+  ; extend immediate by 12 bits, then sign-extend to 64 bits
+  (define se_imm (sign-extend (concat imm (bv 0 12)) (bitvector 64)))
+  (set-gprs-i! (machine-gprs m) rd (bvadd pc (base-address) se_imm))
   (set-machine-pc! m (bvadd pc (bv 4 64)))
   (list 'auipc rd imm))
 (provide auipc-instr)
@@ -750,10 +786,10 @@
   (define pc (machine-pc m))
   (define se_imm (sign-extend (concat imm (bv 0 1)) (bitvector 64)))
   ; adjust for (base-address)
-  (define save_addr (bvadd (bvadd pc (bv 4 64)) (base-address)))
+  (define save_addr (bvadd pc (bv 4 64) (base-address)))
   ; imm is the offset from pc, so we don't need to do anything with (base-address)
   (define jump_addr (bvadd se_imm pc))
-  (when (not (equal? rd 0))
+  (when (not (bvzero? rd))
     (set-gprs-i! (machine-gprs m) rd save_addr))
   (set-machine-pc! m jump_addr)
   (list 'jal rd imm))
@@ -764,11 +800,13 @@
 (define (FENCE-instr m)
   ; TODO: FENCE instruction not implemented yet
   (define pc (machine-pc m))
+  (set-machine-pc! m (bvadd pc (bv 4 64)))
   (list 'FENCE))
 (provide FENCE-instr)
 
 (define (FENCE_I-instr m)
   ; TODO: FENCE_I instruction not implemented yet
   (define pc (machine-pc m))
+  (set-machine-pc! m (bvadd pc (bv 4 64)))
   (list 'FENCE_I))
 (provide FENCE_I-instr)
