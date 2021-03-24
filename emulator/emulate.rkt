@@ -24,13 +24,21 @@
 
 (define (step m)
   (define pc (machine-pc m))
-  (try! next_instr (if (use-sym-optimizations)
+  (define next_instr (if (use-sym-optimizations)
                        (fresh-symbolic next_instr (bitvector 32))  ; fetch arbitrary instruction
-                       (get-next-instr m)) ; fetch actual instruction
-        (define decoded_instr (execute m next_instr))
-        (when (use-debug-mode)
+                       (get-next-instr m))) ; fetch actual instruction
+  ; TODO: Implement actual exception handler
+  (cond
+    [(equal? next_instr 'illegal-instruction)
+     (illegal-instr m)
+     next_instr]
+    [(symbol? next_instr)
+     next_instr]
+    [else
+     (define decoded_instr (execute m next_instr))
+     (when (use-debug-mode)
           (printf "PC: ~x BYTES: ~a INS: ~a~n" (bitvector->natural pc) next_instr decoded_instr))
-        decoded_instr))
+     decoded_instr]))
 (provide step)
 
 ; get instructions until reach mret

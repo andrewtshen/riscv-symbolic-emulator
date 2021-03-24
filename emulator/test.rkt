@@ -315,7 +315,7 @@
                 [use-fnmem #f]
                 [use-concrete-optimizations #t])
                (execute-until-mret m))
-
+             
              ; Check that after boot sequence machine mode is user mode (0) and in OK state
              (check-true (bveq (machine-mode m) (bv 0 3)))
              (assert-OK m))
@@ -336,7 +336,7 @@
                 [use-fnmem #f]
                 [use-concrete-optimizations #f])
                (execute-until-mret m))
-
+             
              ; Check that after boot sequence machine mode is user mode (0) and in OK state
              (check-true (bveq (machine-mode m) (bv 0 3)))
              (assert-OK m)))
@@ -424,9 +424,9 @@
 
 (define-test-suite
   step-checks
-  (test-case "memory tests"
+  (test-case "bounds tests"
+             (printf "* Running bounds tests ~n")
              (clear-terms!)
-             (printf "* Running memory tests ~n")
              (define m (parameterize
                          ([ramsize-log2 32])
                          (init-machine)))
@@ -448,7 +448,6 @@
              (check-true (unsat? model_noninterference))
              
              ; Check the upper/lower bounds of the user region
-             (clear-vc!)
              (define model_ubound
                (verify
                  (begin
@@ -456,16 +455,29 @@
                    (assert-mem-equal m m1 sym-idx))))
              (check-true (not (unsat? model_ubound)))
              
-             (clear-vc!)
+             (define model_outside_ubound
+               (verify
+                 (begin
+                   (assume (bveq sym-idx (bv #x40000 32)))
+                   (assert-mem-equal m m1 sym-idx))))
+             (check-true (unsat? model_outside_ubound))
+             
              (define model_lbound
                (verify
                  (begin
                    (assume (bveq sym-idx (bv #x20000 32)))
                    (assert-mem-equal m m1 sym-idx))))
-             (check-true (not (unsat? model_lbound))))
+             (check-true (not (unsat? model_lbound)))
+             
+             (define model_outside_lbound
+               (verify
+                 (begin
+                   (assume (bveq sym-idx (bv #x1FFFF 32)))
+                   (assert-mem-equal m m1 sym-idx))))
+             (check-true (unsat? model_outside_lbound)))
   (test-case "mode test"
-             (clear-terms!)
              (printf "* Running mode tests ~n")
+             (clear-terms!)
              (define m
                (parameterize
                  ([ramsize-log2 32])
@@ -479,56 +491,25 @@
                   [ramsize-log2 32])
                  (step m)))
              
-             (clear-vc!)
+             ; Check that machine pc is either MTVEC and in m mode or still in u mode
              (define model_mode
                (verify (assert
                          (or (bveq (machine-mode m) (machine-mode m1))
                              (and (bveq (machine-pc m)
                                         (bvsub (machine-csr m MTVEC) (base-address)))
                                   (bveq (machine-mode m) (bv 1 3)))))))
-             (check-true (unsat? model_mode)))
-  (test-case "only user mode test"
-             (clear-terms!)
-             (printf "* Running only user mode test ~n")
-             (define m
-               (parameterize
-                 ([ramsize-log2 32])
-                 (init-machine)))
-             (define m1 (deep-copy-machine m))
+             (check-true (unsat? model_mode))
              
-             (define next_instr
-               (parameterize
-                 ([use-sym-optimizations #f]
-                  [use-debug-mode #f]
-                  [ramsize-log2 32])
-                 (step m)))
-             
-             (clear-vc!)
-             (define model_only_user_mode
-               (verify (assert (bveq (machine-mode m) (bv 0 3)))))
-             (check-true (unsat? model_only_user_mode)))
-  (test-case "cannot reach mtvec test"
-             (clear-terms!)
-             (printf "* Running cannot reach mtvec test ~n")
-             (define m
-               (parameterize
-                 ([ramsize-log2 32])
-                 (init-machine)))
-             (define m1 (deep-copy-machine m))
-             
-             (define next_instr
-               (parameterize
-                 ([use-sym-optimizations #f]
-                  [use-debug-mode #f]
-                  [ramsize-log2 32])
-                 (step m)))
-             
-             (clear-vc!)
-             (define model_only_user_mode
+             (define model_not_user_mode_in_mtvec
                (verify (assert
                          (not (and (bveq (machine-pc m) (bvsub (machine-csr m MTVEC) (base-address)))
-                                   (bveq (machine-mode m) (bv 1 3)))))))
-             (check-true (unsat? model_only_user_mode)))
+                                   (bveq (machine-mode m) (bv 0 3)))))))
+             (check-true (not (unsat? model_not_user_mode_in_mtvec)))
+             
+             ; Check that machine does not only end in user mode
+             (define model_not_end_only_user_mode
+               (verify (assert (bveq (machine-mode m) (bv 0 3)))))
+             (check-true (not (unsat? model_not_end_only_user_mode))))
   (test-case "does not return null test"
              (clear-terms!)
              (printf "* Running does not return null test ~n")
@@ -545,12 +526,10 @@
                   [ramsize-log2 32])
                  (step m)))
              
-             (clear-vc!)
              (define model_does_not_return_null
-               (verify (assert
-                         (not (equal? next_instr null)))))
+               (verify (assert (not (equal? next_instr null)))))
              (check-true (unsat? model_does_not_return_null))
-             (clear-vc!)
+             
              (define model_does_return_illegal_instr
                (verify (assert (not (equal? next_instr 'illegal-instruction)))))
              (check-true (not (unsat? model_does_return_illegal_instr)))))

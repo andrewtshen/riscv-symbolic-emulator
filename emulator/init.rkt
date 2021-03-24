@@ -56,6 +56,8 @@
   (set-csr! csrs MEPC (bv 0 64))
   (set-csr! csrs MSTATUS (bv 0 64))
   (set-csr! csrs MHARTID (bv 0 64))
+  (set-csr! csrs MIE (bv 0 64))
+  ; TODO: Set MPRV to 0
   
   ; Set pc to 0 when loading with program
   (define pc (bv 0 64))

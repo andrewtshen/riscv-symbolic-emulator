@@ -35,16 +35,22 @@
 (provide uret-instr)
 
 (define (mret-instr m)
-  (define pc (machine-pc m))
-  (define mstatus (machine-csr m MSTATUS))
-  (define MPP (extract 12 11 mstatus))
-  ; this is always user mode
-  ; TODO: fix this and set mstatus to its actual value of MPP, for now we are setting to 0
-  ; since we always but it to user mode
-  ; (set-machine-mode! m (bitvector->natural MPP))
-  (set-machine-mode! m (bv 0 3))
-  (set-machine-pc! m (bvsub (machine-csr m MEPC) (base-address)))
-  (list 'mret))
+  (define mode (machine-mode m))
+  (cond
+    [(equal? mode (bv 1 3))
+     (define pc (machine-pc m))
+     (define mstatus (machine-csr m MSTATUS))
+     (define MPP (extract 12 11 mstatus))
+     ; this is always user mode
+     ; TODO: fix this and set mstatus to its actual value of MPP, for now we are setting to 0
+     ; since we always but it to user mode
+     ; (set-machine-mode! m (bitvector->natural MPP))
+     (set-machine-mode! m (bv 0 3))
+     (set-machine-pc! m (bvsub (machine-csr m MEPC) (base-address)))
+     (list 'mret)]
+    [else
+     ; Throw illegal instruction if not machine mode
+     'illegal-instruction]))
 (provide mret-instr)
 
 (define (dret-instr m)
