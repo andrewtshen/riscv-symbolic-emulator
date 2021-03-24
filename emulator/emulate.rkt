@@ -3,6 +3,7 @@
 (require
   "init.rkt"
   "execute.rkt"
+  "execute-compressed.rkt"
   "machine.rkt"
   "pmp.rkt"
   "parameters.rkt"
@@ -22,22 +23,49 @@
     (if (symbol? var) var
         (begin body ...))))
 
+; Get next instruction using current program counter
+(define (get-next-instr m size)
+  (define pc (machine-pc m))
+  (machine-ram-read m pc (/ size 8)))
+(provide get-next-instr)
+
 (define (step m)
   (define pc (machine-pc m))
-  (define next_instr (if (use-sym-optimizations)
-                       (fresh-symbolic next_instr (bitvector 32))  ; fetch arbitrary instruction
-                       (get-next-instr m))) ; fetch actual instruction
-  ; TODO: Implement actual exception handler
+  
+  (define instr16 (if (use-sym-optimizations)
+                       (fresh-symbolic next_instr (bitvector 16))  ; fetch arbitrary instruction
+                       (get-next-instr m 16)))                     ; fetch actual instruction
   (cond
-    [(equal? next_instr 'illegal-instruction)
+    [(equal? instr16 'illegal-instruction)
      (illegal-instr m)
-     next_instr]
-    [(symbol? next_instr)
-     next_instr]
-    [else
-     (define decoded_instr (execute m next_instr))
-     (when (use-debug-mode)
+     instr16]
+    ; [(bveq (bvand instr16 (bv #b11 16)) (bv #b11 16))
+    [(bveq (extract 1 0 instr16) (bv #b11 2))
+     ; Regular word instruction
+     (define next_instr (if (use-sym-optimizations)
+                            (fresh-symbolic next_instr (bitvector 32))  ; fetch arbitrary instruction
+                            (get-next-instr m 32)))                     ; fetch actual instruction
+     ; TODO: Implement actual exception handler
+     (cond
+       [(symbol? next_instr)
+        (illegal-instr m)
+        next_instr]
+       [else
+        (define decoded_instr (execute m next_instr))
+        (when (use-debug-mode)
           (printf "PC: ~x BYTES: ~a INS: ~a~n" (bitvector->natural pc) next_instr decoded_instr))
+        (when (symbol? decoded_instr)
+          (illegal-instr m))
+        decoded_instr])]
+    [(bveq instr16 (bv 0 16))
+     'illegal-instruction]
+    [else
+     ; Compressed instruction (halfword)
+     (define decoded_instr (execute-compressed m instr16))
+     (when (use-debug-mode)
+          (printf "PC: ~x BYTES: ~a INS: ~a~n" (bitvector->natural pc) instr16 decoded_instr))
+     (when (symbol? decoded_instr)
+       (illegal-instr m))
      decoded_instr]))
 (provide step)
 

@@ -122,12 +122,6 @@
   (set-cpu-pc! (machine-cpu m) val))
 (provide set-machine-pc!)
 
-; Get next instruction using current program counter
-(define (get-next-instr m)
-  (define pc (machine-pc m))
-  (machine-ram-read m pc 4))
-(provide get-next-instr)
-
 ;; Illegal Instruction Handling
 
 ; Set up state for illegal instruction and return null to signal end of exec
