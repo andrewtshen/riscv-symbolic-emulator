@@ -60,22 +60,29 @@
   (define shift_type (extract 30 30 b_instr))
   (cond
     ; Move some instructions to the top for potentially faster speed (less branches to check)
-    [(and (bveq funct3 (bv #b000 3)) (bveq opcode (bv #b0000011 7)))
-     (lb-instr m rd rs1 imm)]
-    [(and (bveq funct3 (bv #b001 3)) (bveq opcode (bv #b0000011 7)))
-     (lh-instr m rd rs1 imm)]
-    [(and (bveq funct3 (bv #b010 3)) (bveq opcode (bv #b0000011 7)))
-     (lw-instr m rd rs1 imm)]
-    [(and (bveq funct3 (bv #b011 3)) (bveq opcode (bv #b0000011 7)))
-     (ld-instr m rd rs1 imm)]
-    [(and (bveq funct3 (bv #b100 3)) (bveq opcode (bv #b0000011 7)))
-     (lbu-instr m rd rs1 imm)]
-    [(and (bveq funct3 (bv #b101 3)) (bveq opcode (bv #b0000011 7)))
-     (lhu-instr m rd rs1 imm)]
-    [(and (bveq funct3 (bv #b110 3)) (bveq opcode (bv #b0000011 7)))
-     (lwu-instr m rd rs1 imm)]
+    [(bveq opcode (bv #b0000011 7))
+     (define v_rs1 (get-gprs-i (machine-gprs m) rs1))
+     (define offset (bvadd v_rs1 (sign-extend imm (bitvector 64))))
+     (cond
+       [(bveq funct3 (bv #b000 3))
+        (lb-instr m rd offset)]
+       [(bveq funct3 (bv #b001 3))
+        (lh-instr m rd offset)]
+       [(bveq funct3 (bv #b010 3))
+        (lw-instr m rd offset)]
+       [(bveq funct3 (bv #b011 3))
+        (ld-instr m rd offset)]
+       [(bveq funct3 (bv #b100 3))
+        (lbu-instr m rd offset)]
+       [(bveq funct3 (bv #b101 3))
+        (lhu-instr m rd offset)]
+       [(bveq funct3 (bv #b110 3))
+        (lwu-instr m rd offset)]
+       [else
+        'illegal-instruction])]
     [(and (bveq funct3 (bv #b000 3)) (bveq opcode (bv #b1100111 7)))
-     (jalr-instr m rd rs1 imm)]
+     (define offset (sign-extend imm (bitvector 64)))
+     (jalr-instr m rd rs1 offset)]
     [(and (bveq funct3 (bv #b000 3)) (bveq opcode (bv #b0010011 7)))
      (addi-instr m rd rs1 imm)]
     [(and (bveq funct3 (bv #b010 3)) (bveq opcode (bv #b0010011 7)))
@@ -116,19 +123,20 @@
                 (extract 7 7 b_instr)
                 (extract 30 25 b_instr)
                 (extract 11 8 b_instr)))
+  (define offset (sign-extend imm (bitvector 64)))
   (cond
     [(bveq funct3 (bv #b000 3))
-     (beq-instr m rs1 rs2 imm)]
+     (beq-instr m rs1 rs2 offset)]
     [(bveq funct3 (bv #b001 3))
-     (bne-instr m rs1 rs2 imm)]
+     (bne-instr m rs1 rs2 offset)]
     [(bveq funct3 (bv #b100 3))
-     (blt-instr m rs1 rs2 imm)]
+     (blt-instr m rs1 rs2 offset)]
     [(bveq funct3 (bv #b101 3))
-     (bge-instr m rs1 rs2 imm)]
+     (bge-instr m rs1 rs2 offset)]
     [(bveq funct3 (bv #b110 3))
-     (bltu-instr m rs1 rs2 imm)]
+     (bltu-instr m rs1 rs2 offset)]
     [(bveq funct3 (bv #b111 3))
-     (bgeu-instr m rs1 rs2 imm)]
+     (bgeu-instr m rs1 rs2 offset)]
     [else
      ; (printf "No such B FMT ~n")
      'illegal-instruction]))
@@ -142,7 +150,8 @@
     [(bveq opcode (bv #b0110111 7))
      (lui-instr m rd imm)]
     [(bveq opcode (bv #b0010111 7))
-     (auipc-instr m rd imm)]
+     (define offset (sign-extend (concat imm (bv 0 12)) (bitvector 64)))
+     (auipc-instr m rd offset)]
     [else
      ; (printf "No such U FMT ~n")
      'illegal-instruction]))
@@ -156,14 +165,18 @@
                 (extract 31 25 b_instr)
                 (extract 11 7 b_instr)))
   (cond
-    [(and (bveq funct3 (bv #b000 3)) (bveq opcode (bv #b0100011 7)))
-     (sb-instr m rs1 rs2 imm)]
-    [(and (bveq funct3 (bv #b001 3)) (bveq opcode (bv #b0100011 7)))
-     (sh-instr m rs1 rs2 imm)]
-    [(and (bveq funct3 (bv #b010 3)) (bveq opcode (bv #b0100011 7)))
-     (sw-instr m rs1 rs2 imm)]
-    [(and (bveq funct3 (bv #b011 3)) (bveq opcode (bv #b0100011 7)))
-     (sd-instr m rs1 rs2 imm)]
+    [(bveq opcode (bv #b0100011 7))
+     (define v_rs1 (get-gprs-i (machine-gprs m) rs1))
+     (define offset (bvadd v_rs1 (sign-extend imm (bitvector 64))))
+     (cond
+       [(and (bveq funct3 (bv #b000 3)))
+        (sb-instr m rs2 offset)]
+       [(and (bveq funct3 (bv #b001 3)))
+        (sh-instr m rs2 offset)]
+       [(and (bveq funct3 (bv #b010 3)))
+        (sw-instr m rs2 offset)]
+       [(and (bveq funct3 (bv #b011 3)))
+        (sd-instr m rs2 offset)])]
     [else
      ; (printf "No such S FMT ~n")
      'illegal-instruction]))
@@ -178,7 +191,8 @@
                 (extract 30 21 b_instr)))
   (cond
     [(bveq opcode (bv #b1101111 7))
-     (jal-instr m rd imm)]
+     (define offset (sign-extend (concat imm (bv 0 1)) (bitvector 64)))
+     (jal-instr m rd offset)]
     [else
      ; (printf "No such J FMT ~n")
      'illegal-instruction]))
@@ -245,8 +259,7 @@
     [(eq? fmt 'S) (execute-S m b_instr)]
     [(eq? fmt 'J) (execute-J m b_instr)]
     [(eq? fmt 'SYSTEM) (execute-SYSTEM m b_instr)]
-    [(eq? fmt 'FENCE)
-     (execute-FENCE m b_instr)]
+    [(eq? fmt 'FENCE) (execute-FENCE m b_instr)]
     [else
      ; (printf "No such FMT ~n")
      'illegal-instruction]))
