@@ -38,6 +38,8 @@
   (check-equal? a0 (bv 0 64)))
 
 (define-test-suite riscv-tests
+  (test-case "rv64uc"
+             (execute-test "build/riscv-tests/rv64uc-p-rvc.bin"))
   (test-case "add"
              (execute-test "build/riscv-tests/rv64ui-p-add.bin"))
   (test-case "addi"

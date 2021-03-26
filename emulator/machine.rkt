@@ -161,7 +161,6 @@
     (if (use-concrete-optimizations)
         (concrete-pmp-check (machine-pmp m) (machine-mode m) saddr eaddr)
         (pmp-check (machine-pmp m) (machine-mode m) saddr eaddr)))
-  
   (if legal
       (cond
         [(use-sym-optimizations) (fresh-symbolic val (bitvector (* nbytes 8)))]

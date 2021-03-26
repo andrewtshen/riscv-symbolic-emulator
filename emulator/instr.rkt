@@ -222,7 +222,7 @@
   (define se_imm (sign-extend imm (bitvector 64)))
   (set-gprs-i! (machine-gprs m) rd (bvand v_rs1 se_imm))
   (set-machine-pc! m (bvadd pc (bv 4 64)))
-  (list 'addi rd rs1 imm))
+  (list 'andi rd rs1 imm))
 (provide andi-instr)
 
 (define (addiw-instr m rd rs1 imm)
@@ -281,7 +281,7 @@
   (define val (sign-extend (machine-ram-read m adj_addr nbytes) (bitvector 64)))
   (set-gprs-i! (machine-gprs m) rd val)
   (set-machine-pc! m (bvadd pc (bv 4 64)))
-  (list 'm rd offset))
+  (list 'lb rd offset))
 (provide lb-instr)
 
 (define (lh-instr m rd offset)
@@ -292,7 +292,7 @@
   (define val (sign-extend (machine-ram-read m adj_addr nbytes) (bitvector 64)))
   (set-gprs-i! (machine-gprs m) rd val)
   (set-machine-pc! m (bvadd pc (bv 4 64)))
-  (list 'm rd offset))
+  (list 'lh rd offset))
 (provide lh-instr)
 
 (define (lw-instr m rd offset)
@@ -303,7 +303,7 @@
   (define val (sign-extend (machine-ram-read m adj_addr nbytes) (bitvector 64)))
   (set-gprs-i! (machine-gprs m) rd val)
   (set-machine-pc! m (bvadd pc (bv 4 64)))
-  (list 'm rd offset))
+  (list 'lw rd offset))
 (provide lw-instr)
 
 (define (ld-instr m rd offset)
@@ -314,7 +314,7 @@
   (define val (sign-extend (machine-ram-read m adj_addr nbytes) (bitvector 64)))
   (set-gprs-i! (machine-gprs m) rd val)
   (set-machine-pc! m (bvadd pc (bv 4 64)))
-  (list 'm rd offset))
+  (list 'ld rd offset))
 (provide ld-instr)
 
 (define (lbu-instr m rd offset)
@@ -456,7 +456,7 @@
   (define v_rs2 (get-gprs-i (machine-gprs m) rs2))
   (set-gprs-i! (machine-gprs m) rd (bvor v_rs1 v_rs2))
   (set-machine-pc! m (bvadd pc (bv 4 64)))
-  (list 'm rd rs1 rs2))
+  (list 'or rd rs1 rs2))
 (provide or-instr)
 
 (define (and-instr m rd rs1 rs2)
