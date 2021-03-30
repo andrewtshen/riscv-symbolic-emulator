@@ -14,44 +14,74 @@
   (define funct3 (extract 14 12 b_instr))
   (define rs1 (extract 19 15 b_instr))
   (define rs2 (extract 24 20 b_instr))
-  (define funct7 (extract 31 25 b_instr))
+  (define funct2 (extract 26 25 b_instr))
+  (define funct5 (extract 31 27 b_instr))
   (cond
-    [(and (bveq funct3 (bv #b000 3)) (bveq funct7 (bv #b0000000 7)) (bveq opcode (bv #b0110011 7)))
-     (add-instr m rd rs1 rs2)]
-    [(and (bveq funct3 (bv #b000 3)) (bveq funct7 (bv #b0000000 7)) (bveq opcode (bv #b0111011 7)))
-     (addw-instr m rd rs1 rs2)]
-    [(and (bveq funct3 (bv #b000 3)) (bveq funct7 (bv #b0100000 7)) (bveq opcode (bv #b0110011 7)))
-     (sub-instr m rd rs1 rs2)]
-    [(and (bveq funct3 (bv #b000 3)) (bveq funct7 (bv #b0100000 7)) (bveq opcode (bv #b0111011 7)))
-     (subw-instr m rd rs1 rs2)]
-    [(and (bveq funct3 (bv #b001 3)) (bveq funct7 (bv #b0000000 7)) (bveq opcode (bv #b0110011 7)))
-     (sll-instr m rd rs1 rs2)]
-    [(and (bveq funct3 (bv #b001 3)) (bveq funct7 (bv #b0000000 7)) (bveq opcode (bv #b0111011 7)))
-     (sllw-instr m rd rs1 rs2)]
-    [(and (bveq funct3 (bv #b010 3)) (bveq funct7 (bv #b0000000 7)))
-     (slt-instr m rd rs1 rs2)]
-    [(and (bveq funct3 (bv #b011 3)) (bveq funct7 (bv #b0000000 7)))
-     (sltu-instr m rd rs1 rs2)]
-    [(and (bveq funct3 (bv #b100 3)) (bveq funct7 (bv #b0000000 7)))
-     (xor-instr m rd rs1 rs2)]
-    [(and (bveq funct3 (bv #b101 3)) (bveq funct7 (bv #b0000000 7)) (bveq opcode (bv #b0110011 7)))
-     (srl-instr m rd rs1 rs2)]
-    [(and (bveq funct3 (bv #b101 3)) (bveq funct7 (bv #b0000000 7)) (bveq opcode (bv #b0111011 7)))
-     (srlw-instr m rd rs1 rs2)]
-    [(and (bveq funct3 (bv #b101 3)) (bveq funct7 (bv #b0100000 7)) (bveq opcode (bv #b0110011 7)))
-     (sra-instr m rd rs1 rs2)]
-    [(and (bveq funct3 (bv #b101 3)) (bveq funct7 (bv #b0100000 7)) (bveq opcode (bv #b0111011 7)))
-     (sraw-instr m rd rs1 rs2)]
-    [(and (bveq funct3 (bv #b110 3)) (bveq funct7 (bv #b0000000 7)))
-     (or-instr m rd rs1 rs2)]
-    [(and (bveq funct3 (bv #b111 3)) (bveq funct7 (bv #b0000000 7)))
-     (and-instr m rd rs1 rs2)]
+    [(bveq opcode (bv #b0110011 7))
+     (cond
+       ; RV64I
+       [(and (bveq funct3 (bv #b000 3)) (bveq funct5 (bv #b00000 5)) (bveq funct2 (bv #b00 2)))
+        (add-instr m rd rs1 rs2)]
+       [(and (bveq funct3 (bv #b000 3)) (bveq funct5 (bv #b01000 5)) (bveq funct2 (bv #b00 2)))
+        (sub-instr m rd rs1 rs2)]
+       [(and (bveq funct3 (bv #b001 3)) (bveq funct5 (bv #b00000 5)) (bveq funct2 (bv #b00 2)))
+        (sll-instr m rd rs1 rs2)]
+       [(and (bveq funct3 (bv #b101 3)) (bveq funct5 (bv #b00000 5)) (bveq funct2 (bv #b00 2)))
+        (srl-instr m rd rs1 rs2)]
+       [(and (bveq funct3 (bv #b101 3)) (bveq funct5 (bv #b01000 5)) (bveq funct2 (bv #b00 2)))
+        (sra-instr m rd rs1 rs2)]
+       [(and (bveq funct3 (bv #b010 3)) (bveq funct5 (bv #b00000 5)) (bveq funct2 (bv #b00 2)))
+        (slt-instr m rd rs1 rs2)]
+       [(and (bveq funct3 (bv #b011 3)) (bveq funct5 (bv #b00000 5)) (bveq funct2 (bv #b00 2)))
+        (sltu-instr m rd rs1 rs2)]
+       [(and (bveq funct3 (bv #b100 3)) (bveq funct5 (bv #b00000 5)) (bveq funct2 (bv #b00 2)))
+        (xor-instr m rd rs1 rs2)]
+       [(and (bveq funct3 (bv #b110 3)) (bveq funct5 (bv #b00000 5)) (bveq funct2 (bv #b00 2)))
+        (or-instr m rd rs1 rs2)]
+       [(and (bveq funct3 (bv #b111 3)) (bveq funct5 (bv #b00000 5)) (bveq funct2 (bv #b00 2)))
+        (and-instr m rd rs1 rs2)]
+       
+       ; RV64M
+       [(and (bveq funct3 (bv #b000 3)) (bveq funct5 (bv #b00000 5)) (bveq funct2 (bv #b01 2)))
+        (mul-instr m rd rs1 rs2)]
+       [(and (bveq funct3 (bv #b001 3)) (bveq funct5 (bv #b00000 5)) (bveq funct2 (bv #b01 2)))
+        (mulh-instr m rd rs1 rs2)]
+       [(and (bveq funct3 (bv #b010 3)) (bveq funct5 (bv #b00000 5)) (bveq funct2 (bv #b01 2)))
+        (mulhsu-instr m rd rs1 rs2)]
+       [(and (bveq funct3 (bv #b011 3)) (bveq funct5 (bv #b00000 5)) (bveq funct2 (bv #b01 2)))
+        (mulhu-instr m rd rs1 rs2)]
+       [(and (bveq funct3 (bv #b100 3)) (bveq funct5 (bv #b00000 5)) (bveq funct2 (bv #b01 2)))
+        (div-instr m rd rs1 rs2)]
+       [(and (bveq funct3 (bv #b101 3)) (bveq funct5 (bv #b00000 5)) (bveq funct2 (bv #b01 2)))
+        (divu-instr m rd rs1 rs2)]
+       [(and (bveq funct3 (bv #b110 3)) (bveq funct5 (bv #b00000 5)) (bveq funct2 (bv #b01 2)))
+        (rem-instr m rd rs1 rs2)]
+       [(and (bveq funct3 (bv #b111 3)) (bveq funct5 (bv #b00000 5)) (bveq funct2 (bv #b01 2)))
+        (remu-instr m rd rs1 rs2)]
+       [else
+        'illegal-instruction])]
+    
+    [(bveq opcode (bv #b0111011 7))
+     (cond
+       ; RV64I
+       [(and (bveq funct3 (bv #b000 3)) (bveq funct5 (bv #b00000 5)) (bveq funct2 (bv #b00 2)))
+        (addw-instr m rd rs1 rs2)]
+       [(and (bveq funct3 (bv #b000 3)) (bveq funct5 (bv #b01000 5)) (bveq funct2 (bv #b00 2)))
+        (subw-instr m rd rs1 rs2)]
+       [(and (bveq funct3 (bv #b001 3)) (bveq funct5 (bv #b00000 5)) (bveq funct2 (bv #b00 2)))
+        (sllw-instr m rd rs1 rs2)]
+       [(and (bveq funct3 (bv #b101 3)) (bveq funct5 (bv #b00000 5)) (bveq funct2 (bv #b00 2)))
+        (srlw-instr m rd rs1 rs2)]
+       [(and (bveq funct3 (bv #b101 3)) (bveq funct5 (bv #b01000 5)) (bveq funct2 (bv #b00 2)))
+        (sraw-instr m rd rs1 rs2)]
+       [else
+        'illegal-instruction])]
     [else
      ; (printf "No such R FMT ~n")
      'illegal-instruction]))
 
 (define (execute-I m b_instr)
-  ; TODO Could group by opcode first and then check for funct3
+  ; TODO: Could group by opcode first and then check for funct3
   (define opcode (extract 6 0 b_instr))
   (define rd (extract 11 7 b_instr))
   (define funct3 (extract 14 12 b_instr))
