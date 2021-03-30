@@ -1,8 +1,7 @@
 #lang rosette/safe
 
 (require
-  "parameters.rkt"
-  "pmp.rkt")
+  "parameters.rkt")
 (require (only-in racket/base for in-range))
 (require syntax/parse/define)
 (require (only-in racket/base build-vector))
@@ -17,6 +16,26 @@
 
 (define-simple-macro (fresh-symbolic name type)
   (let () (define-symbolic* name type) name))
+
+
+;; Mode Constants
+(provide
+  U_MODE S_MODE M_MODE
+  U_MODE? S_MODE? M_MODE?)
+
+(define U_MODE (bv #b00 2))
+(define S_MODE (bv #b01 2))
+(define M_MODE (bv #b11 2))
+
+(define (U_MODE? mode)
+  (bveq mode U_MODE))
+
+(define (S_MODE? mode)
+  (bveq mode S_MODE))
+
+(define (M_MODE? mode)
+  (bveq mode M_MODE))
+
 
 ;; CSR Constants
 ; For more info: https://github.com/d0iasm/rvemu/blob/main/src/csr.rs
@@ -35,9 +54,12 @@
          SSIP_BIT MSIP_BIT STIP_BIT MTIP_BIT SEIP_BIT MEIP_BIT)
 ; Commented out: SSTATUS_UIE SSTATUS_UPIE
 
+; RV64
 (define MXLEN 64)
+
 ; The number of CSRs. The field is 12 bits so the maximum kind of CSRs is 4096 (2**12).
 (define CSR_SIZE 4096)
+
 
 #| User-level CSR addresses |#
 ;; User trap setup.

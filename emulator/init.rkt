@@ -63,7 +63,7 @@
   (define pc (bv 0 64))
   
   ; Start in machine mode
-  (define mode (bv 1 3))
+  (define mode M_MODE)
 
   ; Set up PMP and default configurations
   (define pmp (make-pmp))
@@ -107,7 +107,7 @@
   (set-csr! csrs MTVEC (bv #x0000000080000080 64))
   
   ; Start in user mode
-  (define mode (bv 0 3)) 
+  (define mode U_MODE) 
 
   ; Set up PMP and default configurations to enable ONLY #x0000000080020000 - #x000000000001ffff
   (define pmp (make-pmp))

@@ -21,13 +21,7 @@
   (csrs gprs pc pmp) #:mutable #:transparent)
 (provide (struct-out cpu))
 
-; ; control status registers for u and m mode
-; (struct csrs
-;   (mtvec mepc mstatus pmp)
-;   #:mutable #:transparent)
-; (provide (struct-out csrs))
-
-; cpu, ram, and mode (1 is machine, 0 is user)
+; cpu, ram, and mode (#b11 is machine, #b00 is user)
 (struct machine
   (cpu ram mode) #:mutable #:transparent)
 (provide (struct-out machine))
@@ -127,7 +121,7 @@
 ; Set up state for illegal instruction and return null to signal end of exec
 (define (illegal-instr m)
   (set-machine-pc! m (bvsub (machine-csr m MTVEC) (base-address)))
-  (set-machine-mode! m (bv 1 3)))
+  (set-machine-mode! m M_MODE))
 (provide illegal-instr)
 
 ;; Memory Reads/Writes
@@ -186,8 +180,6 @@
     (if (use-concrete-optimizations)
         (concrete-pmp-check (machine-pmp m) (machine-mode m) saddr eaddr)
         (pmp-check (machine-pmp m) (machine-mode m) saddr eaddr)))
-  
-  ; machine mode (1) or legal, we can read the memory
   (when legal
     (bytearray-write! m addr value nbits))
   

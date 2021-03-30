@@ -11,7 +11,7 @@
 ; Decode and execute all of the binary instructions and instruction as list
 
 (define (adj-reg reg)
-  (bvadd (zero-extend reg (bitvector 5)) (bv #x8 5)))
+  (bvadd (zero-extend reg (bitvector 5)) (bv 8 5)))
 
 ; Execute a 32 bit compressed instruction
 (define (c-execute m b_instr)
@@ -67,7 +67,7 @@
               (extract 5 5 b_instr)
               (extract 12 10 b_instr)
               (extract 6 6 b_instr)
-              (bv #x00 2))
+              (bv #b00 2))
           (bitvector 64)))
         (define offset (bvadd imm (get-gprs-i (machine-gprs m) adj-rs1)))
         (c.lw-instr m adj-rd offset)]
@@ -81,16 +81,16 @@
             (concat
               (extract 6 5 b_instr)
               (extract 12 10 b_instr)
-              (bv #x000 3))
+              (bv #b000 3))
             (bitvector 64)))
         (define offset (bvadd imm (get-gprs-i (machine-gprs m) adj-rs1)))
         (c.ld-instr m adj-rd offset)]
-       [(bveq funct3 (bv #x4 3))
+       [(bveq funct3 (bv #b100 3))
         ; // Reserved.
         ; panic!("reserved");
         ; TODO: Figure out what to do here
         'illegal-instruction]
-       [(bveq funct3 (bv #x5 3))
+       [(bveq funct3 (bv #b101 3))
         ; c.fsd
         ; Expands to fsd rs2, offset(rs1), where rs2=rs2'+8 and rs1=rs1'+8.
         ; TODO: Implement regular FSD
@@ -103,7 +103,7 @@
         ; let addr = self.xregs.read(rs1).wrapping_add(offset);
         ; self.write(addr, self.fregs.read(rs2).to_bits() as u64, DOUBLEWORD)?;
         'illegal-instruction]
-       [(bveq funct3 (bv #x6 3))
+       [(bveq funct3 (bv #b110 3))
         ; c.sw
         ; Expands to sw rs2, offset(rs1), where rs2=rs2'+8 and rs1=rs1'+8.
         (define adj-rs2 (adj-reg (extract 4 2 b_instr)))
@@ -119,7 +119,7 @@
         ; let addr = self.xregs.read(rs1).wrapping_add(offset);
         (define offset (bvadd imm (get-gprs-i (machine-gprs m) adj-rs1)))
         (c.sw-instr m adj-rs2 offset)]
-       [(bveq funct3 (bv #x7 3))
+       [(bveq funct3 (bv #b111 3))
         ; c.sd
         ; Expands to sd rs2, offset(rs1), where rs2=rs2'+8 and rs1=rs1'+8.
         (define adj-rs2 (adj-reg (extract 4 2 b_instr)))
@@ -137,7 +137,7 @@
         'illegal-instruction])]
     [(bveq opcode (bv 1 2))
      (cond
-       [(bveq funct3 (bv #x0 3))
+       [(bveq funct3 (bv #b000 3))
         ; c.addi
         ; Expands to addi rd, rd, nzimm.
         (define rd (extract 11 7 b_instr))
@@ -151,7 +151,7 @@
           [else
            ; TODO: what to actually return?
            (c.nop-instr m)])]
-       [(bveq funct3 (bv #x1 3))
+       [(bveq funct3 (bv #b001 3))
         ; c.addiw
         ; Expands to addiw rd, rd, imm
         ; "The immediate can be zero for C.ADDIW, where this corresponds to sext.w rd"
@@ -161,7 +161,7 @@
             (extract 12 12 b_instr)
             (extract 6 2 b_instr)))
         (c.addiw-instr m rd rd imm)]
-       [(bveq funct3 (bv #x2 3))
+       [(bveq funct3 (bv #b010 3))
         ; c.li
         ; Expands to addi rd, x0, imm.
         (define rd (extract 11 7 b_instr))
@@ -170,7 +170,7 @@
             (extract 12 12 b_instr)
             (extract 6 2 b_instr)))
         (c.addi-instr m rd X0 imm)]
-       [(bveq funct3 (bv #x3 3))
+       [(bveq funct3 (bv #b011 3))
         (define rd (extract 11 7 b_instr))
         (cond
           [(bveq rd X0)
@@ -205,11 +205,11 @@
             [else
              ; TODO: what to actually return?
              'illegal-instruction])])]
-       [(bveq funct3 (bv #x4 3))
+       [(bveq funct3 (bv #b100 3))
         (define adj-rd (adj-reg (extract 9 7 b_instr)))
         (define funct2 (extract 11 10 b_instr))
         (cond
-          [(bveq funct2 (bv #x0 2))
+          [(bveq funct2 (bv #b00 2))
            ; c.srli
            ; Expands to srli rd, rd, shamt, where rd=rd'+8.
            (define shamt
@@ -222,7 +222,7 @@
             [else
              ; TODO: what to actually return?
              'illegal-instruction])]
-          [(bveq funct2 (bv #x1 2))
+          [(bveq funct2 (bv #b01 2))
            ; c.srai
            ; Expands to srai rd, rd, shamt, where rd=rd'+8.
            (define shamt
@@ -235,7 +235,7 @@
             [else
              ; TODO: what to actually return?
              'illegal-instruction])]
-          [(bveq funct2 (bv #x2 2))
+          [(bveq funct2 (bv #b10 2))
           ; c.andi
           ; Expands to andi rd, rd, imm, where rd=rd'+8.
           (define shamt
@@ -243,32 +243,32 @@
                (extract 12 12 b_instr)
                (extract 6 2 b_instr)))
           (c.andi-instr m adj-rd adj-rd shamt)]
-          [(bveq funct2 (bv #x3 2))
+          [(bveq funct2 (bv #b11 2))
            (define imm2 (extract 6 5 b_instr))
            (define imm1 (extract 12 12 b_instr))
            (define adj-rs2 (adj-reg (extract 4 2 b_instr)))
            (cond
-             [(and (bveq imm1 (bv #x0 1)) (bveq imm2 (bv #x0 2)))
+             [(and (bveq imm1 (bv #b00 1)) (bveq imm2 (bv #b00 2)))
               ; c.sub
               ; Expands to sub rd, rd, rs2, rd=rd'+8 and rs2=rs2'+8.
               (c.sub-instr m adj-rd adj-rd adj-rs2)]
-             [(and (bveq imm1 (bv #x0 1)) (bveq imm2 (bv #x1 2)))
+             [(and (bveq imm1 (bv #b00 1)) (bveq imm2 (bv #b01 2)))
               ; // c.xor
               ; // Expands to xor rd, rd, rs2, rd=rd'+8 and rs2=rs2'+8.
               (c.xor-instr m adj-rd adj-rd adj-rs2)]
-             [(and (bveq imm1 (bv #x0 1)) (bveq imm2 (bv #x2 2)))
+             [(and (bveq imm1 (bv #b00 1)) (bveq imm2 (bv #b10 2)))
               ; // c.or
               ; // Expands to or rd, rd, rs2, rd=rd'+8 and rs2=rs2'+8.
               (c.or-instr m adj-rd adj-rd adj-rs2)]
-             [(and (bveq imm1 (bv #x0 1)) (bveq imm2 (bv #x3 2)))
+             [(and (bveq imm1 (bv #b00 1)) (bveq imm2 (bv #b11 2)))
               ; // c.and
               ; // Expands to and rd, rd, rs2, rd=rd'+8 and rs2=rs2'+8.
               (c.and-instr m adj-rd adj-rd adj-rs2)]
-             [(and (bveq imm1 (bv #x1 1)) (bveq imm2 (bv #x0 2)))
+             [(and (bveq imm1 (bv #b01 1)) (bveq imm2 (bv #b00 2)))
               ; // c.subw
               ; // Expands to subw rd, rd, rs2, rd=rd'+8 and rs2=rs2'+8.
               (c.subw-instr m adj-rd adj-rd adj-rs2)]
-             [(and (bveq imm1 (bv #x1 1)) (bveq imm2 (bv #x1 2)))
+             [(and (bveq imm1 (bv #b01 1)) (bveq imm2 (bv #b01 2)))
               ; // c.addw
               ; // Expands to addw rd, rd, rs2, rd=rd'+8 and rs2=rs2'+8.
               (c.addw-instr m adj-rd adj-rd adj-rs2)]
@@ -276,7 +276,7 @@
               'illegal-instruction])]
           [else
            'illegal-instruction])]
-       [(bveq funct3 (bv #x5 3))
+       [(bveq funct3 (bv #b101 3))
         ; c.j
         ; Expands to jal x0, offset.
         (define offset
@@ -293,7 +293,7 @@
               (bv #b0 1))
             (bitvector 64)))
         (c.jal-instr m X0 offset)]
-       [(bveq funct3 (bv #x6 3))
+       [(bveq funct3 (bv #b110 3))
         ; // c.beqz
         ; // Expands to beq rs1, x0, offset, rs1=rs1'+8.
         (define adj-rs1 (adj-reg (extract 11 7 b_instr)))
@@ -308,7 +308,7 @@
               (bv #b0 1))
             (bitvector 64)))
         (c.beq-instr m adj-rs1 X0 offset)]
-       [(bveq funct3 (bv #x7 3))
+       [(bveq funct3 (bv #b111 3))
         ; // c.bnez
         ; // Expands to bne rs1, x0, offset, rs1=rs1'+8.
         (define adj-rs1 (adj-reg (extract 11 7 b_instr)))
@@ -327,7 +327,7 @@
         'illegal-instruction])]
     [(bveq opcode (bv 2 2))
      (cond
-       [(bveq funct3 (bv #x0 3))
+       [(bveq funct3 (bv #b000 3))
         ; c.slli
         ; Expands to slli rd, rd, shamt.
         (define rd (extract 11 7 b_instr))
@@ -341,7 +341,7 @@
           [else
            ; TODO: Find out what to do here?
            'illegal-instruction])]
-       [(bveq funct3 (bv #x1 3))
+       [(bveq funct3 (bv #b001 3))
         ; // c.fldsp
         ; // Expands to fld rd, offset(x2).
         ; inst_count!(self, "c.fldsp");
@@ -355,7 +355,7 @@
         ;     f64::from_bits(self.read(self.xregs.read(2) + offset, DOUBLEWORD)?);
         ; self.fregs.write(rd, val);
         'illegal-instruction]
-       [(bveq funct3 (bv #x2 3))
+       [(bveq funct3 (bv #b010 3))
         ; c.lwsp
         ; Expands to lw rd, offset(x2).
         (define rd (extract 11 7 b_instr))
@@ -369,7 +369,7 @@
             (bitvector 64)))
         (define offset (bvadd imm (get-gprs-i (machine-gprs m) X2)))
         (c.lw-instr m rd offset)]
-       [(bveq funct3 (bv #x3 3))
+       [(bveq funct3 (bv #b011 3))
         ; c.ldsp
         ; Expands to ld rd, offset(x2).
         (define rd (extract 11 7 b_instr))
@@ -383,7 +383,7 @@
             (bitvector 64)))
         (define offset (bvadd imm (get-gprs-i (machine-gprs m) X2)))
         (c.ld-instr m rd offset)]
-       [(bveq funct3 (bv #x4 3))
+       [(bveq funct3 (bv #b100 3))
         (define funct1 (extract 12 12 b_instr))
         (define funct5 (extract 6 2 b_instr))
         (cond
@@ -417,7 +417,7 @@
            (c.add-instr m rd rd rs2)]
           [else
            'illegal-instruction])]
-       [(bveq funct3 (bv #x5 3))
+       [(bveq funct3 (bv #b101 3))
         ; // c.fsdsp
         ; // Expands to fsd rs2, offset(x2).
         ; inst_count!(self, "c.fsdsp");
@@ -429,7 +429,7 @@
         ; let addr = self.xregs.read(2).wrapping_add(offset);
         ; self.write(addr, self.fregs.read(rs2).to_bits(), DOUBLEWORD)?;
         'illegal-instruction]
-       [(bveq funct3 (bv #x6 3))
+       [(bveq funct3 (bv #b110 3))
         ; c.swsp
         ; Expands to sw rs2, offset(x2).
         (define rs2 (extract 6 2 b_instr))
@@ -442,7 +442,7 @@
             (bitvector 64)))
         (define offset (bvadd imm (get-gprs-i (machine-gprs m) X2)))
         (c.sw-instr m rs2 offset)]
-       [(bveq funct3 (bv #x7 3))
+       [(bveq funct3 (bv #b111 3))
         ; // c.sdsp
         ; // Expands to sd rs2, offset(x2).
         (define rs2 (extract 6 2 b_instr))

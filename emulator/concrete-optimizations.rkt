@@ -3,7 +3,8 @@
 (require
   "pmp.rkt"
   "fmt.rkt"
-  "parameters.rkt")
+  "parameters.rkt"
+  "csrs.rkt")
 (require (only-in rosette/safe
                   bv bitvector bveq bvadd bvsub bvand bvor extract concat bitvector->natural))
 
@@ -51,8 +52,8 @@
             (if (not (pmp-is-locked? setting))
                 ; Check machine mode
                 (cond
-                  [(bveq mode (bv 1 3)) (set! legal #t)]
-                  [(bveq mode (bv 0 3))
+                  [(M_MODE? mode) (set! legal #t)]
+                  [(U_MODE? mode)
                    ; TODO: actually check what the access type is
                    (set! legal (and (bveq R (bv 1 1)) (bveq W (bv 1 1)) (bveq X (bv 1 1))))]
                   [else
@@ -61,7 +62,7 @@
                 ; TODO: Implement locked variant of access, for now just return false (no access)
                 (set! legal #f))))
         (when (null? legal)
-          (set! legal (bveq mode (bv 1 3))))
+          (set! legal (M_MODE? mode)))
         legal)))
 (provide concrete-pmp-check)
 

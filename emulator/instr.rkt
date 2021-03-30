@@ -37,7 +37,7 @@
 (define (mret-instr m)
   (define mode (machine-mode m))
   (cond
-    [(equal? mode (bv 1 3))
+    [(M_MODE? mode)
      (define pc (machine-pc m))
      (define mstatus (machine-csr m MSTATUS))
      (define MPP (extract 12 11 mstatus))
@@ -45,7 +45,7 @@
      ; TODO: fix this and set mstatus to its actual value of MPP, for now we are setting to 0
      ; since we always but it to user mode
      ; (set-machine-mode! m (bitvector->natural MPP))
-     (set-machine-mode! m (bv 0 3))
+     (set-machine-mode! m U_MODE)
      (set-machine-pc! m (bvsub (machine-csr m MEPC) (base-address)))
      (list 'mret)]
     [else
@@ -73,7 +73,7 @@
 
 (define (csrrw-instr m rd rs1 csr)
   (define pc (machine-pc m))
-  (when (bveq (machine-mode m) (bv 1 3))
+  (when (M_MODE? (machine-mode m))
     (define v_rs1 (get-gprs-i (machine-gprs m) rs1))
     (when (not (bvzero? rd))
       (define v_csr (machine-csr m csr))
@@ -86,7 +86,7 @@
 
 (define (csrrs-instr m rd rs1 csr)
   (define pc (machine-pc m))
-  (when (bveq (machine-mode m) (bv 1 3))
+  (when (M_MODE? (machine-mode m))
     (define v_rs1 (get-gprs-i (machine-gprs m) rs1))
     (define v_csr (machine-csr m csr))
     ; TODO: see if zero-extend is excessive
@@ -107,7 +107,7 @@
 
 (define (csrrwi-instr m rd rs1 csr)
   (define pc (machine-pc m))
-  (when (bveq (machine-mode m) (bv 1 3))
+  (when (M_MODE? (machine-mode m))
     (define ze_rs1 (zero-extend rs1 (bitvector 64)))
     (when (not (bvzero? rd))
       (define v_csr (machine-csr m csr))

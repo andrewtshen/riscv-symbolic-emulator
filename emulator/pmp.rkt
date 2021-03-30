@@ -3,6 +3,8 @@
 (require (only-in racket/base for in-range))
 (require syntax/parse/define)
 (require (only-in racket/base build-vector))
+(require
+  "csrs.rkt")
 
 ;; Macros to Build PMP
 
@@ -245,12 +247,13 @@
           (define elegal (list-ref bounds 1)) 
           ; Check saddr and eaddr match the pmpaddri range
           (when (and slegal elegal)
-            ; Check if pmpaddri is locked
+            ; Locking (L) bit determines if PMP applies to machine mode
             (if (not (pmp-is-locked? setting))
                 ; Check machine mode
                 (cond
-                  [(bveq mode (bv 1 3)) (set! legal #t)]
-                  [(bveq mode (bv 0 3))
+                  [(M_MODE? mode)
+                   (set! legal #t)]
+                  [(U_MODE? mode)
                    ; TODO: actually check what the access type is
                    (set! legal (and (bveq R (bv 1 1)) (bveq W (bv 1 1)) (bveq X (bv 1 1))))]
                   [else
@@ -258,8 +261,9 @@
                    (set! legal #f)])
                 ; TODO: Implement locked variant of access, for now just return false (no access)
                 (set! legal #f))))
+        ; When PMPs are implemented, but none match the access.
         (when (null? legal)
-          (set! legal (bveq mode (bv 1 3))))
+          (set! legal (M_MODE? mode)))
         legal)))
 (provide pmp-check)
 
