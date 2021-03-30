@@ -247,20 +247,18 @@
           (define elegal (list-ref bounds 1)) 
           ; Check saddr and eaddr match the pmpaddri range
           (when (and slegal elegal)
-            ; Locking (L) bit determines if PMP applies to machine mode
-            (if (not (pmp-is-locked? setting))
-                ; Check machine mode
-                (cond
-                  [(M_MODE? mode)
-                   (set! legal #t)]
-                  [(U_MODE? mode)
-                   ; TODO: actually check what the access type is
-                   (set! legal (and (bveq R (bv 1 1)) (bveq W (bv 1 1)) (bveq X (bv 1 1))))]
-                  [else
-                   ; TODO: implement other mode support
-                   (set! legal #f)])
-                ; TODO: Implement locked variant of access, for now just return false (no access)
-                (set! legal #f))))
+            (cond
+              [(M_MODE? mode)
+               ; Locking (L) bit determines if PMP applies to machine mode
+               (if (pmp-is-locked? setting)
+                   (set! legal (and (bveq R (bv 1 1)) (bveq W (bv 1 1)) (bveq X (bv 1 1))))
+                   (set! legal #t))]
+              [(U_MODE? mode)
+               ; TODO: actually check what the access type is
+               (set! legal (and (bveq R (bv 1 1)) (bveq W (bv 1 1)) (bveq X (bv 1 1))))]
+              [else
+               ; TODO: implement other mode support
+               (set! legal #f)])))
         ; When PMPs are implemented, but none match the access.
         (when (null? legal)
           (set! legal (M_MODE? mode)))
