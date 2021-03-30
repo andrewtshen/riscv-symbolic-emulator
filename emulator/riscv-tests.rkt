@@ -36,10 +36,8 @@
   (when (not (bveq a0 (bv 0 64)))
     (print-test-error a0))
   (check-equal? a0 (bv 0 64)))
-
-(define-test-suite riscv-tests
-  (test-case "rv64uc"
-             (execute-test "build/riscv-tests/rv64uc-p-rvc.bin"))
+  
+(define-test-suite rv64ui-tests
   (test-case "add"
              (execute-test "build/riscv-tests/rv64ui-p-add.bin"))
   (test-case "addi"
@@ -144,4 +142,31 @@
   (test-case "xori"
              (execute-test "build/riscv-tests/rv64ui-p-xori.bin")))
 
-(define res-instruction-check (run-tests riscv-tests))
+(define-test-suite rv64uc-tests
+  (test-case "rvc"
+             (execute-test "build/riscv-tests/rv64uc-p-rvc.bin")))
+
+(define-test-suite rv64um-tests
+  (test-case "mul"
+             (execute-test "build/riscv-tests/rv64um-p-mul.bin"))
+  (test-case "mulh"
+             (execute-test "build/riscv-tests/rv64um-p-mulh.bin"))
+  (test-case "mulhsu"
+             (execute-test "build/riscv-tests/rv64um-p-mulhsu.bin"))
+  (test-case "mulhu"
+             (execute-test "build/riscv-tests/rv64um-p-mulhu.bin"))
+  (test-case "div"
+             (execute-test "build/riscv-tests/rv64um-p-div.bin"))
+  (test-case "divu"
+             (execute-test "build/riscv-tests/rv64um-p-divu.bin"))
+  (test-case "rem"
+             (execute-test "build/riscv-tests/rv64um-p-rem.bin"))
+  (test-case "remu"
+             (execute-test "build/riscv-tests/rv64um-p-remu.bin"))
+  )
+
+; (define res-rv64ui-tests (run-tests rv64ui-tests))
+; (define res-rv64uc-tests (run-tests rv64uc-tests))
+(define res-rv64uc-tests (run-tests rv64um-tests))
+
+
