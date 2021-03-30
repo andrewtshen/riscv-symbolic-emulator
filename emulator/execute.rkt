@@ -74,6 +74,18 @@
         (srlw-instr m rd rs1 rs2)]
        [(and (bveq funct3 (bv #b101 3)) (bveq funct5 (bv #b01000 5)) (bveq funct2 (bv #b00 2)))
         (sraw-instr m rd rs1 rs2)]
+       
+       ; RV64M
+       [(and (bveq funct3 (bv #b000 3)) (bveq funct5 (bv #b00000 5)) (bveq funct2 (bv #b01 2)))
+        (mulw-instr m rd rs1 rs2)]
+       [(and (bveq funct3 (bv #b100 3)) (bveq funct5 (bv #b00000 5)) (bveq funct2 (bv #b01 2)))
+        (divw-instr m rd rs1 rs2)]
+       [(and (bveq funct3 (bv #b101 3)) (bveq funct5 (bv #b00000 5)) (bveq funct2 (bv #b01 2)))
+        (divuw-instr m rd rs1 rs2)]
+       [(and (bveq funct3 (bv #b110 3)) (bveq funct5 (bv #b00000 5)) (bveq funct2 (bv #b01 2)))
+        (remw-instr m rd rs1 rs2)]
+       [(and (bveq funct3 (bv #b111 3)) (bveq funct5 (bv #b00000 5)) (bveq funct2 (bv #b01 2)))
+        (remuw-instr m rd rs1 rs2)]
        [else
         'illegal-instruction])]
     [else
@@ -152,7 +164,8 @@
                 (extract 31 31 b_instr) 
                 (extract 7 7 b_instr)
                 (extract 30 25 b_instr)
-                (extract 11 8 b_instr)))
+                (extract 11 8 b_instr)
+                (bv #b0 1)))
   (define offset (sign-extend imm (bitvector 64)))
   (cond
     [(bveq funct3 (bv #b000 3))

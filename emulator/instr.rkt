@@ -632,34 +632,83 @@
   (list 'remu rd rs1 rs2))
 (provide remu-instr)
 
-(define (mulw-instr m)
-  ; TODO: mulw instruction not implemented yet
+(define (mulw-instr m rd rs1 rs2)
   (define pc (machine-pc m))
-  (list 'mulw))
+  (define v_rs1 (extract 31 0 (get-gprs-i (machine-gprs m) rs1)))
+  (define v_rs2 (extract 31 0 (get-gprs-i (machine-gprs m) rs2)))
+  (set-gprs-i! (machine-gprs m) rd (sign-extend (bvmul v_rs1 v_rs2) (bitvector 64)))
+  (set-machine-pc! m (bvadd pc (bv 4 64)))
+  (list 'mulw rd rs1 rs2))
 (provide mulw-instr)
 
-(define (divw-instr m)
-  ; TODO: divw instruction not implemented yet
+(define (divw-instr m rd rs1 rs2)
   (define pc (machine-pc m))
-  (list 'divw))
+  (define v_rs1 (extract 31 0 (get-gprs-i (machine-gprs m) rs1)))
+  (define v_rs2 (extract 31 0 (get-gprs-i (machine-gprs m) rs2)))
+  ; Handle edge cases
+  ; I believe that bvsdiv covers the overflow case where:
+  ; dividend (v_rs1): −2 ^ (XLEN−1)
+  ; divisor (v_rs2): -1
+  ; div: −2 ^ (XLEN−1)
+  (define res 
+    (cond
+      [(bveq v_rs2 (bv 0 32))
+       (bvnot (bv 0 32))]
+      [else
+       (bvsdiv v_rs1 v_rs2)]))
+  (set-gprs-i! (machine-gprs m) rd (sign-extend res (bitvector 64)))
+  (set-machine-pc! m (bvadd pc (bv 4 64)))
+  (list 'divw rd rs1 rs2))
 (provide divw-instr)
 
-(define (divuw-instr m)
-  ; TODO: divuw instruction not implemented yet
+(define (divuw-instr m rd rs1 rs2)
   (define pc (machine-pc m))
-  (list 'divuw))
+  (define v_rs1 (extract 31 0 (get-gprs-i (machine-gprs m) rs1)))
+  (define v_rs2 (extract 31 0 (get-gprs-i (machine-gprs m) rs2)))
+  ; Handle edge cases
+  (define res
+    (cond
+      [(bveq v_rs2 (bv 0 32))
+       (bv -1 32)]
+      [else
+       (bvudiv v_rs1 v_rs2)]))
+  (set-gprs-i! (machine-gprs m) rd (sign-extend res (bitvector 64)))
+  (set-machine-pc! m (bvadd pc (bv 4 64)))
+  (list 'divuw rd rs1 rs2))
 (provide divuw-instr)
 
-(define (remw-instr m)
-  ; TODO: remw instruction not implemented yet
+(define (remw-instr m rd rs1 rs2)
   (define pc (machine-pc m))
-  (list 'remw))
+  (define v_rs1 (extract 31 0 (get-gprs-i (machine-gprs m) rs1)))
+  (define v_rs2 (extract 31 0 (get-gprs-i (machine-gprs m) rs2)))
+  ; Handle edge cases
+  ; I believe that bvsdiv covers the overflow case where:
+  ; dividend (v_rs1): −2 ^ (XLEN−1)
+  ; divisor (v_rs2): -1
+  ; div: −2 ^ (XLEN−1)
+  (define res
+    (cond
+      [(bveq v_rs2 (bv 0 32))
+       v_rs1]
+      [else
+       (bvsrem v_rs1 v_rs2)]))
+  (set-gprs-i! (machine-gprs m) rd (sign-extend res (bitvector 64)))
+  (set-machine-pc! m (bvadd pc (bv 4 64)))
+  (list 'remw rd rs1 rs2))
 (provide remw-instr)
 
-(define (remuw-instr m)
-  ; TODO: remuw instruction not implemented yet
+(define (remuw-instr m rd rs1 rs2)
   (define pc (machine-pc m))
-  (list 'remuw))
+  ; Handle edge cases
+  (define v_rs1 (extract 31 0 (get-gprs-i (machine-gprs m) rs1)))
+  (define v_rs2 (extract 31 0 (get-gprs-i (machine-gprs m) rs2)))
+  (define res
+    (cond
+      [(bveq v_rs2 (bv 0 32)) v_rs1]
+      [else (bvurem v_rs1 v_rs2)]))
+  (set-gprs-i! (machine-gprs m) rd (sign-extend res (bitvector 64)))
+  (set-machine-pc! m (bvadd pc (bv 4 64)))
+  (list 'remuw rd rs1 rs2))
 (provide remuw-instr)
 
 
@@ -669,7 +718,7 @@
   (define v_rs1 (get-gprs-i (machine-gprs m) rs1))
   (define v_rs2 (get-gprs-i (machine-gprs m) rs2))
   (if (bveq v_rs1 v_rs2)
-      (set-machine-pc! m (bvadd pc (bvmul offset (bv 2 64))))
+      (set-machine-pc! m (bvadd pc offset))
       (set-machine-pc! m (bvadd pc (bv 4 64))))
   (list 'beq rs1 rs2 offset))
 (provide beq-instr)
@@ -680,7 +729,7 @@
   (define v_rs2 (get-gprs-i (machine-gprs m) rs2))
   ; (printf "v_rs1: ~a v_rs2: ~a~n" v_rs1 v_rs2)
   (if (not (bveq v_rs1 v_rs2))
-      (set-machine-pc! m (bvadd pc (bvmul offset (bv 2 64))))
+      (set-machine-pc! m (bvadd pc offset))
       (set-machine-pc! m (bvadd pc (bv 4 64))))
   (list 'bne rs1 rs2 offset))
 (provide bne-instr)
@@ -690,7 +739,7 @@
   (define v_rs1 (get-gprs-i (machine-gprs m) rs1))
   (define v_rs2 (get-gprs-i (machine-gprs m) rs2))
   (if (bvslt v_rs1 v_rs2)
-      (set-machine-pc! m (bvadd pc (bvmul offset (bv 2 64))))
+      (set-machine-pc! m (bvadd pc offset))
       (set-machine-pc! m (bvadd pc (bv 4 64))))
   (list 'blt rs1 rs2 offset))
 (provide blt-instr)
@@ -700,7 +749,7 @@
   (define v_rs1 (get-gprs-i (machine-gprs m) rs1))
   (define v_rs2 (get-gprs-i (machine-gprs m) rs2))
   (if (bvsge v_rs1 v_rs2)
-      (set-machine-pc! m (bvadd pc (bvmul offset (bv 2 64))))
+      (set-machine-pc! m (bvadd pc offset))
       (set-machine-pc! m (bvadd pc (bv 4 64))))
   (list 'bge rs1 rs2 offset))
 (provide bge-instr)
@@ -710,7 +759,7 @@
   (define v_rs1 (get-gprs-i (machine-gprs m) rs1))
   (define v_rs2 (get-gprs-i (machine-gprs m) rs2))
   (if (bvult v_rs1 v_rs2)
-      (set-machine-pc! m (bvadd pc (bvmul offset (bv 2 64))))
+      (set-machine-pc! m (bvadd pc offset))
       (set-machine-pc! m (bvadd pc (bv 4 64))))
   (list 'bltu rs1 rs2 offset))
 (provide bltu-instr)
@@ -720,7 +769,7 @@
   (define v_rs1 (get-gprs-i (machine-gprs m) rs1))
   (define v_rs2 (get-gprs-i (machine-gprs m) rs2))
   (if (bvuge v_rs1 v_rs2)
-      (set-machine-pc! m (bvadd pc (bvmul offset (bv 2 64))))
+      (set-machine-pc! m (bvadd pc offset))
       (set-machine-pc! m (bvadd pc (bv 4 64))))
   (list 'bgeu rs1 rs2 offset))
 (provide bgeu-instr)

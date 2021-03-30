@@ -13,8 +13,8 @@
 (define (adj-reg reg)
   (bvadd (zero-extend reg (bitvector 5)) (bv #x8 5)))
 
-; Execute a 32 bit instruction
-(define (execute-compressed m b_instr)
+; Execute a 32 bit compressed instruction
+(define (c-execute m b_instr)
   (define opcode (extract 1 0 b_instr))
   (define funct3 (extract 15 13 b_instr))
 
@@ -459,7 +459,7 @@
         'illegal-instruction])]
     [else
      'illegal-instruction]))
-(provide execute-compressed)
+(provide c-execute)
 
 ; example: add x5, x6, x7
 ; (define b_instr (bv #b00000000011100110000001010110011 32))

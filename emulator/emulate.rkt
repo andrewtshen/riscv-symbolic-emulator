@@ -3,7 +3,7 @@
 (require
   "init.rkt"
   "execute.rkt"
-  "execute-compressed.rkt"
+  "c-execute.rkt"
   "machine.rkt"
   "pmp.rkt"
   "parameters.rkt"
@@ -61,7 +61,7 @@
      'illegal-instruction]
     [else
      ; Compressed instruction (halfword)
-     (define decoded_instr (execute-compressed m instr16))
+     (define decoded_instr (c-execute m instr16))
      (when (use-debug-mode)
           (printf "PC: ~x BYTES: ~a INS: ~a~n" (bitvector->natural pc) instr16 decoded_instr))
      (when (symbol? decoded_instr)

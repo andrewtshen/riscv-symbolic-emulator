@@ -163,10 +163,17 @@
              (execute-test "build/riscv-tests/rv64um-p-rem.bin"))
   (test-case "remu"
              (execute-test "build/riscv-tests/rv64um-p-remu.bin"))
-  )
+  (test-case "mulw"
+             (execute-test "build/riscv-tests/rv64um-p-mulw.bin"))
+  (test-case "divw"
+             (execute-test "build/riscv-tests/rv64um-p-divw.bin"))
+  (test-case "divuw"
+             (execute-test "build/riscv-tests/rv64um-p-divuw.bin"))
+  (test-case "remw"
+             (execute-test "build/riscv-tests/rv64um-p-remw.bin"))
+  (test-case "remuw"
+             (execute-test "build/riscv-tests/rv64um-p-remuw.bin")))
 
-; (define res-rv64ui-tests (run-tests rv64ui-tests))
-; (define res-rv64uc-tests (run-tests rv64uc-tests))
-(define res-rv64uc-tests (run-tests rv64um-tests))
-
-
+(define res-rv64ui-tests (run-tests rv64ui-tests))
+(define res-rv64uc-tests (run-tests rv64uc-tests))
+(define res-rv64um-tests (run-tests rv64um-tests))
