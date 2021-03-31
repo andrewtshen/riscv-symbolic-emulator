@@ -221,6 +221,9 @@
   (vector-set!-bv csrs csr val))
 (provide set-csr!)
 
+(define (csr-access? csr mode)
+  (bvule (extract 9 8 csr) mode))
+(provide csr-access?)
 
 ; (define csrs (make-sym-vector CSR_SIZE MXLEN csrs))
 ; (printf "~a~n" (get-csr csrs PMPCFG0))

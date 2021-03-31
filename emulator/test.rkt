@@ -21,25 +21,25 @@
   
   ; mode is not always equal, do not assert
   ; OK property
-  (assert (bveq (machine-csr m MTVEC) (bv #x0000000080000080 64)))
-  (assert (bveq (machine-csr m PMPCFG0) (bv #x000000000000001f 64)))
-  (assert (bveq (machine-csr m PMPCFG2) (bv #x0000000000000018 64)))
-  (assert (bveq (machine-csr m PMPADDR0) (bv #x000000002000bfff 64)))
-  (assert (bveq (machine-csr m PMPADDR1) (bv #x0 64)))
-  (assert (bveq (machine-csr m PMPADDR2) (bv #x0 64)))
-  (assert (bveq (machine-csr m PMPADDR3) (bv #x0 64)))
-  (assert (bveq (machine-csr m PMPADDR4) (bv #x0 64)))
-  (assert (bveq (machine-csr m PMPADDR5) (bv #x0 64)))
-  (assert (bveq (machine-csr m PMPADDR6) (bv #x0 64)))
-  (assert (bveq (machine-csr m PMPADDR7) (bv #x0 64)))
-  (assert (bveq (machine-csr m PMPADDR8) (bv #x7fffffffffffffff 64)))
-  (assert (bveq (machine-csr m PMPADDR9) (bv #x0 64)))
-  (assert (bveq (machine-csr m PMPADDR10) (bv #x0 64)))
-  (assert (bveq (machine-csr m PMPADDR11) (bv #x0 64)))
-  (assert (bveq (machine-csr m PMPADDR12) (bv #x0 64)))
-  (assert (bveq (machine-csr m PMPADDR13) (bv #x0 64)))
-  (assert (bveq (machine-csr m PMPADDR14) (bv #x0 64)))
-  (assert (bveq (machine-csr m PMPADDR15) (bv #x0 64))))
+  (assert (bveq (M_MODE-machine-csr m MTVEC) (bv #x0000000080000080 64)))
+  (assert (bveq (M_MODE-machine-csr m PMPCFG0) (bv #x000000000000001f 64)))
+  (assert (bveq (M_MODE-machine-csr m PMPCFG2) (bv #x0000000000000018 64)))
+  (assert (bveq (M_MODE-machine-csr m PMPADDR0) (bv #x000000002000bfff 64)))
+  (assert (bveq (M_MODE-machine-csr m PMPADDR1) (bv #x0 64)))
+  (assert (bveq (M_MODE-machine-csr m PMPADDR2) (bv #x0 64)))
+  (assert (bveq (M_MODE-machine-csr m PMPADDR3) (bv #x0 64)))
+  (assert (bveq (M_MODE-machine-csr m PMPADDR4) (bv #x0 64)))
+  (assert (bveq (M_MODE-machine-csr m PMPADDR5) (bv #x0 64)))
+  (assert (bveq (M_MODE-machine-csr m PMPADDR6) (bv #x0 64)))
+  (assert (bveq (M_MODE-machine-csr m PMPADDR7) (bv #x0 64)))
+  (assert (bveq (M_MODE-machine-csr m PMPADDR8) (bv #x7fffffffffffffff 64)))
+  (assert (bveq (M_MODE-machine-csr m PMPADDR9) (bv #x0 64)))
+  (assert (bveq (M_MODE-machine-csr m PMPADDR10) (bv #x0 64)))
+  (assert (bveq (M_MODE-machine-csr m PMPADDR11) (bv #x0 64)))
+  (assert (bveq (M_MODE-machine-csr m PMPADDR12) (bv #x0 64)))
+  (assert (bveq (M_MODE-machine-csr m PMPADDR13) (bv #x0 64)))
+  (assert (bveq (M_MODE-machine-csr m PMPADDR14) (bv #x0 64)))
+  (assert (bveq (M_MODE-machine-csr m PMPADDR15) (bv #x0 64))))
 (provide assert-OK)
 
 (define (deep-copy-machine m)
@@ -471,25 +471,39 @@
                   [ramsize-log2 32])
                  (step m)))
              
-             ; Check that machine pc is either MTVEC and in m mode or still in u mode
+             ; Check that machine pc is either MTVEC and machine mode or still in user mode
              (define model_mode
                (verify (assert
                          (or (bveq (machine-mode m) (machine-mode m1))
                              (and (bveq (machine-pc m)
-                                        (bvsub (machine-csr m MTVEC) (base-address)))
+                                        (bvsub (M_MODE-machine-csr m MTVEC) (base-address)))
                                   (M_MODE? (machine-mode m)))))))
              (check-true (unsat? model_mode))
              
+             ; Find a case where we are in user_mode and in mtvec (does not mean we can execute there)
              (define model_not_user_mode_in_mtvec
                (verify (assert
-                         (not (and (bveq (machine-pc m) (bvsub (machine-csr m MTVEC) (base-address)))
-                                   (M_MODE? (machine-mode m)))))))
+                         (not (and (bveq (machine-pc m) (bvsub (M_MODE-machine-csr m MTVEC) (base-address)))
+                                   (U_MODE? (machine-mode m)))))))
              (check-true (not (unsat? model_not_user_mode_in_mtvec)))
              
              ; Check that machine does not only end in user mode
              (define model_not_end_only_user_mode
-               (verify (assert (bveq (M_MODE? (machine-mode m))))))
-             (check-true (not (unsat? model_not_end_only_user_mode))))
+               (verify (assert (U_MODE? (machine-mode m)))))
+             (check-true (not (unsat? model_not_end_only_user_mode)))
+             
+             ; Check that machine does not only end in machine mode
+             (define model_not_end_only_machine_mode
+               (verify (assert (M_MODE? (machine-mode m)))))
+             (check-true (not (unsat? model_not_end_only_machine_mode)))
+             
+             ; Check that if we are in machine mode then we have had an illegal instruction
+             (define model_illegal_instr_machine_mode
+               (verify (assert
+                         (xor (U_MODE? (machine-mode m))
+                              (and (M_MODE? (machine-mode m))
+                                   (equal? next_instr 'illegal-instruction))))))
+             (check-true (unsat? model_illegal_instr_machine_mode)))
   (test-case "does not return null test"
              (clear-terms!)
              (printf "* Running does not return null test ~n")
@@ -567,7 +581,7 @@
                (verify (assert
                          (or (bveq (machine-mode m) (machine-mode m1))
                              (and (bveq (machine-pc m)
-                                        (bvsub (machine-csr m MTVEC) (base-address)))
+                                        (bvsub (M_MODE-machine-csr m MTVEC) (base-address)))
                                   (M_MODE? (machine-mode m)))))))
              (check-true (unsat? model_mode))
              
@@ -591,7 +605,7 @@
 (define res-high-level-test (run-tests high-level-test))
 (define res-step-checks (run-tests step-checks))
 
-; ;; Testing the base case and inductive step
+;; Testing the base case and inductive step
 
 (define res-boot-sequence (time (run-tests boot-sequence)))
 (define res-inductive-step (time (run-tests inductive-step)))

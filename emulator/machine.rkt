@@ -58,7 +58,8 @@
 
 ;; csrs Accessors/Mutators
 
-(define (machine-csr m csr)
+; For verifying (this is because often we end in user mode and cannot read some csrs)
+(define (M_MODE-machine-csr m csr)
   (cond
     [(bveq csr PMPCFG0)   (pmpcfg-value  (pmp-pmpcfgi  (machine-pmp m) 0))]
     [(bveq csr PMPCFG2)   (pmpcfg-value  (pmp-pmpcfgi  (machine-pmp m) 1))]
@@ -80,30 +81,59 @@
     [(bveq csr PMPADDR15) (pmpaddr-value (pmp-pmpaddri (machine-pmp m) 15))]
     [else
      (get-csr (cpu-csrs (machine-cpu m)) csr)]))
+(provide M_MODE-machine-csr)
+
+; For emulation
+(define (machine-csr m csr)
+  (if (csr-access? csr (machine-mode m))
+      (cond
+        [(bveq csr PMPCFG0)   (pmpcfg-value  (pmp-pmpcfgi  (machine-pmp m) 0))]
+        [(bveq csr PMPCFG2)   (pmpcfg-value  (pmp-pmpcfgi  (machine-pmp m) 1))]
+        [(bveq csr PMPADDR0)  (pmpaddr-value (pmp-pmpaddri (machine-pmp m) 0))]
+        [(bveq csr PMPADDR1)  (pmpaddr-value (pmp-pmpaddri (machine-pmp m) 1))]
+        [(bveq csr PMPADDR2)  (pmpaddr-value (pmp-pmpaddri (machine-pmp m) 2))]
+        [(bveq csr PMPADDR3)  (pmpaddr-value (pmp-pmpaddri (machine-pmp m) 3))]
+        [(bveq csr PMPADDR4)  (pmpaddr-value (pmp-pmpaddri (machine-pmp m) 4))]
+        [(bveq csr PMPADDR5)  (pmpaddr-value (pmp-pmpaddri (machine-pmp m) 5))]
+        [(bveq csr PMPADDR6)  (pmpaddr-value (pmp-pmpaddri (machine-pmp m) 6))]
+        [(bveq csr PMPADDR7)  (pmpaddr-value (pmp-pmpaddri (machine-pmp m) 7))]
+        [(bveq csr PMPADDR8)  (pmpaddr-value (pmp-pmpaddri (machine-pmp m) 8))]
+        [(bveq csr PMPADDR9)  (pmpaddr-value (pmp-pmpaddri (machine-pmp m) 9))]
+        [(bveq csr PMPADDR10) (pmpaddr-value (pmp-pmpaddri (machine-pmp m) 10))]
+        [(bveq csr PMPADDR11) (pmpaddr-value (pmp-pmpaddri (machine-pmp m) 11))]
+        [(bveq csr PMPADDR12) (pmpaddr-value (pmp-pmpaddri (machine-pmp m) 12))]
+        [(bveq csr PMPADDR13) (pmpaddr-value (pmp-pmpaddri (machine-pmp m) 13))]
+        [(bveq csr PMPADDR14) (pmpaddr-value (pmp-pmpaddri (machine-pmp m) 14))]
+        [(bveq csr PMPADDR15) (pmpaddr-value (pmp-pmpaddri (machine-pmp m) 15))]
+        [else
+          (get-csr (cpu-csrs (machine-cpu m)) csr)])
+      'illegal-instruction))
 (provide machine-csr)
 
 (define (set-machine-csr! m csr val)
-  (cond
-    [(bveq csr PMPCFG0)   (set-pmpcfgi!  (machine-pmp m) 0  val)]
-    [(bveq csr PMPCFG2)   (set-pmpcfgi!  (machine-pmp m) 1  val)]
-    [(bveq csr PMPADDR0)  (set-pmpaddri! (machine-pmp m) 0  val)]
-    [(bveq csr PMPADDR1)  (set-pmpaddri! (machine-pmp m) 1  val)]
-    [(bveq csr PMPADDR2)  (set-pmpaddri! (machine-pmp m) 2  val)]
-    [(bveq csr PMPADDR3)  (set-pmpaddri! (machine-pmp m) 3  val)]
-    [(bveq csr PMPADDR4)  (set-pmpaddri! (machine-pmp m) 4  val)]
-    [(bveq csr PMPADDR5)  (set-pmpaddri! (machine-pmp m) 5  val)]
-    [(bveq csr PMPADDR6)  (set-pmpaddri! (machine-pmp m) 6  val)]
-    [(bveq csr PMPADDR7)  (set-pmpaddri! (machine-pmp m) 7  val)]
-    [(bveq csr PMPADDR8)  (set-pmpaddri! (machine-pmp m) 8  val)]
-    [(bveq csr PMPADDR9)  (set-pmpaddri! (machine-pmp m) 9  val)]
-    [(bveq csr PMPADDR10) (set-pmpaddri! (machine-pmp m) 10 val)]
-    [(bveq csr PMPADDR11) (set-pmpaddri! (machine-pmp m) 11 val)]
-    [(bveq csr PMPADDR12) (set-pmpaddri! (machine-pmp m) 12 val)]
-    [(bveq csr PMPADDR13) (set-pmpaddri! (machine-pmp m) 13 val)]
-    [(bveq csr PMPADDR14) (set-pmpaddri! (machine-pmp m) 14 val)]
-    [(bveq csr PMPADDR15) (set-pmpaddri! (machine-pmp m) 15 val)]
-    [else 
-     (set-csr! (cpu-csrs (machine-cpu m)) csr val)]))
+  (if (csr-access? csr (machine-mode m))
+      (cond
+        [(bveq csr PMPCFG0)   (set-pmpcfgi!  (machine-pmp m) 0  val)]
+        [(bveq csr PMPCFG2)   (set-pmpcfgi!  (machine-pmp m) 1  val)]
+        [(bveq csr PMPADDR0)  (set-pmpaddri! (machine-pmp m) 0  val)]
+        [(bveq csr PMPADDR1)  (set-pmpaddri! (machine-pmp m) 1  val)]
+        [(bveq csr PMPADDR2)  (set-pmpaddri! (machine-pmp m) 2  val)]
+        [(bveq csr PMPADDR3)  (set-pmpaddri! (machine-pmp m) 3  val)]
+        [(bveq csr PMPADDR4)  (set-pmpaddri! (machine-pmp m) 4  val)]
+        [(bveq csr PMPADDR5)  (set-pmpaddri! (machine-pmp m) 5  val)]
+        [(bveq csr PMPADDR6)  (set-pmpaddri! (machine-pmp m) 6  val)]
+        [(bveq csr PMPADDR7)  (set-pmpaddri! (machine-pmp m) 7  val)]
+        [(bveq csr PMPADDR8)  (set-pmpaddri! (machine-pmp m) 8  val)]
+        [(bveq csr PMPADDR9)  (set-pmpaddri! (machine-pmp m) 9  val)]
+        [(bveq csr PMPADDR10) (set-pmpaddri! (machine-pmp m) 10 val)]
+        [(bveq csr PMPADDR11) (set-pmpaddri! (machine-pmp m) 11 val)]
+        [(bveq csr PMPADDR12) (set-pmpaddri! (machine-pmp m) 12 val)]
+        [(bveq csr PMPADDR13) (set-pmpaddri! (machine-pmp m) 13 val)]
+        [(bveq csr PMPADDR14) (set-pmpaddri! (machine-pmp m) 14 val)]
+        [(bveq csr PMPADDR15) (set-pmpaddri! (machine-pmp m) 15 val)]
+        [else
+         (set-csr! (cpu-csrs (machine-cpu m)) csr val)])
+      'illegal-instruction))
 (provide set-machine-csr!)
 
 ; Get program counter
@@ -120,7 +150,7 @@
 
 ; Set up state for illegal instruction and return null to signal end of exec
 (define (illegal-instr m)
-  (set-machine-pc! m (bvsub (machine-csr m MTVEC) (base-address)))
+  (set-machine-pc! m (bvsub (M_MODE-machine-csr m MTVEC) (base-address)))
   (set-machine-mode! m M_MODE))
 (provide illegal-instr)
 

@@ -248,27 +248,27 @@
            (define imm1 (extract 12 12 b_instr))
            (define adj-rs2 (adj-reg (extract 4 2 b_instr)))
            (cond
-             [(and (bveq imm1 (bv #b00 1)) (bveq imm2 (bv #b00 2)))
+             [(and (bveq imm1 (bv #b0 1)) (bveq imm2 (bv #b00 2)))
               ; c.sub
               ; Expands to sub rd, rd, rs2, rd=rd'+8 and rs2=rs2'+8.
               (c.sub-instr m adj-rd adj-rd adj-rs2)]
-             [(and (bveq imm1 (bv #b00 1)) (bveq imm2 (bv #b01 2)))
+             [(and (bveq imm1 (bv #b0 1)) (bveq imm2 (bv #b01 2)))
               ; // c.xor
               ; // Expands to xor rd, rd, rs2, rd=rd'+8 and rs2=rs2'+8.
               (c.xor-instr m adj-rd adj-rd adj-rs2)]
-             [(and (bveq imm1 (bv #b00 1)) (bveq imm2 (bv #b10 2)))
+             [(and (bveq imm1 (bv #b0 1)) (bveq imm2 (bv #b10 2)))
               ; // c.or
               ; // Expands to or rd, rd, rs2, rd=rd'+8 and rs2=rs2'+8.
               (c.or-instr m adj-rd adj-rd adj-rs2)]
-             [(and (bveq imm1 (bv #b00 1)) (bveq imm2 (bv #b11 2)))
+             [(and (bveq imm1 (bv #b0 1)) (bveq imm2 (bv #b11 2)))
               ; // c.and
               ; // Expands to and rd, rd, rs2, rd=rd'+8 and rs2=rs2'+8.
               (c.and-instr m adj-rd adj-rd adj-rs2)]
-             [(and (bveq imm1 (bv #b01 1)) (bveq imm2 (bv #b00 2)))
+             [(and (bveq imm1 (bv #b1 1)) (bveq imm2 (bv #b00 2)))
               ; // c.subw
               ; // Expands to subw rd, rd, rs2, rd=rd'+8 and rs2=rs2'+8.
               (c.subw-instr m adj-rd adj-rd adj-rs2)]
-             [(and (bveq imm1 (bv #b01 1)) (bveq imm2 (bv #b01 2)))
+             [(and (bveq imm1 (bv #b1 1)) (bveq imm2 (bv #b01 2)))
               ; // c.addw
               ; // Expands to addw rd, rd, rs2, rd=rd'+8 and rs2=rs2'+8.
               (c.addw-instr m adj-rd adj-rd adj-rs2)]

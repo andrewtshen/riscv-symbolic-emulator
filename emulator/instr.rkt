@@ -41,12 +41,12 @@
      (define pc (machine-pc m))
      (define mstatus (machine-csr m MSTATUS))
      (define MPP (extract 12 11 mstatus))
+     (set-machine-pc! m (bvsub (machine-csr m MEPC) (base-address)))
      ; this is always user mode
      ; TODO: fix this and set mstatus to its actual value of MPP, for now we are setting to 0
      ; since we always but it to user mode
      ; (set-machine-mode! m (bitvector->natural MPP))
      (set-machine-mode! m U_MODE)
-     (set-machine-pc! m (bvsub (machine-csr m MEPC) (base-address)))
      (list 'mret)]
     [else
      ; Throw illegal instruction if not machine mode
