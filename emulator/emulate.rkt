@@ -9,7 +9,8 @@
   "parameters.rkt"
   "print-utils.rkt"
   "concrete-optimizations.rkt")
-(require (only-in racket/base parameter? for in-range symbol?))
+(require (only-in racket/base
+                  for in-range symbol?))
 
 ; Set up the machine and execute each instruction.
 ; Properties are proved at the end of the execution of the machine.

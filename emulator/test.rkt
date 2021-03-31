@@ -11,10 +11,8 @@
   "instr.rkt"
   "csrs.rkt")
 (require (only-in racket/base 
-                  custodian-limit-memory current-custodian parameterize call-with-parameterization
-                  parameterize* for for/list for/vector in-range))
+                  parameterize for for/list for/vector in-range))
 (require rackunit rackunit/text-ui)
-(require profile)
 
 (define (assert-OK m)
   ; Assert that code is in an OK state as described by the paper in the ./report folder.

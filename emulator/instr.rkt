@@ -5,15 +5,20 @@
   "machine.rkt"
   "parameters.rkt"
   "csrs.rkt")
+(require syntax/parse/define)
 
 ; Execute each individual instruction symbolically and update the program count to the proper place.
 ; Used rv8.io and https://content.riscv.org/wp-content/uploads/2017/05/riscv-spec-v2.2.pdf for implementing instructions
 ; Conventions used for decoding are as follows: v_var represents the bitvector value stored in register var. Otherwise,
 ; the variable var contains the index into the register that it refers to.
 
+(define-syntax-rule (try! var val body ...) ; try!
+  (let ()
+    (define var val)
+    (if (symbol? var) var
+        (begin body ...))))
 
 ;; Execute Instruction
-
 
 ;; SPECIAL Format
 (define (ecall-instr m)
@@ -73,30 +78,26 @@
 
 (define (csrrw-instr m rd rs1 csr)
   (define pc (machine-pc m))
-  (when (M_MODE? (machine-mode m))
-    (define v_rs1 (get-gprs-i (machine-gprs m) rs1))
-    (when (not (bvzero? rd))
-      (define v_csr (machine-csr m csr))
-      (set-gprs-i! (machine-gprs m) rd (zero-extend v_csr (bitvector 64))))
-    ; TODO: Implement specific setting permissions for CSR bits
-    (set-machine-csr! m csr v_rs1)
-    (set-machine-pc! m (bvadd pc (bv 4 64))))
-  (list 'csrrw rd rs1 csr))
+  (define v_rs1 (get-gprs-i (machine-gprs m) rs1))
+  (try! v_csr (machine-csr m csr)
+        ; TODO: see if zero-extend is excessive
+        (set-gprs-i! (machine-gprs m) rd (zero-extend v_csr (bitvector 64)))
+        ; TODO: Implement specific setting permissions for CSR bits
+        (try! _ (set-machine-csr! m csr v_rs1)
+              (set-machine-pc! m (bvadd pc (bv 4 64)))
+              (list 'csrrw rd rs1 csr))))
 (provide csrrw-instr)
 
 (define (csrrs-instr m rd rs1 csr)
   (define pc (machine-pc m))
-  (when (M_MODE? (machine-mode m))
-    (define v_rs1 (get-gprs-i (machine-gprs m) rs1))
-    (define v_csr (machine-csr m csr))
-    ; TODO: see if zero-extend is excessive
-    (set-gprs-i! (machine-gprs m) rd (zero-extend v_csr (bitvector 64)))
-    
-    ; TODO: Implement specific setting permissions for CSR bits
-    (when (not (bvzero? rs1))
-      (set-machine-csr! m csr (bvor v_csr v_rs1)))
-    (set-machine-pc! m (bvadd pc (bv 4 64))))
-  (list 'csrrs rd rs1 csr))
+  (define v_rs1 (get-gprs-i (machine-gprs m) rs1))
+  (try! v_csr (machine-csr m csr)
+        ; TODO: see if zero-extend is excessive
+        (set-gprs-i! (machine-gprs m) rd (zero-extend v_csr (bitvector 64)))
+        ; TODO: Implement specific setting permissions for CSR bits
+        (try! _ set-machine-csr! m csr (bvor v_csr v_rs1)
+              (set-machine-pc! m (bvadd pc (bv 4 64)))
+              (list 'csrrs rd rs1 csr))))
 (provide csrrs-instr)
 
 (define (csrrc-instr m)
@@ -107,15 +108,15 @@
 
 (define (csrrwi-instr m rd rs1 csr)
   (define pc (machine-pc m))
-  (when (M_MODE? (machine-mode m))
-    (define ze_rs1 (zero-extend rs1 (bitvector 64)))
-    (when (not (bvzero? rd))
-      (define v_csr (machine-csr m csr))
-      (set-gprs-i! (machine-gprs m) rd (zero-extend v_csr (bitvector 64))))
-    ; TODO: Implement specific setting permissions for CSR bits
-    (set-machine-csr! m csr ze_rs1)
-    (set-machine-pc! m (bvadd pc (bv 4 64))))
-  (list 'csrrwi rd rs1 csr))
+  (define ze_rs1 (zero-extend rs1 (bitvector 64)))
+
+  (try! v_csr (machine-csr m csr)
+        ; TODO: see if zero-extend is excessive
+        (set-gprs-i! (machine-gprs m) rd (zero-extend v_csr (bitvector 64)))
+        ; TODO: Implement specific setting permissions for CSR bits
+        (try! _ (set-machine-csr! m csr ze_rs1)
+              (set-machine-pc! m (bvadd pc (bv 4 64)))
+              (list 'csrrwi rd rs1 csr))))
 (provide csrrwi-instr)
 
 (define (csrrsi-instr m)

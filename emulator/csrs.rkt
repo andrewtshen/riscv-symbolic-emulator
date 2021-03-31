@@ -2,9 +2,9 @@
 
 (require
   "parameters.rkt")
-(require (only-in racket/base for in-range))
 (require syntax/parse/define)
-(require (only-in racket/base build-vector))
+(require (only-in racket/base
+                  build-vector for in-range))
 
 ;; Macros to Build Symbolics
 
