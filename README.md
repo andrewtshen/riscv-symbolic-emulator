@@ -2,18 +2,26 @@
 
 ![CI](https://github.com/andrewtshen/riscv-symbolic-emulator/workflows/CI/badge.svg)
 
-This project was built during the PRIMES 2019-2020 program by Andrew Shen under the mentorship of Anish Athalye.
+This project began as a part of the PRIMES program by Andrew Shen under the mentorship of Anish Athalye.
 The paper can be found at: https://math.mit.edu/research/highschool/primes/materials/2020/Shen.pdf
 
-## Roadmap to the Directories
-For more information on each of the directories use the README.md in each of the sub-directories.
+## Roadmap
+"*A goal without a plan is just a wish*" - Antoine de Saint-Exupery
 
-### emulate
-Contains the implementation of the RISC-V symbolic emulator, which contains the bulk of the project.
+### emulator
+As suggested by the namesake, `emulator` contains the source code for the RISC-V 64-bit symbolic emulator. This section will cover the execution of the emulator from passing a binary file to execution, the supported ISA (and extensions), the peripherals, and the different memory representations. 
 
-There are two types of RAM memory implementations: 
-- array based RAM memory. This is the prefered emulator for running actual code, but fails to quickly reason about large pieces of memory.
-- uninterpreted functional based RAM memory. This is the prefered emulator for verifying the inductive step of our proof as it allows much simpler reasoning for operations across large regions of memory. However, it is not as good for running large snippets of concrete code as many memory writes result in a large conditional, which scales poorly.
+**Execution**
+
+The program takes a RISC-V 64-bit binary file as input. After initializing the starting state, the emulator will read from program counter (PC) equals `0x80000000`, which should correspond with the first instruction in the program. Internally, the program counter is saved as `0x0` and then later adjusted to account for the base address using the parameter `base-address`. The emulator will then proceed as specified in base ISA.
+
+The emulator works as follows: loop until program terminates and determine next byte instruction to execute (`emulate.rkt`) --> decode and execute a specific instruction (`execute.rkt`) --> functions for each instruction as specified by the ISA (`instr.rkt`).
+
+**Memory Representation**
+
+To emulate a microcontroller's RAM (or memory) we propose two different representations of RAM:
+- **memory as an array**: This is the prefered emulator for running actual code, but fails to quickly reason about large pieces of memory.
+- **memory as an uninterpreted function**: This is the prefered representation for verifying the inductive step of our proof as it allows much simpler reasoning for operations across large regions of memory. However, it is not well suited to run large snippets of concrete code as many memory writes result in a large conditional expression, which scales poorly.
 
 ### legOS
 The simplified kernel that we reason about in our proof. We implemented it in both the ARM and RISC-V variants of Assembly, however for the purposes of our proof, we only reason about the RISC-V variant.
@@ -28,7 +36,7 @@ Contains the prerequisite work for this project. There are miscellaneous differe
 - `z3-proofs`, an assortment of proofs in z3 with Python.
 
 ### related_works
-Contains different related works that were used for reference during the making of this project. Currently, the following repositories are included in `related works`:
+Different related works that were used for reference during the making of this project. Currently, the following repositories are included in `related works`:
 - `serval-sosp19`
 - `serval-tutorial-sosp19`
 - `unitary`
@@ -36,4 +44,4 @@ Contains different related works that were used for reference during the making 
 - `xv6-riscv-fall19`
 
 ### report
-Contains the written report of this work as well as the presentation presented at MIT PRIMES '20.
+The written report of this work and the presentation presented at MIT PRIMES '20.
