@@ -29,6 +29,7 @@ Required local tools are now installed:
 - `raco`: present
 - `riscv64-unknown-elf-gcc`: present, GCC 13.2.0
 - `riscv64-unknown-elf-objcopy`: present, GNU objcopy 2.42
+- `picolibc-riscv64-unknown-elf`: present, version 1.8.6-2. Ubuntu installs headers under `/usr/lib/picolibc/riscv64-unknown-elf`; `riscv64-unknown-elf-gcc` finds them when invoked with `--specs=picolibc.specs`.
 - `qemu-system-riscv64`: present, QEMU 8.2.2
 - `git-lfs`: present, git-lfs 3.4.1
 - `autoconf`: present, GNU Autoconf 2.71
@@ -39,12 +40,17 @@ Racket package setup has been run:
 ```sh
 git submodule update --init --recursive
 raco pkg install --auto --batch ./emulator
-git lfs pull
 ```
 
 The local `emulator` package is linked, and `rosette` plus its dependencies are installed for Racket 8.10.
 
-There are existing build artifacts under `emulator/build/`: 418 files total, including 403 `riscv-tests` `.bin` files and 15 local test `.bin` files. Rebuilding them requires the RISC-V cross-toolchain and initialized submodules.
+There are existing build artifacts under `emulator/build/`: 418 files total, including 403 `riscv-tests` `.bin` files and 15 local test `.bin` files. The checked-in binary test path is validated.
+
+`raco make emulator/*.rkt` passes. `make -C emulator kernel/kernel.bin kernel/user.bin` reports the kernel/user binaries are up to date. A full `make -C emulator all` no longer fails on missing `string.h` after installing `picolibc`, but the historical rebuild path still needs Makefile maintenance for current toolchains:
+
+- Ubuntu's `riscv64-unknown-elf-gcc` needs `--specs=picolibc.specs` to find `picolibc` headers.
+- `emulator/riscv-tests.mk` can recurse into a bare `make` when no upstream `.dump` files exist yet.
+- Local C builds use `-march=rv64i`, but GCC/binutils 13 require the CSR extension to be explicit for CSR instructions, e.g. `-march=rv64i_zicsr`.
 
 CI is configured to install Racket 8.0, pull Git LFS files, install the local emulator package, and run:
 
@@ -76,7 +82,7 @@ Important emulator modules:
 - `emulator/test.rkt`: main rackunit/Rosette test and proof suite.
 - `emulator/riscv-tests.rkt`: RV64UI-style binary test runner.
 
-The emulator README is partially stale: it references `decode.rkt`, but no `decode.rkt` exists; decoding currently happens in `execute.rkt`. The root README also refers to an `emulate` directory, while the actual directory is `emulator`.
+The root README and emulator README have been updated to use the current `emulator/` directory name and the current `execute.rkt` decode/dispatch flow.
 
 ## Current functionality
 
@@ -107,6 +113,12 @@ The simplified kernel in `emulator/kernel/` sets PMP regions, sets `mstatus`, ha
 
 ## Known incomplete or fragile areas
 
+- `machine-ram-read` computes read end addresses as `addr + nbytes * 8` instead of the last byte address, so PMP read checks are too strict near region boundaries.
+- Illegal memory reads return `'illegal-instruction`, but load instructions immediately pass that symbol to `sign-extend` or `zero-extend`, causing a runtime contract error instead of clean trap/illegal-instruction behavior.
+- `slliw`, `srliw`, and `sraiw` write `rd` before checking the reserved `imm[5]` bit, so reserved encodings can mutate machine state before returning `'illegal-instruction`.
+- `execute-R` omits opcode checks on some R-type cases (`slt`, `sltu`, `xor`, `or`, `and`), so invalid OP-32 encodings can execute as 64-bit OP instructions.
+- `andi-instr` returns a decoded label of `'addi` instead of `'andi`; `lb`, `lh`, `lw`, and `ld` return `'m` instead of their instruction names.
+- Illegal instruction/trap handling is incomplete: `illegal-instr` exists but `step`/`execute` mostly return `'illegal-instruction` without consistently updating `pc`/mode to trap state.
 - Several instruction semantics are stubs or placeholders: `ebreak`, `uret`, `dret`, `sfence_vma`, `wfi`, `csrrc`, `csrrsi`, `csrrci`, the RV64M multiply/divide/remainder family, and `andw`.
 - `ecall` is only a marker, not a real trap implementation.
 - `FENCE` and `FENCE_I` are implemented as PC-advancing no-ops.
@@ -115,9 +127,12 @@ The simplified kernel in `emulator/kernel/` sets PMP regions, sets `mstatus`, ha
 - PMP handling only supports the currently needed NAPOT path and has TODOs for access type, locking behavior, and other modes.
 - `init.rkt` has TODOs around realistic initial CSR/PMP values.
 - `emulator/kernel/kernel.c` has hardcoded or TODO-marked values for user memory sizing, UART/PMP behavior, `mtvec`, and copy size.
-- Documentation is out of sync with current file names and directory names.
+- There are no active Git LFS-tracked files (`git lfs ls-files` is empty), although CI still runs `git lfs pull`.
 
 ## Useful next steps
 
-1. Update stale documentation references to `emulator/` and `execute.rkt`.
-2. Triage the instruction/PMP/kernel TODOs before extending proof coverage.
+1. Modernize the Makefile rebuild path: pass `--specs=picolibc.specs` for upstream `riscv-tests`, avoid the empty-target recursion in `all-riscv-tests`, and update local `CFLAGS` to include `zicsr`.
+2. Add regression tests for the concrete semantic bugs listed above, then fix them in small patches.
+3. Decide whether CI should keep using checked-in binaries or rebuild them from source; if it rebuilds, add the RISC-V toolchain and C library to CI.
+4. Remove or justify the no-op `git lfs pull` step if there are no LFS-tracked files.
+5. Triage the remaining instruction/PMP/kernel TODOs before extending proof coverage.
